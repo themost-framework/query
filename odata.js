@@ -1,13 +1,4 @@
-/**
- * MOST Web Framework
- * A JavaScript Web Framework
- * http://themost.io
- *
- * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com, Anthi Oikonomou anthioikonomou@gmail.com
- *
- * Released under the BSD3-Clause license
- * Date: 2014-02-15
- */
+// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 var _ = require("lodash");
 var LangUtils = require("@themost/common/utils").LangUtils;
 var sprintf = require('sprintf').sprintf;

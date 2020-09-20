@@ -3,6 +3,9 @@
   "version": "2.5.0",
   "description": "MOST Web Framework Codename Blueshift - Query Module",
   "main": "index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
   "peerDependencies": {
     "@themost/common": "^2.5.0"
   },
@@ -24,7 +27,10 @@
     "symbol": "^0.3.1"
   },
   "devDependencies": {
-    "eslint": "^4.12.1"
+    "@types/jasmine": "^3.5.14",
+    "eslint": "^6.8.0",
+    "jasmine": "^3.6.1",
+    "jasmine-spec-reporter": "^5.0.2"
   },
   "eslintConfig": {
     "env": {

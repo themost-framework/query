@@ -1,11 +1,4 @@
-/**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
- *
- * Use of this source code is governed by an BSD-3-Clause license that can be
- * found in the LICENSE file at https://themost.io/license
- */
+// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 var QueryExpression = require('./query').QueryExpression;
 
 /**
@@ -63,6 +56,7 @@ function bufferToString(buffer) {
         // node v0.4.x does not support hex / throws unknown encoding error
         for (var i = 0; i < buffer.length; i++) {
             var byte = buffer[i];
+            // noinspection JSCheckFunctionSignatures
             hex += zeroPad(byte.toString(16));
         }
     }
@@ -73,7 +67,7 @@ function bufferToString(buffer) {
 function objectToValues(object, timeZone) {
     var values = [];
     for (var key in object) {
-        if (object.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(object, key)) {
             var value = object[key];
             if(typeof value === 'function') {
                 continue;
