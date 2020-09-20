@@ -1,0 +1,33 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": false
+  },
+  "parserOptions": {
+    "ecmaVersion": 5
+  },
+  "globals": {
+    "jasmine": false,
+    "describe": false,
+    "it": false,
+    "fdescribe": false,
+    "fit": false,
+    "expect": false,
+    "beforeAll": false,
+    "beforeEach": false,
+    "afterAll": false,
+    "afterEach": false
+  },
+  "extends": "eslint:recommended",
+  "rules": {
+    "no-console": "warn",
+    "no-invalid-this": "warn",
+    "no-undef": "error",
+    "no-unused-vars": "warn",
+    "strict": [
+      2,
+      "never"
+    ]
+  }
+}
