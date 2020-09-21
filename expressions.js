@@ -3,14 +3,14 @@ var _ = require('lodash');
 /**
  * @class
  * @param {*=} p0 The left operand
- * @param {String=} oper The operator
+ * @param {String=} operator The operator
  * @param {*=} p1 The right operand
  * @constructor
  */
-function ArithmeticExpression(p0, oper, p1)
+function ArithmeticExpression(p0, operator, p1)
 {
     this.left = p0;
-    this.operator = oper || '$add';
+    this.operator = operator || '$add';
     this.right = p1;
 }
 
@@ -68,11 +68,11 @@ MemberExpression.prototype.exprOf = function() {
 /**
  * @class
  * @constructor
- * @param {string} oper
+ * @param {string} operator
  * @param {*} args
  */
-function LogicalExpression(oper, args) {
-    this.operator = oper || '$and' ;
+function LogicalExpression(operator, args) {
+    this.operator = operator || '$and' ;
     this.args = args || [];
 }
 
