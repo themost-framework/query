@@ -221,7 +221,6 @@ function MethodCallExpression(name, args) {
  */
 MethodCallExpression.prototype.exprOf = function() {
     var method = {};
-    var result = {};
     var name = '$'.concat(this.name);
     //set arguments array
     method[name] = [] ;
@@ -229,8 +228,7 @@ MethodCallExpression.prototype.exprOf = function() {
         throw new Error('Unsupported method expression. Method arguments cannot be empty.');
     //get first argument
     if (this.args[0] instanceof MemberExpression) {
-        var member = this.args[0].name;
-        for (var i = 1; i < this.args.length; i++)
+        for (var i = 0; i < this.args.length; i++)
         {
             var arg = this.args[i];
             if (typeof arg === 'undefined' || arg===null)
@@ -240,8 +238,8 @@ MethodCallExpression.prototype.exprOf = function() {
             else
                 method[name].push(arg);
         }
-        result[member] = method;
-        return result;
+        // result[member] = method;
+        return method;
     }
     else {
         throw new Error('Unsupported method expression. The first argument of a method expression must be always a MemberExpression.');

@@ -26,6 +26,8 @@ export declare class QueryExpression {
     update(entity: string): QueryExpression;
     set(obj: any): QueryExpression;
     select(...field: Array<any>): QueryExpression;
+    select<T>(expr: (value: T) => any, params?: any): QueryExpression;
+    select<T,J>(expr: (value1: T, value2: J) => any, params?: any): QueryExpression;
     count(alias: string): QueryExpression;
     from(alias: string): QueryExpression;
     join(entity: any, props?: any, alias?: any): QueryExpression;

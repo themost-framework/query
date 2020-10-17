@@ -17,7 +17,7 @@ if (typeof Object.key !== 'function') {
         if (typeof obj === 'undefined' || obj === null)
             return null;
         for(var prop in obj) {
-            if (obj.hasOwnProperty(prop))
+            if (Object.prototype.hasOwnProperty.call(obj, prop))
                 return prop;
         }
         return null;
@@ -29,7 +29,7 @@ var aliasKeyword = ' AS ';
  * @this SqlFormatter
  */
 function getAliasKeyword() {
-    if (this.settings.hasOwnProperty('useAliasKeyword') === false) {
+    if (Object.prototype.hasOwnProperty.call(this.settings, 'useAliasKeyword') === false) {
         return aliasKeyword;
     }
     if (this.settings.useAliasKeyword) {
@@ -86,7 +86,7 @@ SqlFormatter.prototype.formatComparison = function(comparison)
         }
         var compares = [];
         for(key in comparison) {
-            if (comparison.hasOwnProperty(key))
+            if (Object.prototype.hasOwnProperty.call(comparison, key))
                 compares.push(key);
         }
         if (compares.length===0)
@@ -147,7 +147,7 @@ SqlFormatter.prototype.escape = function(value,unquoted)
         //add an exception for Date object
         if (value instanceof Date)
             return SqlUtils.escape(value);
-        if (value.hasOwnProperty('$name'))
+        if (Object.prototype.hasOwnProperty.call(value, '$name'))
             return this.escapeName(value.$name);
         else {
             //check if value is a known expression e.g. { $length:"name" }
@@ -563,7 +563,7 @@ SqlFormatter.prototype.isField = function(obj) {
     if (_.isNil(obj))
         return false;
     if (typeof obj === 'object')
-        if (obj.hasOwnProperty('$name'))
+        if (Object.prototype.hasOwnProperty.call(obj, '$name'))
             return true;
     return false;
 };
@@ -856,7 +856,7 @@ SqlFormatter.prototype.formatField = function(obj)
     }
     if (typeof obj === 'object') {
         //if field is a constant e.g. { $value:1000 }
-        if (obj.hasOwnProperty('$value'))
+        if (Object.prototype.hasOwnProperty.call(obj, '$value'))
             return this.escapeConstant(obj['$value']);
         //get table name
         var tableName = Object.key(obj);
@@ -938,7 +938,7 @@ SqlFormatter.prototype.formatInsert = function(obj)
     var obj1 = obj.$insert[entity];
     var props = [];
     for(var prop in obj1)
-        if (obj1.hasOwnProperty(prop))
+        if (Object.prototype.hasOwnProperty.call(obj1, prop))
             props.push(prop);
     sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(' , _.map(props, function(x) { return self.escapeName(x); }).join(', '), ') VALUES (',
         _.map(props, function(x)
@@ -965,7 +965,7 @@ SqlFormatter.prototype.formatUpdate = function(obj)
     var obj1 = obj.$update[entity];
     var props = [];
     for(var prop in obj1)
-        if (obj1.hasOwnProperty(prop))
+        if (Object.prototype.hasOwnProperty.call(obj1, prop))
             props.push(prop);
     //add basic INSERT statement
     sql = sql.concat('UPDATE ', self.escapeName(entity), ' SET ',

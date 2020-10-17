@@ -5,6 +5,7 @@ var _ = require('lodash');
 var Symbol = require('symbol');
 var aggregate = Symbol();
 var instanceOf = require('./instance-of').instanceOf;
+var ClosureParser = require('./closures').ClosureParser;
 // eslint-disable-next-line no-unused-vars
 //noinspection JSUnusedLocalSymbols
 require('./natives');
@@ -484,13 +485,32 @@ QueryExpression.prototype.set = function(obj)
 /* eslint-disable-next-line no-unused-vars */
 QueryExpression.prototype.select = function(field)
 {
+    var fields = [];
+    // handle closure
+    if (typeof field === 'function') {
+        var closureParser = new ClosureParser();
+        fields = closureParser.parseSelect(field);
+        if (this.privates.entity) {
+            this.$select = {};
+            Object.defineProperty(this.$select, this.privates.entity, {
+                configurable: true,
+                enumerable: true,
+                value: fields,
+                writable: true
+            });
+        } else {
+            this.privates.fields = fields;
+        }
+        // and return
+        return this;
+    }
     // get argument
     var arr = Array.prototype.slice.call(arguments);
     if (arr.length === 0) {
         return this;
     }
     // validate arguments
-    var fields = [];
+
     arr.forEach( function (x) {
         // backward compatibility
         // any argument may be an array of fields
