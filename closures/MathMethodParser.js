@@ -27,7 +27,7 @@ MathMethodParser.floor = function(args) {
 }
 
 MathMethodParser.ceil = function(args) {
-    return new MethodCallExpression('ceil', args);
+    return new MethodCallExpression('ceiling', args);
 }
 MathMethodParser.round = function(args) {
     return new MethodCallExpression('round', args);

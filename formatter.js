@@ -637,7 +637,7 @@ SqlFormatter.prototype.$mod = function(p0, p1)
     //validate params
     if (_.isNil(p0) || _.isNil(p1))
         return '0';
-    return sprintf('(%s % %s)', this.escape(p0), this.escape(p1));
+    return '(' + this.escape(p0) + ' % ' + this.escape(p1) + ')';
 };
 
 /**
@@ -1001,6 +1001,9 @@ SqlFormatter.prototype.formatDelete = function(obj)
 SqlFormatter.prototype.escapeName = function(name) {
     if (typeof name === 'string')
         return name.replace(/(\w+)$|^(\w+)$/g, this.settings.nameFormat);
+    if (typeof name === 'object' && Object.prototype.hasOwnProperty.call(name, '$name')) {
+        return this.escapeName(name.$name);
+    }
     return name;
 };
 
@@ -1042,20 +1045,23 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
         prop = Object.key(expr);
         var name = expr[prop], s;
         switch (prop) {
+            case '$name':
+                s= this.escapeName(name);
+                break;
             case '$count':
-                s= sprintf('COUNT(%s)',this.escapeName(name));
+                s= sprintf('COUNT(%s)',Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
                 break;
             case '$min':
-                s= sprintf('MIN(%s)',this.escapeName(name));
+                s= sprintf('MIN(%s)', Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
                 break;
             case '$max':
-                s= sprintf('MAX(%s)',this.escapeName(name));
+                s= sprintf('MAX(%s)',Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
                 break;
             case '$avg':
-                s= sprintf('AVG(%s)',this.escapeName(name));
+                s= sprintf('AVG(%s)',Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
                 break;
             case '$sum':
-                s= sprintf('SUM(%s)',this.escapeName(name));
+                s= sprintf('SUM(%s)',Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
                 break;
             case '$value':
                 s= this.escapeConstant(name);

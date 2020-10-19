@@ -14,41 +14,28 @@ function ArithmeticExpression(p0, operator, p1)
     this.right = p1;
 }
 
-ArithmeticExpression.OperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod)$/g;
+ArithmeticExpression.OperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod|\$bit)$/g;
 
 ArithmeticExpression.prototype.exprOf = function()
 {
-    var p;
-    if (typeof this.left === 'undefined' || this.left===null)
+    if (this.left == null) {
         throw new Error('Expected left operand');
-    else if (typeof this.left.exprOf === 'function')
-        p = this.left.exprOf();
-    else
-        p = this.left;
-    if (typeof this.operator === 'undefined' || this.operator===null)
+    }
+    if (this.operator == null)
         throw new Error('Expected arithmetic operator.');
-    if (this.operator.match(ArithmeticExpression.OperatorRegEx)===null)
+    if (this.operator.match(ArithmeticExpression.OperatorRegEx) == null) {
         throw new Error('Invalid arithmetic operator.');
+    }
     //build right operand e.g. { $add:[ 5 ] }
-    var r = {};
-    if (typeof this.right === 'undefined' || this.right===null) {
-        r[this.operator]=[null];
+    var result = { };
+    Object.defineProperty(result, this.operator, {
+        value: [ this.left.exprOf(), this.right.exprOf() ],
+        enumerable: true,
+        configurable: true
+    });
+    if (this.right == null) {
+        result[this.operator]=[null];
     }
-    else if (typeof this.right.exprOf === 'function') {
-        if (this.right instanceof MemberExpression) {
-            r[this.operator] = [{ "$name": this.right.exprOf() }];
-        }
-        else {
-            r[this.operator] = [this.right.exprOf()];
-        }
-
-    }
-    else {
-        r[this.operator]=[this.right];
-    }
-    //add left operand e.g { Price: { $add:[ 5 ] } }
-    var result = {};
-    result[p] = r;
     //return query expression
     return result;
 };
@@ -62,7 +49,9 @@ function MemberExpression(name) {
     this.name = name;
 }
 MemberExpression.prototype.exprOf = function() {
-    return this.name;
+    return {
+        $name: this.name
+    };
 };
 
 /**

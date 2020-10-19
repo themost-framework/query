@@ -9,6 +9,8 @@ var ArithmeticExpression = expressions.ArithmeticExpression;
 var LogicalExpression = expressions.LogicalExpression;
 var ComparisonExpression = expressions.ComparisonExpression;
 var MethodCallExpression = expressions.MethodCallExpression;
+var isArithmeticOperator = expressions.isArithmeticOperator;
+var isComparisonOperator = expressions.isComparisonOperator;
 
 var parse = require('esprima').parse;
 var Args = require('@themost/common').Args;
@@ -428,9 +430,10 @@ ClosureParser.prototype.parseBinary = function(expr) {
         throw new Error('Invalid binary operator.');
     }
     else {
+
         var left = self.parseCommon(expr.left);
         var right = self.parseCommon(expr.right);
-        if (op instanceof ArithmeticExpression) {
+        if (isArithmeticOperator(op)) {
             //validate arithmetic arguments
             if (left instanceof LiteralExpression && right instanceof LiteralExpression) {
                 //evaluate expression
@@ -452,10 +455,11 @@ ClosureParser.prototype.parseBinary = function(expr) {
                 }
             }
             else {
-                return new ArithmeticExpression(left, op, right);
+                var finalExpr = new ArithmeticExpression(left, op, right);
+                return finalExpr;
             }
         }
-        else if (op instanceof ComparisonExpression) {
+        else if (isComparisonOperator(op)) {
             return new ComparisonExpression(left, op, right);
         }
         else {

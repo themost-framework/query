@@ -489,7 +489,9 @@ QueryExpression.prototype.select = function(field)
     // handle closure
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
-        fields = closureParser.parseSelect(field);
+        // get closure and params
+        var selectArgs = Array.from(arguments);
+        fields = closureParser.parseSelect.apply(closureParser, selectArgs);
         if (this.privates.entity) {
             this.$select = {};
             Object.defineProperty(this.$select, this.privates.entity, {
