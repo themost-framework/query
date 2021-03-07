@@ -123,15 +123,15 @@ export class TestAdapter {
      * @param {string} query - A parameterized query expression e.g. SELECT * FROM Table1 WHERE status = ?
      * @param {Array<*>=} values - An array of parameters
      */
-    prepare(query, values) {
+    prepare(query: string, values: any) {
         return SqlUtils.format(query,values);
     }
 
     /**
-     * @param {MemoryAdapterColumn} field
+     * @param {*} field
      * @returns {string}
      */
-    static formatType(field) {
+    static formatType(field: { size: string; type: any; scale: string; primary: any; nullable: any; }) {
         const size = parseInt(field.size);
         let s;
         switch (field.type)
@@ -287,7 +287,7 @@ export class TestAdapter {
      * @param {*} query
      * @param {AdapterExecuteCallback} callback
      */
-    createView(name, query, callback) {
+    createView(name: any, query: any, callback: any) {
         return this.view(name).create(query, callback);
     }
 
@@ -460,7 +460,7 @@ export class TestAdapter {
                         throw new Error('Full table migration is not yet implemented.');
                     }
                     else {
-                        migration.add.forEach( x => {
+                        migration.add.forEach( (x: { size?: string; type?: any; scale?: string; primary?: any; nullable?: any; name?: any; }) => {
                             //search for columns
                             expressions.push(`ALTER TABLE "${migration.appliesTo}" ADD COLUMN "${x.name}" ${TestAdapter.formatType(x)}`);
                         });
@@ -496,9 +496,9 @@ export class TestAdapter {
     /**
      * @param {MemoryAdapterMigration} migration
      */
-    migrateAsync(migration) {
+    migrateAsync(migration: any) {
         return new Promise((resolve, reject) => {
-            return this.migrate(migration, (err) => {
+            return this.migrate(migration, (err: any) => {
                 if (err) {
                     return reject(err);
                 }
@@ -513,7 +513,7 @@ export class TestAdapter {
      * @param attribute {string} The target attribute
      * @param {AdapterExecuteCallback} callback
      */
-    selectIdentity(entity, attribute, callback) {
+    selectIdentity(entity: string, attribute: string, callback: { (err: any, result: unknown): void; call?: any; }) {
 
         const self = this;
 
@@ -530,7 +530,7 @@ export class TestAdapter {
             ]
         };
         //ensure increments entity
-        self.migrate(migration, function(err)
+        self.migrate(migration, function(err: any)
         {
             //throw error if any
             if (err) { callback.call(self,err); return; }
@@ -574,9 +574,9 @@ export class TestAdapter {
      * @param {string} attribute The target attribute
      * @returns Promise<*>
      */
-    selectIdentityAsync(entity, attribute) {
+    selectIdentityAsync(entity: any, attribute: any) {
         return new Promise((resolve, reject) => {
-            return this.selectIdentity(entity, attribute, (err, result) => {
+            return this.selectIdentity(entity, attribute, (err: any, result: unknown) => {
                 if (err) {
                     return reject(err);
                 }
@@ -596,7 +596,7 @@ export class TestAdapter {
             /**
              * @param {ExistsCallback} callback
              */
-            exists:function(callback) {
+            exists:function(callback: any) {
                 self.execute(`SELECT COUNT(*) AS "count" FROM "sqlite_master" WHERE "name" = ? AND "type" = 'table';`, [ name ], (err, result) => {
                     if (err) {
                         return callback(err);

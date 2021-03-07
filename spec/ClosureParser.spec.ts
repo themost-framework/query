@@ -27,4 +27,16 @@ describe('ClosureParser', () => {
                 "CustomerID": 78
             });
     });
+
+    it('should parse select', async () => {
+        const parser = new ClosureParser();
+        const parserSelectAsync = promisify(parser.parseSelect.bind(parser));
+        let query = await parserSelectAsync((x: { ProductID: any; ProductName: any; Unit: any; Price: any; }) => {
+            x.ProductID,
+            x.ProductName,
+            x.Unit,
+            x.Price
+        }, null);
+        expect(query).toBeTruthy();
+    });
 });

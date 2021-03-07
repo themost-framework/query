@@ -12,6 +12,11 @@ var expressions = require('./expressions');
 var esprima = require('esprima');
 var async = require('async');
 var _ = require('lodash');
+var Args = require('@themost/common').Args;
+var MemberExpression = expressions.MemberExpression;
+var SequenceExpression = expressions.SequenceExpression;
+var ObjectExpression = expressions.ObjectExpression;
+var Q = require('q');
 
 var ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -26,7 +31,8 @@ var ExpressionTypes = {
     FunctionExpression:'FunctionExpression',
     BlockStatement:'BlockStatement',
     ReturnStatement:'ReturnStatement',
-    CallExpression:'CallExpression'
+    CallExpression:'CallExpression',
+    SequenceExpression:'SequenceExpression'
 };
 /**
  * @class ClosureParser
@@ -107,6 +113,9 @@ ClosureParser.prototype.parseCommon = function(expr, callback) {
     }
     else if (expr.type === ExpressionTypes.Identifier) {
         this.parseIdentifier(expr, callback);
+    }
+    else if (expr.type === ExpressionTypes.BlockStatement) {
+        this.parseBlock(expr, callback);
     }
     else {
         callback(new Error('The given expression is not yet implemented (' + expr.type + ').'));
@@ -476,6 +485,105 @@ ClosureParser.prototype.resolveMethod = function(method, args, callback)
     else
         callback.call(this);
 };
+
+ClosureParser.prototype.parseBlock = function(expr, callback) {
+        var self = this;
+        // get expression statement
+        var bodyExpression = expr.body[0];
+        if (bodyExpression.type === ExpressionTypes.ExpressionStatement) {
+            if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
+                return self.parseSequence(bodyExpression.expression, callback);
+            }
+            else if (bodyExpression.expression && bodyExpression.expression.type === 'MemberExpression') {
+                return self.parseMember(bodyExpression.expression, callback);
+            }
+        }
+        else if (bodyExpression.type === ExpressionTypes.ReturnStatement) {
+            // get return statement
+            var objectExpression = bodyExpression.argument;
+            if (objectExpression && objectExpression.type === ExpressionTypes.ObjectExpression) {
+                return self.parseObject(objectExpression, callback);
+            }
+        }
+        return callback(new Error('The given expression is not yet implemented (' + expr.type + ').'));
+    }
+
+ClosureParser.prototype.parseSequence = function (sequenceExpression, callback) {
+    var self = this;
+    if (sequenceExpression == null) {
+        throw new Error('Sequence expression may not be null');
+    }
+    if (sequenceExpression.type !== ExpressionTypes.SequenceExpression) {
+        return callback(new Error('Invalid expression type. Expected an object expression.'));
+    }
+    if (Array.isArray(sequenceExpression.expressions) === false) {
+        return callback(new Error('Sequence expression expressions must be an array.'));
+    }
+    var finalResult = new SequenceExpression();
+    var sources = sequenceExpression.expressions.map(function (expression) {
+        return Q.Promise(function (resolve, reject) {
+            return self.parseCommon(expression, function (err, value) {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(value);
+            });
+        })
+    });
+    Q.all(sources).then(function (results) {
+        finalResult.value = results;
+        return callback(null, finalResult);
+    }).catch(function (err) {
+        return callback(err);
+    });
+}
+
+/**
+ * 
+ */
+ClosureParser.prototype.parseSelect = function(func, params, callback) {
+        if (func == null) {
+            return;
+        }
+        this.params = params;
+        Args.check(typeof func === 'function', new Error('Select closure must a function.'));
+        // convert the given function to javascript expression
+        var expr = esprima.parseScript('void(' + func.toString() + ')');
+        // validate expression e.g. return [EXPRESSION];
+        var body = expr.body[0];
+        var funcExpr = body.expression.argument;
+        // get named parameters
+        this.namedParams = funcExpr.params;
+        this.parseCommon(funcExpr.body, function(err, res) {
+            if (err) {
+                return callback(err);
+            }
+            if (res && res instanceof SequenceExpression) {
+                return callback(null, res.value.map( function(x) {
+                    return x.exprOf();
+                }));
+            }
+            if (res && res instanceof MemberExpression) {
+                return callback(null, [ res.exprOf() ]);
+            }
+            if (res && res instanceof ObjectExpression) {
+                return callback(null, Object.keys(res).map( function(key) {
+                    if (hasOwnProperty(res, key)) {
+                        var result = {};
+                        Object.defineProperty(result, key, {
+                            configurable: true,
+                            enumerable: true,
+                            writable: true,
+                            value: res[key].exprOf()
+                        })
+                        return result;
+                    }
+                }));
+            }
+            return  callback(new Error('Invalid select closure'));
+        });
+    }
+
 
 if (typeof exports !== 'undefined')
 {

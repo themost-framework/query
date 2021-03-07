@@ -257,6 +257,57 @@ MethodCallExpression.prototype.exprOf = function() {
 
 };
 
+function SequenceExpression() {
+    this.value = [];
+}
+
+SequenceExpression.prototype.exprOf = function() {
+    return this.value.reduce(function(previousValue, currentValue, currentIndex) {
+        if (currentValue instanceof MemberExpression) {
+            Object.defineProperty(previousValue, currentValue.name, {
+                value: 1,
+                enumerable: true,
+                configurable: true
+            });
+            return previousValue;
+        }
+        else if (currentValue instanceof MethodCallExpression) {
+            // validate method name e.g. Math.floor and get only the last part
+            var name = currentValue.name.split('.');
+            Object.defineProperty(previousValue, name[name.length-1].toString() + currentIndex.toString(), {
+                value: currentValue.exprOf(),
+                enumerable: true,
+                configurable: true
+            });
+            return previousValue;
+        }
+        throw new Error('Sequence expression is invalid or has a member which its type has not implemented yet');
+    }, {});
+}
+
+function ObjectExpression() {
+    this.value = [];
+}
+
+ObjectExpression.prototype.exprOf = function() {
+    var finalResult = { };
+    var self = this;
+    Object.keys(this).forEach( function(key) {
+        if (typeof self[key].exprOf === 'function') {
+            Object.defineProperty(finalResult, key, {
+                value: self[key].exprOf(),
+                enumerable: true,
+                configurable: true
+            });
+            return;
+        }
+        throw new Error('Object expression is invalid or has a member which its type has not implemented yet');
+    });
+    return finalResult;
+}
+
+
+
 /**
  * @enum
  */
@@ -290,6 +341,8 @@ if (typeof exports !== 'undefined')
     module.exports.ComparisonExpression =  ComparisonExpression;
     module.exports.LiteralExpression =  LiteralExpression;
     module.exports.LogicalExpression =  LogicalExpression;
+    module.exports.ObjectExpression =  ObjectExpression;
+    module.exports.SequenceExpression =  SequenceExpression;
     /**
      * @param {*=} left The left operand
      * @param {string=} operator The operator
