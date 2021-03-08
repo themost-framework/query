@@ -10,29 +10,32 @@
  */
 var expressions = require('./expressions');
 var esprima = require('esprima');
-var async = require('async');
 var _ = require('lodash');
 var Args = require('@themost/common').Args;
 var MemberExpression = expressions.MemberExpression;
 var SequenceExpression = expressions.SequenceExpression;
 var ObjectExpression = expressions.ObjectExpression;
-var Q = require('q');
+var LogicalExpression = expressions.LogicalExpression;
+var ArithmeticExpression = expressions.ArithmeticExpression;
+var LiteralExpression = expressions.LiteralExpression;
+var MethodCallExpression = expressions.MethodCallExpression;
+var ComparisonExpression = expressions.ComparisonExpression;
 
 var ExpressionTypes = {
-    LogicalExpression : 'LogicalExpression',
+    LogicalExpression: 'LogicalExpression',
     BinaryExpression: 'BinaryExpression',
     MemberExpression: 'MemberExpression',
     MethodExpression: 'MethodExpression',
     Identifier: 'Identifier',
     Literal: 'Literal',
     Program: 'Program',
-    ExpressionStatement : 'ExpressionStatement',
-    UnaryExpression:'UnaryExpression',
-    FunctionExpression:'FunctionExpression',
-    BlockStatement:'BlockStatement',
-    ReturnStatement:'ReturnStatement',
-    CallExpression:'CallExpression',
-    SequenceExpression:'SequenceExpression'
+    ExpressionStatement: 'ExpressionStatement',
+    UnaryExpression: 'UnaryExpression',
+    FunctionExpression: 'FunctionExpression',
+    BlockStatement: 'BlockStatement',
+    ReturnStatement: 'ReturnStatement',
+    CallExpression: 'CallExpression',
+    SequenceExpression: 'SequenceExpression'
 };
 /**
  * @class ClosureParser
@@ -46,201 +49,157 @@ function ClosureParser() {
     /**
      * @type {*}
      */
-    this.parsers = { };
+    this.parsers = {};
+    // set params
+    this.params = null;
 
 }
 /**
  * Parses a javascript expression and returns the equivalent QueryExpression instance.
  * @param {Function} fn The closure expression to parse
- * @param {Function} callback
+ * @param {*=} params
  */
-ClosureParser.prototype.parseFilter = function(fn, callback) {
+// eslint-disable-next-line no-unused-vars
+ClosureParser.prototype.parseFilter = function (fn, params) {
     var self = this;
-    if (typeof fn === 'undefined' || fn === null ) {
-        callback();
+    if (typeof fn === 'undefined' || fn === null) {
         return;
     }
-    try {
-        //convert the given function to javascript expression
-        var expr = esprima.parse('void(' + fn.toString() + ')');
-        //get FunctionExpression
-        var fnExpr = expr.body[0].expression.argument;
-        if (_.isNil(fnExpr)) {
-            callback(new Error('Invalid closure statement. Closure expression cannot be found.'));
-            return;
-        }
-        //get named parameters
-        self.namedParams = fnExpr.params;
-        //validate expression e.g. return [EXPRESSION];
-        if (fnExpr.body.body[0].type!==ExpressionTypes.ReturnStatement) {
-            callback(new Error('Invalid closure syntax. A closure expression must return a value.'));
-            return;
-        }
-        var closureExpr =  fnExpr.body.body[0].argument;
-        //parse this expression
-        this.parseCommon(closureExpr, function(err, result) {
-            //and finally return the equivalent query expression
-            if (result) {
-                if (typeof result.exprOf === 'function') {
-                    callback.call(self, err, result.exprOf());
-                    return;
-                }
-            }
-            callback.call(self, err, result);
-        });
+    this.params = params;
+    //convert the given function to javascript expression
+    var expr = esprima.parse('void(' + fn.toString() + ')');
+    //get FunctionExpression
+    var fnExpr = expr.body[0].expression.argument;
+    if (_.isNil(fnExpr)) {
+        throw new Error('Invalid closure statement. Closure expression cannot be found.');
     }
-    catch(e) {
-        callback(e);
+    //get named parameters
+    self.namedParams = fnExpr.params;
+    //validate expression e.g. return [EXPRESSION];
+    if (fnExpr.body.body[0].type !== ExpressionTypes.ReturnStatement) {
+        throw new Error('Invalid closure syntax. A closure expression must return a value.');
     }
+    var closureExpr = fnExpr.body.body[0].argument;
+    //parse this expression
+    var result = this.parseCommon(closureExpr);
+    if (result != null && typeof result.exprOf === 'function') {
+        return result.exprOf();
+    }
+    return result;
 
 };
 
-ClosureParser.prototype.parseCommon = function(expr, callback) {
+
+ClosureParser.prototype.parseCommon = function (expr) {
     if (expr.type === ExpressionTypes.LogicalExpression) {
-        this.parseLogical(expr, callback);
+        return this.parseLogical(expr);
     }
     else if (expr.type === ExpressionTypes.BinaryExpression) {
-        this.parseBinary(expr, callback);
+        return this.parseBinary(expr);
     }
     else if (expr.type === ExpressionTypes.Literal) {
-        this.parseLiteral(expr, callback);
+        return this.parseLiteral(expr);
     }
     else if (expr.type === ExpressionTypes.MemberExpression) {
-        this.parseMember(expr, callback);
+        return this.parseMember(expr);
     }
     else if (expr.type === ExpressionTypes.CallExpression) {
-        this.parseMethod(expr, callback);
+        return this.parseMethod(expr);
     }
     else if (expr.type === ExpressionTypes.Identifier) {
-        this.parseIdentifier(expr, callback);
+        return this.parseIdentifier(expr);
     }
     else if (expr.type === ExpressionTypes.BlockStatement) {
-        this.parseBlock(expr, callback);
+        return this.parseBlock(expr);
     }
     else {
-        callback(new Error('The given expression is not yet implemented (' + expr.type + ').'));
+        throw new Error('The given expression is not yet implemented (' + expr.type + ').');
     }
 };
 
-ClosureParser.prototype.parseLogical = function(expr, callback) {
+ClosureParser.prototype.parseLogical = function (expr) {
     var self = this;
     var op = (expr.operator === '||') ? expressions.Operators.Or : expressions.Operators.And;
     //validate operands
-    if (_.isNil(expr.left) || _.isNil(expr.right)) {
-        callback(new Error('Invalid logical expression. Left or right operand is missing or undefined.'));
+    if (expr.left == null || expr.right == null) {
+        throw new Error('Invalid logical expression. Left or right operand is missing or undefined.');
     }
-    else {
-        self.parseCommon(expr.left, function(err, left) {
-            if (err) {
-                callback(err);
-            }
-            else {
-                self.parseCommon(expr.right, function(err, right) {
-                    if (err) {
-                        callback(err);
-                    }
-                    else {
-                        //create expression
-                        callback(null, expressions.createLogicalExpression(op, [left, right]));
-                    }
-                });
-            }
-        });
-    }
-
+    return new LogicalExpression(op, [
+        self.parseCommon(expr.left),
+        self.parseCommon(expr.right)
+    ]);
 };
 /**
  * @static
  * @param {string} op
  * @returns {*}
  */
-ClosureParser.BinaryToExpressionOperator = function(op) {
-  switch (op) {
-      case '===':
-      case '==':
-          return expressions.Operators.Eq;
-      case '!=':
-          return expressions.Operators.Ne;
-      case '>':
-          return expressions.Operators.Gt;
-      case '>=':
-          return expressions.Operators.Ge;
-      case '<':
-          return expressions.Operators.Lt;
-      case '<=':
-          return expressions.Operators.Le;
-      case '-':
-          return expressions.Operators.Sub;
-      case '+':
-          return expressions.Operators.Add;
-      case '*':
-          return expressions.Operators.Mul;
-      case '/':
-          return expressions.Operators.Div;
-      case '%':
-          return expressions.Operators.Mod;
-      default:
-          return;
-  }
+ClosureParser.BinaryToExpressionOperator = function (op) {
+    switch (op) {
+        case '===':
+        case '==':
+            return expressions.Operators.Eq;
+        case '!=':
+            return expressions.Operators.Ne;
+        case '>':
+            return expressions.Operators.Gt;
+        case '>=':
+            return expressions.Operators.Ge;
+        case '<':
+            return expressions.Operators.Lt;
+        case '<=':
+            return expressions.Operators.Le;
+        case '-':
+            return expressions.Operators.Sub;
+        case '+':
+            return expressions.Operators.Add;
+        case '*':
+            return expressions.Operators.Mul;
+        case '/':
+            return expressions.Operators.Div;
+        case '%':
+            return expressions.Operators.Mod;
+        default:
+            return;
+    }
 };
-ClosureParser.prototype.parseBinary = function(expr, callback) {
+ClosureParser.prototype.parseBinary = function (expr) {
     var self = this;
     var op = ClosureParser.BinaryToExpressionOperator(expr.operator);
-    if (_.isNil(op)) {
-        callback(new Error('Invalid binary operator.'));
+    if (op == null) {
+        throw new Error('Invalid binary operator.');
+    }
+    var left = self.parseCommon(expr.left);
+    var right = self.parseCommon(expr.right);
+    if (expressions.isArithmeticOperator(op)) {
+        //validate arithmetic arguments
+        if (expressions.isLiteralExpression(left) && expressions.isLiteralExpression(right)) {
+            //evaluate expression
+            switch (op) {
+                case expressions.Operators.Add:
+                    return left.value + right.value;
+                case expressions.Operators.Sub:
+                    return left.value - right.value;
+                case expressions.Operators.Div:
+                    return left.value / right.value;
+                case expressions.Operators.Mul:
+                    return left.value * right.value;
+                case expressions.Operators.Mod:
+                    return left.value % right.value;
+                default:
+                    throw new Error('Invalid arithmetic operator');
+            }
+        }
+        else {
+            return new ArithmeticExpression(left, op, right);
+        }
+    }
+    else if (expressions.isComparisonOperator(op)) {
+        return new ComparisonExpression(left, op, right);
     }
     else {
-        self.parseCommon(expr.left, function(err, left) {
-            if (err) {
-                callback(err);
-            }
-            else {
-                self.parseCommon(expr.right, function(err, right) {
-                    if (err) {
-                        callback(err);
-                    }
-                    else {
-                        if (expressions.isArithmeticOperator(op)) {
-                            //validate arithmetic arguments
-                            if (expressions.isLiteralExpression(left) && expressions.isLiteralExpression(right)) {
-                                //evaluate expression
-                                switch (op) {
-                                    case expressions.Operators.Add:
-                                        callback(null, left.value + right.value);
-                                        break;
-                                    case expressions.Operators.Sub:
-                                        callback(null, left.value - right.value);
-                                        break;
-                                    case expressions.Operators.Div:
-                                        callback(null, left.value / right.value);
-                                        break;
-                                    case expressions.Operators.Mul:
-                                        callback(null, left.value * right.value);
-                                        break;
-                                    case expressions.Operators.Mod:
-                                        callback(null, left.value % right.value);
-                                        break;
-                                    default:
-                                        callback(new Error('Invalid arithmetic operator'));
-                                }
-                            }
-                            else {
-                                callback(null, expressions.createArithmeticExpression(left, op, right));
-                            }
-
-                        }
-                        else if (expressions.isComparisonOperator(op)) {
-                            callback(null, expressions.createComparisonExpression(left, op, right));
-                        }
-                        else {
-                            callback(new Error('Unsupported binary expression'));
-                        }
-                    }
-                });
-            }
-        });
+        throw new Error('Unsupported binary expression');
     }
-
 };
 
 function memberExpressionToString(expr) {
@@ -261,175 +220,113 @@ function parentMemberExpressionToString(expr) {
     }
 }
 
-ClosureParser.prototype.parseMember = function(expr, callback) {
-    try {
-        var self = this;
-        if (expr.property) {
-            var namedParam = self.namedParams[0];
-            if (_.isNil(namedParam)) {
-                callback('Invalid or missing closure parameter');
-                return;
+ClosureParser.prototype.parseMember = function (expr) {
+    var self = this;
+    if (expr.property) {
+        var namedParam = self.namedParams[0];
+        if (_.isNil(namedParam)) {
+            throw new Error('Invalid or missing closure parameter');
+        }
+        var member;
+        if (expr.object.name === namedParam.name) {
+            member = self.resolveMember(expr.property.name);
+            return new MemberExpression(member);
+        }
+        else {
+            var value;
+            if (expr.object.object == null) {
+                // evaluate object member value e.g. item.title or item.status.id
+                value = memberExpressionToString(expr);
+                return new MemberExpression(value);
             }
-            if (expr.object.name===namedParam.name) {
-                self.resolveMember(expr.property.name, function(err, member) {
-                    if (err) {
-                        callback(err);
-                        return;
-                    }
-                    callback(null, expressions.createMemberExpression(member));
-                });
+            if (expr.object.object.name === namedParam.name) {
+                // get closure parameter expression e.g. x.title.length
+                var property = expr.property.name;
+                var result = self.parseMember(expr.object);
+                return new MethodCallExpression(property, [result]);
             }
             else {
-                var value;
-                if (_.isNil(expr.object.object)) {
-                    //evaluate object member value e.g. item.title or item.status.id
-                    value = self.eval(memberExpressionToString(expr));
-                    callback(null, expressions.createLiteralExpression(value));
-                    return;
-                }
-                if (expr.object.object.name===namedParam.name) {
-                    //get closure parameter expression e.g. x.title.length
-                    var property = expr.property.name;
-                    self.parseMember(expr.object, function(err, result) {
-                        if (err) { callback(err); return; }
-                        callback(null, expressions.createMethodCallExpression(property, [result]));
-                    });
-                }
-                else {
-                    //evaluate object member value e.g. item.title or item.status.id
-                    value = self.eval(memberExpressionToString(expr));
-                    callback(null, expressions.createLiteralExpression(value));
-                }
-
+                // evaluate object member value e.g. item.title or item.status.id
+                value = memberExpressionToString(expr);
+                return new LiteralExpression(value);
             }
         }
-        else
-            callback(new Error('Invalid member expression.'));
     }
-    catch(e) {
-        callback(e);
-    }
+    throw new Error('Invalid member expression.');
 };
 /**
  * @private
  * @param {*} expr
- * @param {function(Error=,*=)} callback
  */
-ClosureParser.prototype.parseMethodCall = function(expr, callback) {
+ClosureParser.prototype.parseMethodCall = function (expr) {
     var self = this;
-    if (_.isNil(expr.callee.object)) {
-        callback(new Error('Invalid or unsupported method expression.'));
-        return;
+    if (expr.callee.object == null) {
+        throw new Error('Invalid or unsupported method expression.');
     }
     var method = expr.callee.property.name;
-    self.parseMember(expr.callee.object, function(err, result) {
-        if (err) { callback(err); return; }
-        var args = [result];
-        async.eachSeries(expr.arguments, function(arg, cb) {
-            self.parseCommon(arg, function(err, result) {
-                if (err) { cb(err); return; }
-                args.push(result);
-                cb();
-            });
-        }, function(err) {
-            if (err) {
-                callback(err);
-                return;
-            }
-            try {
-                if (typeof self.parsers[method] === 'function') {
-                    self.parsers[method](method, args, callback);
-                }
-                else {
-                    switch (method) {
-                        case 'getDate': method='day';break;
-                        case 'getMonth': method='month';break;
-                        case 'getYear':
-                        case 'getFullYear':
-                            method='date';break;
-                        case 'getMinutes': method='minute';break;
-                        case 'getSeconds': method='second';break;
-                        case 'getHours': method='hour';break;
-                        case 'startsWith': method='startswith';break;
-                        case 'endsWith': method='endswith';break;
-                        case 'trim': method='trim';break;
-                        case 'toUpperCase': method='toupper';break;
-                        case 'toLowerCase': method='tolower';break;
-                        case 'floor': method='floor';break;
-                        case 'ceiling': method='ceiling';break;
-                        case 'indexOf': method='indexof';break;
-                        case 'substring':
-                        case 'substr':
-                            method='substring';break;
-                        default:
-                            callback(new Error('The specified method ('+ method +') is unsupported or is not yet implemented.'));
-                            return;
-                    }
-                    callback(null, expressions.createMethodCallExpression(method, args));
-                }
-
-            }
-            catch(e) {
-                callback(e);
-            }
-
-        })
-
+    var result = self.parseMember(expr.callee.object);
+    var args = [result];
+    expr.arguments.forEach(function(arg) {
+        args.push(self.parseCommon(arg));
     });
-
+    if (typeof self.parsers[method] === 'function') {
+        return self.parsers[method](method, args);
+    }
+    else {
+        switch (method) {
+            case 'getDate': method = 'day'; break;
+            case 'getMonth': method = 'month'; break;
+            case 'getYear':
+            case 'getFullYear':
+                method = 'date'; break;
+            case 'getMinutes': method = 'minute'; break;
+            case 'getSeconds': method = 'second'; break;
+            case 'getHours': method = 'hour'; break;
+            case 'startsWith': method = 'startswith'; break;
+            case 'endsWith': method = 'endswith'; break;
+            case 'trim': method = 'trim'; break;
+            case 'toUpperCase': method = 'toupper'; break;
+            case 'toLowerCase': method = 'tolower'; break;
+            case 'floor': method = 'floor'; break;
+            case 'ceiling': method = 'ceiling'; break;
+            case 'indexOf': method = 'indexof'; break;
+            case 'substring':
+            case 'substr':
+                method = 'substring'; break;
+            default:
+                throw new Error('The specified method (' + method + ') is unsupported or is not yet implemented.');
+        }
+        return new MethodCallExpression(method, args);
+    }
 };
 
-ClosureParser.prototype.parseMethod = function(expr, callback) {
-
+ClosureParser.prototype.parseMethod = function (expr) {
     var self = this;
-    try {
-        //get method name
-        var name = expr.callee.name, args = [], needsEvaluation = true, thisName;
-        if (_.isNil(name)) {
-            if (!_.isNil(expr.callee.object)) {
-                if (!_.isNil(expr.callee.object.object)) {
-                    if (expr.callee.object.object.name===self.namedParams[0].name) {
-                        self.parseMethodCall(expr, callback);
-                        return;
-                    }
+    //get method name
+    var name = expr.callee.name, args = [], needsEvaluation = true, thisName;
+    if (_.isNil(name)) {
+        if (!_.isNil(expr.callee.object)) {
+            if (!_.isNil(expr.callee.object.object)) {
+                if (expr.callee.object.object.name === self.namedParams[0].name) {
+                    return self.parseMethodCall(expr);
                 }
             }
-            name = memberExpressionToString(expr.callee);
-            thisName = parentMemberExpressionToString(expr.callee);
         }
-        //get arguments
-        async.eachSeries(expr.arguments, function(arg, cb) {
-            self.parseCommon(arg, function(err, result) {
-                if (err) {
-                    cb(err);
-                }
-                else {
-                    args.push(result);
-                    if (!expressions.isLiteralExpression(result))
-                        needsEvaluation = false;
-                    cb();
-                }
-            });
-        }, function(err) {
-            try {
-                if (err) { callback(err); return; }
-                if (needsEvaluation) {
-                    var fn = self.eval(name), thisArg;
-                    if (thisName)
-                        thisArg = self.eval(thisName);
-                    callback(null, expressions.createLiteralExpression(fn.apply(thisArg, args.map(function(x) { return x.value; }))));
-                }
-                else {
-                    callback(null, expressions.createMethodCallExpression(name, args));
-                }
-            }
-            catch(e) {
-                callback(e);
-            }
-        });
+        name = memberExpressionToString(expr.callee);
+        thisName = parentMemberExpressionToString(expr.callee);
     }
-    catch(e) {
-        callback(e);
+    expr.arguments.forEach(function(arg) {
+        var result = self.parseCommon(arg);
+        args.push(result);
+        if (expressions.isLiteralExpression(result) === false) {
+            needsEvaluation = false;
+        }
+    });
+    if (needsEvaluation) {
+        throw new Error('Needs evaluation');
+    }
+    else {
+        return new MethodCallExpression(name, args);
     }
 };
 
@@ -437,37 +334,27 @@ ClosureParser.prototype.parseMethod = function(expr, callback) {
  * @param {*} str
  * @returns {*}
  */
-ClosureParser.prototype.eval = function(str) {
-    return eval.call(undefined,str);
+ClosureParser.prototype.eval = function (str) {
+    return eval.call(undefined, str);
 };
 
-ClosureParser.prototype.parseIdentifier = function(expr, callback) {
-    try {
-        var value = this.eval(expr.name);
-        callback(null, expressions.createLiteralExpression(value));
+ClosureParser.prototype.parseIdentifier = function (expr) {
+    if (this.params && Object.prototype.hasOwnProperty.call(this.params, expr.name)) {
+        return new LiteralExpression(this.params[expr.name]);
     }
-    catch (e) {
-        callback(e);
-    }
-
+    throw new Error('Identifier cannot be found or is inaccessible. Consider passing parameters if they are used inside method.');
 };
 
-ClosureParser.prototype.parseLiteral = function(expr, callback) {
-    callback(null, expressions.createLiteralExpression(expr.value));
+ClosureParser.prototype.parseLiteral = function (expr) {
+    return new LiteralExpression(expr.value);
 };
 
 /**
  * Abstract function which resolves entity based on the given member name
  * @param {string} member
- * @param {Function} callback
  */
-ClosureParser.prototype.resolveMember = function(member, callback)
-{
-    if (typeof callback !== 'function')
-    //sync process
-        return member;
-    else
-        callback.call(this, null, member);
+ClosureParser.prototype.resolveMember = function (member) {
+    return member;
 };
 
 /**
@@ -477,132 +364,130 @@ ClosureParser.prototype.resolveMember = function(member, callback)
  * @param callback
  * @returns {MethodCallExpression}
  */
-ClosureParser.prototype.resolveMethod = function(method, args, callback)
-{
-    if (typeof callback !== 'function')
-    //sync process
-        return null;
-    else
-        callback.call(this);
+// eslint-disable-next-line no-unused-vars
+ClosureParser.prototype.resolveMethod = function (method, args) {
+    return null;
 };
 
-ClosureParser.prototype.parseBlock = function(expr, callback) {
-        var self = this;
-        // get expression statement
-        var bodyExpression = expr.body[0];
-        if (bodyExpression.type === ExpressionTypes.ExpressionStatement) {
-            if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
-                return self.parseSequence(bodyExpression.expression, callback);
-            }
-            else if (bodyExpression.expression && bodyExpression.expression.type === 'MemberExpression') {
-                return self.parseMember(bodyExpression.expression, callback);
-            }
+ClosureParser.prototype.parseBlock = function (expr) {
+    var self = this;
+    // get expression statement
+    var bodyExpression = expr.body[0];
+    if (bodyExpression.type === ExpressionTypes.ExpressionStatement) {
+        if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
+            return self.parseSequence(bodyExpression.expression);
         }
-        else if (bodyExpression.type === ExpressionTypes.ReturnStatement) {
-            // get return statement
-            var objectExpression = bodyExpression.argument;
-            if (objectExpression && objectExpression.type === ExpressionTypes.ObjectExpression) {
-                return self.parseObject(objectExpression, callback);
-            }
+        else if (bodyExpression.expression && bodyExpression.expression.type === 'MemberExpression') {
+            return self.parseMember(bodyExpression.expression);
         }
-        return callback(new Error('The given expression is not yet implemented (' + expr.type + ').'));
     }
+    else if (bodyExpression.type === ExpressionTypes.ReturnStatement) {
+        // get return statement
+        var objectExpression = bodyExpression.argument;
+        if (objectExpression && objectExpression.type === ExpressionTypes.ObjectExpression) {
+            return self.parseObject(objectExpression);
+        }
+    }
+    throw new Error('The given expression is not yet implemented (' + expr.type + ').');
+}
 
-ClosureParser.prototype.parseSequence = function (sequenceExpression, callback) {
+ClosureParser.prototype.parseSequence = function (sequenceExpression) {
     var self = this;
     if (sequenceExpression == null) {
         throw new Error('Sequence expression may not be null');
     }
     if (sequenceExpression.type !== ExpressionTypes.SequenceExpression) {
-        return callback(new Error('Invalid expression type. Expected an object expression.'));
+        throw new Error('Invalid expression type. Expected an object expression.');
     }
     if (Array.isArray(sequenceExpression.expressions) === false) {
-        return callback(new Error('Sequence expression expressions must be an array.'));
+        throw new Error('Sequence expression expressions must be an array.');
     }
     var finalResult = new SequenceExpression();
-    var sources = sequenceExpression.expressions.map(function (expression) {
-        return Q.Promise(function (resolve, reject) {
-            return self.parseCommon(expression, function (err, value) {
-                if (err) {
-                    return reject(err);
-                }
-                return resolve(value);
-            });
-        })
+    finalResult.value = sequenceExpression.expressions.map(function (expression) {
+        return self.parseCommon(expression);
     });
-    Q.all(sources).then(function (results) {
-        finalResult.value = results;
-        return callback(null, finalResult);
-    }).catch(function (err) {
-        return callback(err);
+    return finalResult;
+}
+
+ClosureParser.prototype.parseObject = function(objectExpression) {
+    var self =this;
+    if (objectExpression == null) {
+        throw new Error('Object expression may not be null');
+    }
+    if (objectExpression.type !== ExpressionTypes.ObjectExpression) {
+        throw new Error('Invalid expression type. Expected an object expression.');
+    }
+    if (Array.isArray(objectExpression.properties) === false) {
+        throw new Error('Object expression properties must be an array.');
+    }
+    var finalResult = new ObjectExpression();
+    objectExpression.properties.forEach( function(property) {
+        var value = self.parseCommon(property.value);
+        var name;
+        if (property.key == null) {
+            throw new Error('Property key may not be null.');
+        }
+        if (property.key && property.key.type === 'Literal') {
+            name = property.key.value;
+        }
+        else if (property.key && property.key.type === 'Identifier') {
+            name = property.key.name;
+        }
+        else {
+            throw new Error('Invalid property key type. Expected Literal or Identifier. Found ' + property.key.type + '.');
+        }
+        Object.defineProperty(finalResult, name, {
+            value: value,
+            enumerable: true,
+            configurable: true
+        });
     });
+    return finalResult;
 }
 
 /**
  * 
  */
-ClosureParser.prototype.parseSelect = function(func, params, callback) {
-        if (func == null) {
-            return;
-        }
-        this.params = params;
-        Args.check(typeof func === 'function', new Error('Select closure must a function.'));
-        // convert the given function to javascript expression
-        var expr = esprima.parseScript('void(' + func.toString() + ')');
-        // validate expression e.g. return [EXPRESSION];
-        var body = expr.body[0];
-        var funcExpr = body.expression.argument;
-        // get named parameters
-        this.namedParams = funcExpr.params;
-        this.parseCommon(funcExpr.body, function(err, res) {
-            if (err) {
-                return callback(err);
-            }
-            if (res && res instanceof SequenceExpression) {
-                return callback(null, res.value.map( function(x) {
-                    return x.exprOf();
-                }));
-            }
-            if (res && res instanceof MemberExpression) {
-                return callback(null, [ res.exprOf() ]);
-            }
-            if (res && res instanceof ObjectExpression) {
-                return callback(null, Object.keys(res).map( function(key) {
-                    if (hasOwnProperty(res, key)) {
-                        var result = {};
-                        Object.defineProperty(result, key, {
-                            configurable: true,
-                            enumerable: true,
-                            writable: true,
-                            value: res[key].exprOf()
-                        })
-                        return result;
-                    }
-                }));
-            }
-            return  callback(new Error('Invalid select closure'));
+ClosureParser.prototype.parseSelect = function (func, params) {
+    if (func == null) {
+        return;
+    }
+    this.params = params;
+    Args.check(typeof func === 'function', new Error('Select closure must a function.'));
+    // convert the given function to javascript expression
+    var expr = esprima.parseScript('void(' + func.toString() + ')');
+    // validate expression e.g. return [EXPRESSION];
+    var body = expr.body[0];
+    var funcExpr = body.expression.argument;
+    // get named parameters
+    this.namedParams = funcExpr.params;
+    var res = this.parseCommon(funcExpr.body);
+    if (res && res instanceof SequenceExpression) {
+        return res.value.map(function (x) {
+            return x.exprOf();
         });
     }
+    if (res && res instanceof MemberExpression) {
+        return [ res.exprOf() ];
+    }
+    if (res && res instanceof ObjectExpression) {
+        return Object.keys(res).map(function (key) {
+            if (hasOwnProperty(res, key)) {
+                var result = {};
+                Object.defineProperty(result, key, {
+                    configurable: true,
+                    enumerable: true,
+                    writable: true,
+                    value: res[key].exprOf()
+                })
+                return result;
+            }
+        });
+    }
+    throw new new Error('Invalid select closure');
+}
 
 
-if (typeof exports !== 'undefined')
-{
-    /**
-     * @param {Function} fn - The closure expression to parse
-     * @param {Function} callback - A callback function which is going to return the equivalent QueryExpression
-     */
-    module.exports.parseFilter =  function(fn, callback) {
-        var p = new ClosureParser();
-        return p.parseFilter(fn, callback);
-    };
-    /**
-     * Creates an instance of ClosureParser class
-     * @return {ClosureParser}
-     */
-    module.exports.createParser = function() {
-        var parser = new ClosureParser();
-        parser.eval = function(o) { return eval(o); };
-        return parser;
-    };
+if (typeof exports !== 'undefined') {
     module.exports.ClosureParser = ClosureParser;
 }

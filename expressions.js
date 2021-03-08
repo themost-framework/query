@@ -33,10 +33,12 @@ ArithmeticExpression.prototype.exprOf = function()
         p = this.left.exprOf();
     else
         p = this.left;
-    if (typeof this.operator === 'undefined' || this.operator===null)
-        throw new Error('Expected arithmetic operator.');
-    if (this.operator.match(ArithmeticExpression.OperatorRegEx)===null)
-        throw new Error('Invalid arithmetic operator.');
+    if (typeof this.operator === 'undefined' || this.operator===null) {
+            throw new Error('Expected arithmetic operator.');
+        }
+    if (this.operator.match(ArithmeticExpression.OperatorRegEx)===null) { 
+            throw new Error('Invalid arithmetic operator.');
+        }
     //build right operand e.g. { $add:[ 5 ] }
     var r = {};
     if (typeof this.right === 'undefined' || this.right===null) {

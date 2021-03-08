@@ -12,7 +12,7 @@ var Args = require('@themost/common').Args;
 var _ = require('lodash');
 var Symbol = require('symbol');
 var aggregate = Symbol();
-var instanceOf = require('./instance-of').instanceOf;
+var ClosureParser = require('./closures').ClosureParser;
 // eslint-disable-next-line no-unused-vars
 //noinspection JSUnusedLocalSymbols
 require('./natives');
@@ -493,13 +493,19 @@ QueryExpression.prototype.set = function(obj)
 QueryExpression.prototype.select = function(field)
 {
     // get argument
-    var arr = Array.prototype.slice.call(arguments);
-    if (arr.length === 0) {
+    var args = Array.prototype.slice.call(arguments);
+    if (args.length === 0) {
         return this;
+    }
+    // todo: validate select closure argument
+    if (typeof args[0] === 'function') {
+        var selectClosure = args[0];
+        var closureParams = args[1];
+        args = new ClosureParser().parseSelect(selectClosure, closureParams);
     }
     // validate arguments
     var fields = [];
-    arr.forEach( function (x) {
+    args.forEach( function (x) {
         // backward compatibility
         // any argument may be an array of fields
         // this operation needs to be deprecated

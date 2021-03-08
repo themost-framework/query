@@ -18,8 +18,7 @@ describe('ClosureParser', () => {
 
     it('should parse filter', async () => {
         const parser = new ClosureParser();
-        const parserFilterAsync = promisify(parser.parseFilter.bind(parser));
-        let query = await parserFilterAsync((x: { CustomerID: number; }) => {
+        let query = parser.parseFilter((x: { CustomerID: number; }) => {
             return x.CustomerID === 78;
         });
         expect(query).toBeTruthy();
@@ -30,8 +29,7 @@ describe('ClosureParser', () => {
 
     it('should parse select', async () => {
         const parser = new ClosureParser();
-        const parserSelectAsync = promisify(parser.parseSelect.bind(parser));
-        let query = await parserSelectAsync((x: { ProductID: any; ProductName: any; Unit: any; Price: any; }) => {
+        let query = await parser.parseSelect((x: { ProductID: any; ProductName: any; Unit: any; Price: any; }) => {
             x.ProductID,
             x.ProductName,
             x.Unit,
