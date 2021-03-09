@@ -33,7 +33,7 @@ describe('Arithmetic Functions', () => {
         const result = await new TestAdapter().executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( (x: any) => {
-            expect(x.Price + 10 ).toBeGreaterThan(30);
+            expect(x.Price + 10).toBeGreaterThan(30);
         });
     });
     it('should use subtract operator', async () => {

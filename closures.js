@@ -1,13 +1,5 @@
-/**
- * MOST Web Framework
- * A JavaScript Web Framework
- * http://themost.io
- *
- * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com, Anthi Oikonomou anthioikonomou@gmail.com
- *
- * Released under the BSD3-Clause license
- * Date: 2015-03-12
- */
+// MOST Web Framework Copyright (c) 2014-2021 THEMOST LP released under the BSD3-Clause license
+
 var expressions = require('./expressions');
 var esprima = require('esprima');
 var _ = require('lodash');
@@ -35,7 +27,8 @@ var ExpressionTypes = {
     BlockStatement: 'BlockStatement',
     ReturnStatement: 'ReturnStatement',
     CallExpression: 'CallExpression',
-    SequenceExpression: 'SequenceExpression'
+    SequenceExpression: 'SequenceExpression',
+    ObjectExpression: 'ObjectExpression'
 };
 /**
  * @class ClosureParser
@@ -159,6 +152,8 @@ ClosureParser.BinaryToExpressionOperator = function (op) {
             return expressions.Operators.Div;
         case '%':
             return expressions.Operators.Mod;
+        case '&':
+            return expressions.Operators.BitAnd;
         default:
             return;
     }
@@ -186,6 +181,8 @@ ClosureParser.prototype.parseBinary = function (expr) {
                     return left.value * right.value;
                 case expressions.Operators.Mod:
                     return left.value % right.value;
+                case expressions.Operators.BitAnd:
+                    return left.value & right.value;
                 default:
                     throw new Error('Invalid arithmetic operator');
             }
@@ -211,6 +208,7 @@ function memberExpressionToString(expr) {
     }
 }
 
+// eslint-disable-next-line no-unused-vars
 function parentMemberExpressionToString(expr) {
     if (_.isNil(expr.object.object)) {
         return expr.object.name;
@@ -290,6 +288,7 @@ ClosureParser.prototype.parseMethodCall = function (expr) {
             case 'floor': method = 'floor'; break;
             case 'ceiling': method = 'ceiling'; break;
             case 'indexOf': method = 'indexof'; break;
+            case 'includes': method = 'contains'; break;
             case 'substring':
             case 'substr':
                 method = 'substring'; break;
@@ -303,7 +302,7 @@ ClosureParser.prototype.parseMethodCall = function (expr) {
 ClosureParser.prototype.parseMethod = function (expr) {
     var self = this;
     //get method name
-    var name = expr.callee.name, args = [], needsEvaluation = true, thisName;
+    var name = expr.callee.name, args = [], needsEvaluation = true;
     if (_.isNil(name)) {
         if (!_.isNil(expr.callee.object)) {
             if (!_.isNil(expr.callee.object.object)) {
@@ -313,7 +312,6 @@ ClosureParser.prototype.parseMethod = function (expr) {
             }
         }
         name = memberExpressionToString(expr.callee);
-        thisName = parentMemberExpressionToString(expr.callee);
     }
     expr.arguments.forEach(function(arg) {
         var result = self.parseCommon(arg);
@@ -326,6 +324,10 @@ ClosureParser.prototype.parseMethod = function (expr) {
         throw new Error('Needs evaluation');
     }
     else {
+        // trim method call
+        if (expr.callee && expr.callee.property) {
+            return new MethodCallExpression(expr.callee.property.name, args);
+        }
         return new MethodCallExpression(name, args);
     }
 };
@@ -472,14 +474,17 @@ ClosureParser.prototype.parseSelect = function (func, params) {
     }
     if (res && res instanceof ObjectExpression) {
         return Object.keys(res).map(function (key) {
-            if (hasOwnProperty(res, key)) {
+            if (Object.prototype.hasOwnProperty.call(res, key)) {
                 var result = {};
-                Object.defineProperty(result, key, {
-                    configurable: true,
-                    enumerable: true,
-                    writable: true,
-                    value: res[key].exprOf()
-                })
+                var expressionProperty = res[key];
+                if (typeof expressionProperty.exprOf === 'function') {
+                    Object.defineProperty(result, key, {
+                        configurable: true,
+                        enumerable: true,
+                        writable: true,
+                        value: expressionProperty.exprOf()
+                    });
+                }
                 return result;
             }
         });

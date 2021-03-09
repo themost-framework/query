@@ -1,4 +1,4 @@
-// MOST Web Framework Copyright (c) 2014-2021 THEMOST LP eleased under the BSD3-Clause license
+// MOST Web Framework Copyright (c) 2014-2021 THEMOST LP released under the BSD3-Clause license
 
 export declare class ClosureParser {
     parseFilter(func: (x: any) => void, params?: any): any;

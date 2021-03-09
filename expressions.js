@@ -22,7 +22,7 @@ function ArithmeticExpression(p0, oper, p1)
     this.right = p1;
 }
 
-ArithmeticExpression.OperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod)$/g;
+ArithmeticExpression.OperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod|\$bit)$/g;
 
 ArithmeticExpression.prototype.exprOf = function()
 {
@@ -288,7 +288,7 @@ SequenceExpression.prototype.exprOf = function() {
 }
 
 function ObjectExpression() {
-    this.value = [];
+    //this.value = [];
 }
 
 ObjectExpression.prototype.exprOf = function() {
@@ -332,7 +332,7 @@ Operators.Ne = '$ne';
 Operators.In = '$in';
 Operators.NotIn = '$nin';
 Operators.And = '$and';
-Operators.Or = '$or';
+Operators.BitAnd = '$bit';
 
 if (typeof exports !== 'undefined')
 {

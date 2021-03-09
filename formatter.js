@@ -456,6 +456,11 @@ SqlFormatter.prototype.$indexof = function(p0, p1)
 
 SqlFormatter.prototype.$indexOf = SqlFormatter.prototype.$indexof;
 
+SqlFormatter.prototype.$includes = function(p0, p1)
+{
+    return this.$contains(p0, p1);
+};
+
 /**
  * Implements substring(str,pos) expression formatter.
  * @param {String} p0 The source string
@@ -656,6 +661,19 @@ SqlFormatter.prototype.$mod = function(p0, p1)
  * @param p1 {*}
  */
 SqlFormatter.prototype.$bit = function(p0, p1)
+{
+    //validate params
+    if (_.isNil(p0) || _.isNil(p1))
+        return '0';
+    return sprintf('(%s & %s)', this.escape(p0), this.escape(p1));
+};
+
+/**
+ * Implements [a & b] bitwise and expression formatter.
+ * @param p0 {*}
+ * @param p1 {*}
+ */
+SqlFormatter.prototype.$bitAnd = function(p0, p1)
 {
     //validate params
     if (_.isNil(p0) || _.isNil(p1))

@@ -349,19 +349,25 @@ QueryExpression.prototype.distinct = function(value)
 };
 
 /**
- * @param {*} field
+ * @param {*} expr
+ * @param {*} params
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.where = function(field)
+QueryExpression.prototype.where = function(expr, params)
 {
-    if (_.isNil(field))
+    if (typeof expr === 'function') {
+        // parse closure
+        this.$where = new ClosureParser().parseFilter(expr, params);
+        return this;
+    }
+    if (_.isNil(expr))
         throw new Error('Left operand cannot be empty. Expected string or object.');
     delete this.$where;
-    if (typeof field === 'string') {
-        this.prop(field);
+    if (typeof expr === 'string') {
+        this.prop(expr);
     }
-    else if (typeof field === 'object') {
-        this.prop(QueryField.prototype.nameOf.call(field))
+    else if (typeof expr === 'object') {
+        this.prop(QueryField.prototype.nameOf.call(expr))
     }
     else {
         throw new Error('Invalid left operand. Expected string or object.');
@@ -547,7 +553,7 @@ QueryExpression.prototype.count = function(alias) {
 };
 /**
  * Sets the entity of a select query expression
- * @param entity {string|QueryEntity|*} A string that represents the entity name
+ * @param {*} entity {string|QueryEntity|*} A string that represents the entity name
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.from = function(entity) {
