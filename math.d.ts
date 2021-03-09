@@ -13,3 +13,4 @@ export declare function mod(n: any): any;
 export declare function bitAnd(...args: any[]): any;
 export declare function sum(...args: any[]): any;
 export declare function mean(...args: any[]): any;
+export declare function avg(...args: any[]): any;

@@ -150,6 +150,10 @@ function mean() {
     return args.reduce(reducer) / args.length;
 }
 
+function avg() {
+    return mean.apply(null, Array.from(arguments));
+}
+
 module.exports = {
     count: count,
     round: round,
@@ -164,5 +168,6 @@ module.exports = {
     bitAnd: bitAnd,
     sum: sum,
     mod: mod,
-    mean: mean
+    mean: mean,
+    avg: avg
 }

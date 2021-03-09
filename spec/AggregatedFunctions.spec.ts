@@ -1,18 +1,25 @@
 import { QueryExpression, QueryEntity, min, max, count, mean, sum } from '../index';
 import { TestAdapter } from './adapter/TestAdapter';
 import { initDatabase } from './adapter/TestDatabase';
+import { QueryField } from '../query';
 
 describe('Aggregate Functions', () => {
     beforeAll(async () => {
         await initDatabase();
     });
-    fit('should use min()', async () => {
+    it('should use min()', async () => {
+        const q = new QueryExpression().from('Products')
+            .select(new QueryField().min('Price').as('SmallestPrice'));
+        expect(q.$select).toBeTruthy();
+        console.log(JSON.stringify(q.$select, null, 2));
         const a = new QueryExpression().select( (x: any) => {
             return {
                 SmallestPrice: min(x.Price)
             }
         })
         .from('Products');
+        expect(a.$select).toBeTruthy();
+        console.log(JSON.stringify(a.$select, null, 2));
         const result = await new TestAdapter().executeAsync(a);
         expect(result.length).toBeTruthy();
         expect(result[0].SmallestPrice).toBe(2.5);

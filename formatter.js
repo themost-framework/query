@@ -1080,6 +1080,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
                 s= sprintf('MAX(%s)',this.escapeName(name));
                 break;
             case '$avg':
+            case '$mean':
                 s= sprintf('AVG(%s)',this.escapeName(name));
                 break;
             case '$sum':

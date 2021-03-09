@@ -225,6 +225,14 @@ function MethodCallExpression(name, args) {
     if (_.isArray(args))
         this.args = args;
 }
+MethodCallExpression.SimpleMethods = [
+    "min",
+    "max",
+    "avg",
+    "mean",
+    "count",
+    "sum"
+]
 /**
  * Converts the current method to the equivalent query expression e.g. { orderDate: { $year: [] } } which is equivalent with year(orderDate)
  * @returns {*}
@@ -237,6 +245,7 @@ MethodCallExpression.prototype.exprOf = function() {
     method[name] = [] ;
     if (this.args.length===0)
         throw new Error('Unsupported method expression. Method arguments cannot be empty.');
+    
     //get first argument
     if (this.args[0] instanceof MemberExpression) {
         var member = this.args[0].name;
@@ -250,7 +259,11 @@ MethodCallExpression.prototype.exprOf = function() {
             else
                 method[name].push(arg);
         }
-        result[member] = method;
+        if (MethodCallExpression.SimpleMethods.includes(this.name)) {
+            result[name] = member;
+        } else {
+            result[member] = method;
+        }
         return result;
     }
     else {
