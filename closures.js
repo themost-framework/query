@@ -276,7 +276,7 @@ ClosureParser.prototype.parseMethodCall = function (expr) {
             case 'getMonth': method = 'month'; break;
             case 'getYear':
             case 'getFullYear':
-                method = 'date'; break;
+                method = 'year'; break;
             case 'getMinutes': method = 'minute'; break;
             case 'getSeconds': method = 'second'; break;
             case 'getHours': method = 'hour'; break;

@@ -1,12 +1,5 @@
-/**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
- *
- * Use of this source code is governed by an BSD-3-Clause license that can be
- * found in the LICENSE file at https://themost.io/license
- */
-///
+// MOST Web Framework Copyright (c) 2014-2021 THEMOST LP released under the BSD3-Clause license
+
 var sprintf = require('sprintf').sprintf;
 var Args = require('@themost/common').Args;
 var _ = require('lodash');
@@ -496,7 +489,7 @@ QueryExpression.prototype.set = function(obj)
  * // SELECT UserBase.id, UserBase.name FROM UserBase
  */
 /* eslint-disable-next-line no-unused-vars */
-QueryExpression.prototype.select = function(field)
+QueryExpression.prototype.select = function()
 {
     // get argument
     var args = Array.prototype.slice.call(arguments);
@@ -672,82 +665,118 @@ QueryExpression.prototype.with = function(obj) {
 // noinspection JSUnusedGlobalSymbols
 /**
  * Applies an ascending ordering to a query expression
- * @param name {string|Array}
+ * @param {...*} arg
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.orderBy = function(name) {
-
-    if (_.isNil(name))
+QueryExpression.prototype.orderBy = function() {
+    var args = Array.from(arguments);
+    if (args.length === 0) {
         return this;
-    if (_.isNil(this.$order))
-        this.$order = [];
-    this.$order.push({ $asc: name });
+    }
+    if (typeof args[0] === 'function') {
+        var selectClosure = args[0];
+        var closureParams = args[1];
+        args = new ClosureParser().parseSelect(selectClosure, closureParams);
+    }
+    this.$order = this.$order || [];
+    this.$order.push.apply(this.$order, args.map(function(arg) {
+        return { $asc: arg }
+    }));
     return this;
 };
 // noinspection JSUnusedGlobalSymbols
 /**
  * Applies a descending ordering to a query expression
- * @param name
+ * @param {...*} arg
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.orderByDescending = function(name) {
+QueryExpression.prototype.orderByDescending = function() {
 
-    if (_.isNil(name))
+    var args = Array.from(arguments);
+    if (args.length === 0) {
         return this;
-    if (_.isNil(this.$order))
-        this.$order = [];
-    this.$order.push({ $desc: name });
+    }
+    if (typeof args[0] === 'function') {
+        var selectClosure = args[0];
+        var closureParams = args[1];
+        args = new ClosureParser().parseSelect(selectClosure, closureParams);
+    }
+    this.$order = this.$order || [];
+    this.$order.push.apply(this.$order, args.map(function(arg) {
+        return { $desc: arg }
+    }));
     return this;
 };
 
 /**
  * Performs a subsequent ordering in a query expression
- * @param name {string|Array}
+ * @param {...*} arg
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.thenBy = function(name) {
-
-    if (_.isNil(name))
+QueryExpression.prototype.thenBy = function() {
+    if (this.$order == null) {
         return this;
-    if (_.isNil(this.$order))
-    //throw exception (?)
+    }
+    var args = Array.from(arguments);
+    if (args.length === 0) {
         return this;
-    this.$order.push({ $asc: name });
+    }
+    if (typeof args[0] === 'function') {
+        var selectClosure = args[0];
+        var closureParams = args[1];
+        args = new ClosureParser().parseSelect(selectClosure, closureParams);
+    }
+    this.$order.push.apply(this.$order, args.map(function(arg) {
+        return { $asc: arg }
+    }));
     return this;
 };
 
 /**
  * Performs a subsequent ordering in a query expression
- * @param name {string|Array}
+ * @param {...*} arg
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.thenByDescending = function(name) {
-
-    if (_.isNil(name))
+QueryExpression.prototype.thenByDescending = function() {
+    if (this.$order == null) {
         return this;
-    if (_.isNil(this.$order))
-    //throw exception (?)
+    }
+    var args = Array.from(arguments);
+    if (args.length === 0) {
         return this;
-    this.$order.push({ $desc: name });
+    }
+    if (typeof args[0] === 'function') {
+        var selectClosure = args[0];
+        var closureParams = args[1];
+        args = new ClosureParser().parseSelect(selectClosure, closureParams);
+    }
+    this.$order.push.apply(this.$order, args.map(function(arg) {
+        return { $desc: arg }
+    }));
     return this;
 };
 // noinspection JSUnusedGlobalSymbols
 /**
  *
- * @param {...*} field
+ * @param {...*} arg
  * @returns {QueryExpression}
  */
 /* eslint-disable-next-line no-unused-vars */
-QueryExpression.prototype.groupBy = function(field) {
+QueryExpression.prototype.groupBy = function() {
 
     // get argument
-    var arr = Array.prototype.slice.call(arguments);
-    if (arr.length === 0) {
+    var args = Array.prototype.slice.call(arguments);
+    if (args.length === 0) {
         return this;
+    }
+    if (typeof args[0] === 'function') {
+        var groupByClosure = args[0];
+        var closureParams = args[1];
+        args = new ClosureParser().parseSelect(groupByClosure, closureParams);
     }
     // validate arguments
     var fields = [];
-    arr.forEach( function (x) {
+    args.forEach( function (x) {
         // backward compatibility
         // any argument may be an array of fields
         // this operation needs to be deprecated
@@ -1577,7 +1606,7 @@ QueryField.prototype.count = function(name) {
  * @return {QueryField}
  */
 /* eslint-disable-next-line no-unused-vars */
-QueryField.prototype.concat = function(str) {
+QueryField.prototype.concat = function() {
     this.$name.concat.apply(this.$name, Array.prototype.slice.call(arguments));
     return this;
 };
@@ -2101,7 +2130,7 @@ OpenDataQuery.prototype.skip = function(val) {
 };
 // noinspection JSUnusedGlobalSymbols
 /**
- * @param {string} name
+ * @param {*} name
  * @returns OpenDataQuery
  */
 OpenDataQuery.prototype.orderBy = function(name) {
