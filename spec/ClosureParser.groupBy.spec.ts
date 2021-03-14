@@ -23,7 +23,7 @@ describe('GroupBy Functions', () => {
         expect(result.length).toBeTruthy();
     });
     it('should use groupBy() with join()', async () => {
-        const Shippers = new QueryEntity('Shippers');
+        const Shippers: any = new QueryEntity('Shippers');
         const Orders = new QueryEntity('Orders');
         const a = new QueryExpression().select( (x: { OrderID: any; }) => {
             return {
@@ -42,7 +42,7 @@ describe('GroupBy Functions', () => {
          )
         // eslint-disable-next-line no-unused-vars
         .groupBy ( (x: any) => {
-            (Shippers as any).ShipperName
+            Shippers.ShipperName
         }, {
             Shippers
         });

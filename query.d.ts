@@ -34,7 +34,7 @@ export declare class QueryExpression {
     select(...field: Array<any>): this;
     count(alias: string): this;
     from(entity: string | QueryEntity | any): this;
-    join(entity: any, props?: any, alias?: any): this;
+    join(entity: string | QueryEntity | any, props?: any, alias?: any): this;
     with<T,J>(localField: (value: T) => any, foreignField: (value: T) => any): this;
     with(localField: any, foreignField: any): this;
     with(obj: any): this;

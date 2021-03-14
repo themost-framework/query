@@ -21,7 +21,7 @@ describe('ClosureParser.parseFilter()', () => {
         expect(result).toBeTruthy();
         expect(result.length).toBe(1);
         expect(result[0].CustomerID).toBe(78);
-
+        
     });
 
     it('should use object property to an equal expression', async () => {
@@ -288,20 +288,20 @@ describe('ClosureParser.parseFilter()', () => {
         });
     });
 
-    // it('should use QueryExpression.join()', async () => {
-    //     const a = new QueryExpression().select( (x: { OrderID: any; OrderDate: any; Customer: any; }) => {
-    //         x.OrderID,
-    //         x.OrderDate,
-    //         x.Customer
-    //     })
-    //     .from('Orders')
-    //     .join('Customers')
-    //     .with('Customer', 'CustomerID')
-    //     .where( (x: { Customer: number; }) => {
-    //         return x.Customer === 14;
-    //     });
-    //     const result = await new TestAdapter().executeAsync(a);
-    //     expect(result.length).toBeTruthy();
-    // });
+    it('should use QueryExpression.join()', async () => {
+        const a = new QueryExpression().select( (x: { OrderID: any; OrderDate: any; Customer: any; }) => {
+            x.OrderID,
+            x.OrderDate,
+            x.Customer
+        })
+        .from('Orders')
+        .join('Customers')
+        .with('Customer', 'CustomerID')
+        .where( (x: { Customer: number; }) => {
+            return x.Customer === 14;
+        });
+        const result = await new TestAdapter().executeAsync(a);
+        expect(result.length).toBeTruthy();
+    });
 
 });

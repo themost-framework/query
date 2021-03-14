@@ -617,36 +617,108 @@ QueryExpression.prototype.join = function(entity, props, alias) {
 };
 /**
  * Sets the join expression of the last join entity
- * @param obj {Array|*}
+ * @param {*...} arg
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.with = function(obj) {
+QueryExpression.prototype.with = function() {
 
-    if (_.isNil(obj))
+    var args = Array.from(arguments);
+    if (args.length === 0)
         return this;
-    if (_.isNil(this.privates.expand))
+    if (this.privates.expand == null) {
         throw new Error('Join entity cannot be empty when adding a join expression. Use QueryExpression.join(entity, props) before.');
-    if (obj instanceof QueryExpression)
+    }
+    // validate local and foreign fields closures
+    // e.g.
+    // .with(
+    //    (x: any) => x.Shipper,
+    //    (y: any) => y.ShipperID
+    // )
+    if (args.length === 2) {
+         if (typeof args[0] === 'function' &&
+            typeof args[1] === 'function') {
+                // parse closures and create query expression
+                var localField = new ClosureParser().parseSelect(args[0]);
+                var foreignField = new ClosureParser().parseSelect(args[1]);
+
+                // get entity name from select attribute
+                var localEntity= Object.key(this.$select);
+                if (localEntity == null) {
+                    // if name is not defined
+                    // get local entity from privates
+                    localEntity = this.privates.entity
+                }
+                // get foreign entity name
+                var foreignEntity;
+                if (this.privates.expand.$entity.name) {
+                    foreignEntity = this.privates.expand.$entity.name;
+                } else {
+                    foreignEntity = Object.key(this.privates.expand.$entity);
+                }
+                // set join statement as query expression
+                args = [ 
+                    new QueryExpression().where(
+                        new QueryField(localField[0])
+                    .from(localEntity)).equal(
+                        new QueryField(foreignField[0])
+                    .from(foreignEntity))
+                ];
+         }
+         if (typeof args[0] === 'string' &&
+            typeof args[1] === 'string') {
+                // get entity name from select attribute
+                localEntity= Object.key(this.$select);
+                if (localEntity == null) {
+                    // if name is not defined
+                    // get local entity from privates
+                    localEntity = this.privates.entity
+                }
+                // get foreign entity name
+                if (this.privates.expand.$entity.name) {
+                    foreignEntity = this.privates.expand.$entity.name;
+                } else {
+                    foreignEntity = Object.key(this.privates.expand.$entity);
+                }
+                
+                // set join statement as query expression
+                args = [ 
+                    new QueryExpression().where(
+                        new QueryField(args[0])
+                    .from(localEntity)).equal(
+                        new QueryField(args[1])
+                    .from(foreignEntity))
+                ];
+            }
+    }
+    if (args.length === 1 && typeof args[0] === 'function') {
+        args = [
+            new ClosureParser().parseFilter(args[0])
+         ];
+    }
+
+
+    if (args[0] instanceof QueryExpression)
     {
         /**
          * @type {QueryExpression}
          */
-        var expr = obj;
+        var expr = args[0];
         var where = null;
-        if (expr.$where)
-            where = expr.$prepared ? { $and: [expr.$prepared, expr.$where] } : expr.$where;
-        else if (expr.$prepared)
+        if (expr.$where) {
+             where = expr.$prepared ? { $and: [expr.$prepared, expr.$where] } : expr.$where;
+        } else if (expr.$prepared) {
             where = expr.$prepared;
+        }
         this.privates.expand.$with = where;
     }
     else {
-        this.privates.expand.$with = obj;
+        this.privates.expand.$with = args[0];
     }
-    if (_.isNil(this.$expand)) {
+    if (this.$expand == null) {
         this.$expand = this.privates.expand;
     }
     else {
-        if (_.isArray(this.$expand)) {
+        if (Array.isArray(this.$expand)) {
             this.$expand.push(this.privates.expand);
         }
         else {
