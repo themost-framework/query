@@ -4,7 +4,8 @@ import { initDatabase } from './adapter/TestDatabase';
 import { QueryEntity } from '../query';
 
 interface Customer {
-    CustomerID?: number; CustomerName: string;
+    CustomerID?: number; 
+    CustomerName: string;
 }
 
 interface Order {
@@ -13,6 +14,26 @@ interface Order {
     Employee?: any;
     OrderDate?: Date;
     Shipper?: any;
+}
+
+interface Supplier {
+    SupplierID?: number; 
+    SupplierName: string;
+}
+
+interface Product {
+    ProductID?: number; 
+    ProductName?: string; 
+    Supplier?: any | Supplier;
+    Unit?: string;
+    Price?: number;
+}
+
+interface OrderDetail {
+    OrderDetailID?: number; 
+    Order?: any | Order; 
+    Product?: any | Product;
+    Quantity?: number;
 }
 
 describe('ClosureParser.parseSelect()', () => {
@@ -58,6 +79,67 @@ describe('ClosureParser.parseSelect()', () => {
         expect(result).toBeTruthy();
         expect(result.length).toBe(1);
         expect(result[0].id).toBe(customer);
+    });
+
+    it('should use select and join', async () => {
+        const customer = 90;
+        const Orders = new QueryEntity('Orders');
+        const Customers: any = new QueryEntity('Customers');
+        let a = new QueryExpression()
+        .select( (x: Order) => {
+            return {
+                OrderID: x.OrderID,
+                CustomerName: Customers.CustomerName
+            }
+        })
+        .from(Orders)
+        .join(Customers)
+        .with((x: Order) => x.Customer, (x: Customer) => x.CustomerID)
+        .where( (x: Order) => {
+            return x.Customer.CustomerID === customer;
+        }, {
+            customer
+        });
+        console.log(JSON.stringify(a, null, 4));
+        const result = await new TestAdapter().executeAsync(a);
+        expect(result).toBeTruthy();
+        
+    });
+
+
+    fit('should use select and multiple joins', async () => {
+        const customer = 90;
+        const OrderDetails: any = new QueryEntity('Order_Details').as('OrderDetails');
+        const Products: any = new QueryEntity('Products');
+        const Orders: any = new QueryEntity('Orders');
+        const Customers: any = new QueryEntity('Customers');
+        let a = new QueryExpression()
+        .select( (x: OrderDetail) => {
+            return {
+                OrderID: x.OrderDetailID,
+                ProductName: Products.ProductName,
+                CustomerName: Customers.CustomerName,
+                OrderDate: Orders.OrderDate
+            }
+        })
+        .from(OrderDetails)
+        .join(Products)
+        .with((x: OrderDetail) => x.Product, (x: Product) => x.ProductID)
+        .join(Orders)
+        .with((_x: any) => {
+            return OrderDetails.Order === Orders.OrderID;
+        })
+        .join(Customers)
+        .with((_x: any) => {
+            return Orders.Customer === Customers.CustomerID;
+        })
+        .where( (x: Order) => {
+            return x.Customer.CustomerID === customer;
+        }, {
+            customer
+        });
+        const result = await new TestAdapter().executeAsync(a);
+        expect(result).toBeTruthy();
         
     });
 
