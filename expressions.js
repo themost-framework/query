@@ -8,6 +8,7 @@
  */
 ///
 var _ = require('lodash');
+var LangUtils = require('@themost/common').LangUtils;
 /**
  * @class
  * @param {*=} p0 The left operand
@@ -272,6 +273,57 @@ MethodCallExpression.prototype.exprOf = function() {
 
 };
 
+/**
+ * Creates a method call expression
+ * @class
+ * @constructor
+ */
+function MethodCallExpressionN(name, args) {
+    /**
+     * Gets or sets the name of this method
+     * @type {string}
+     */
+    this.name = name;
+    /**
+     * Gets or sets an array that represents the method arguments
+     * @type {Array<*>}
+     */
+    this.args = [];
+    if (Array.isArray(args)) {
+        this.args = args;
+    }
+}
+LangUtils.inherits(MethodCallExpressionN, MethodCallExpression);
+/**
+ * Converts the current method to the equivalent query expression e.g. { orderDate: { $year: [] } } which is equivalent with year(orderDate)
+ * @returns {*}
+ */
+MethodCallExpressionN.prototype.exprOf = function() {
+    // format name
+    var name = '$'.concat(this.name);
+    if (this.args.length===0)
+        throw new Error('Unsupported method expression. Method arguments cannot be empty.');
+    var args = this.args.map(function(item) {
+        if (item instanceof MemberExpression) {
+            return {
+                $name: item.name
+            };
+        }
+        if (typeof item.exprOf === 'function') {
+            return item.exprOf();
+        }
+        return item;
+    });
+    var result = {};
+    Object.defineProperty(result, name, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: args
+    });
+    return result;
+};
+
 function SequenceExpression() {
     this.value = [];
 }
@@ -353,6 +405,7 @@ if (typeof exports !== 'undefined')
     module.exports.ArithmeticExpression =  ArithmeticExpression;
     module.exports.MemberExpression =  MemberExpression;
     module.exports.MethodCallExpression =  MethodCallExpression;
+    module.exports.MethodCallExpressionN =  MethodCallExpressionN;
     module.exports.ComparisonExpression =  ComparisonExpression;
     module.exports.LiteralExpression =  LiteralExpression;
     module.exports.LogicalExpression =  LogicalExpression;

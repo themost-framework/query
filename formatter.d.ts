@@ -70,7 +70,7 @@ export declare class SqlFormatter {
     formatUpdate(query: QueryExpression|Object): string;
     formatDelete(query: QueryExpression|Object): string;
     escapeName(name: string): string;
-    formatFieldEx(obj: any, format: string);
-    format(obj: any, s?: string);
+    formatFieldEx(obj: any, format: string): string;
+    format(obj: any, s?: string): string;
 
 }

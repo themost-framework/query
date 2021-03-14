@@ -24,6 +24,7 @@ module.exports.OpenDataParser = _odata.OpenDataParser;
 
 module.exports.LogicalExpression = _expressions.LogicalExpression;
 module.exports.MethodCallExpression = _expressions.MethodCallExpression;
+module.exports.MethodCallExpressionN = _expressions.MethodCallExpressionN;
 module.exports.LiteralExpression = _expressions.LiteralExpression;
 module.exports.MemberExpression = _expressions.MemberExpression;
 module.exports.ArithmeticExpression = _expressions.ArithmeticExpression;

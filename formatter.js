@@ -542,6 +542,60 @@ SqlFormatter.prototype.$date = function(p0) {
 SqlFormatter.prototype.$floor = function(p0) { return sprintf('FLOOR(%s)', this.escape(p0)); };
 SqlFormatter.prototype.$ceiling = function(p0) { return sprintf('CEILING(%s)', this.escape(p0)); };
 
+/**
+ * @param {*} p0
+ * @returns {string}
+ */
+SqlFormatter.prototype.$min = function(p0)
+{
+    return sprintf('MIN(%s)', this.escape(p0));
+};
+
+/**
+ * @param {*} p0
+ * @returns {string}
+ */
+SqlFormatter.prototype.$max = function(p0)
+{
+    return sprintf('MAX(%s)', this.escape(p0));
+};
+
+/**
+ * @param {*} p0
+ * @returns {string}
+ */
+SqlFormatter.prototype.$count = function(p0)
+{
+    return sprintf('COUNT(%s)', this.escape(p0));
+};
+
+/**
+ * @param {*} p0
+ * @returns {string}
+ */
+SqlFormatter.prototype.$sum = function(p0)
+{
+    return sprintf('SUM(%s)', this.escape(p0));
+};
+
+/**
+ * @param {*} p0
+ * @returns {string}
+ */
+SqlFormatter.prototype.$avg = function(p0)
+{
+    return sprintf('AVG(%s)', this.escape(p0));
+};
+
+/**
+ * @param {*} p0
+ * @returns {string}
+ */
+SqlFormatter.prototype.$mean = function(p0)
+{
+    return sprintf('AVG(%s)', this.escape(p0));
+};
+
 
 /**
  * Implements round(a) expression formatter.
@@ -1068,22 +1122,43 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
         //get aggregate expression
         var alias = prop;
         prop = Object.key(expr);
-        var name = expr[prop], s;
+        var name = expr[prop]
+        var s;
         switch (prop) {
             case '$count':
+                if (Array.isArray(name)) {
+                    s= sprintf('COUNT(%s)',this.escape(name[0]));
+                    break;
+                }
                 s= sprintf('COUNT(%s)',this.escapeName(name));
                 break;
             case '$min':
+                if (Array.isArray(name)) {
+                    s= sprintf('MIN(%s)',this.escape(name[0]));
+                    break;
+                }
                 s= sprintf('MIN(%s)',this.escapeName(name));
                 break;
             case '$max':
+                if (Array.isArray(name)) {
+                    s= sprintf('MAX(%s)',this.escape(name[0]));
+                    break;
+                }
                 s= sprintf('MAX(%s)',this.escapeName(name));
                 break;
             case '$avg':
             case '$mean':
+                if (Array.isArray(name)) {
+                    s= sprintf('AVG(%s)',this.escape(name[0]));
+                    break;
+                }
                 s= sprintf('AVG(%s)',this.escapeName(name));
                 break;
             case '$sum':
+                if (Array.isArray(name)) {
+                    s= sprintf('SUM(%s)',this.escape(name[0]));
+                    break;
+                }
                 s= sprintf('SUM(%s)',this.escapeName(name));
                 break;
             case '$value':

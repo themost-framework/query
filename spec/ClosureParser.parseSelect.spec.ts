@@ -1,4 +1,4 @@
-import { QueryExpression } from '../index';
+import { QueryExpression, round } from '../index';
 import { TestAdapter } from './adapter/TestAdapter';
 import { initDatabase } from './adapter/TestDatabase';
 import { QueryEntity } from '../query';
@@ -107,7 +107,7 @@ describe('ClosureParser.parseSelect()', () => {
     });
 
 
-    fit('should use select and multiple joins', async () => {
+    it('should use select and multiple joins', async () => {
         const customer = 90;
         const OrderDetails: any = new QueryEntity('Order_Details').as('OrderDetails');
         const Products: any = new QueryEntity('Products');
@@ -141,6 +141,26 @@ describe('ClosureParser.parseSelect()', () => {
         const result = await new TestAdapter().executeAsync(a);
         expect(result).toBeTruthy();
         
+    });
+
+    it('should use method on select', async () => {
+        const a = new QueryExpression().select( (x: any) => {
+            return {
+                ProductID: x.ProductID,
+                ProductName: x.ProductName,
+                Price: round(x.Price, 2)
+            };
+            
+        })
+        .from('Products').where( (x: any) => {
+            return x.Price < 30;
+        });
+        console.log(JSON.stringify(a, null, 4));
+        const result = await new TestAdapter().executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( (x: any) => {
+            expect(x.Price).toBeLessThan(30);
+        });
     });
 
 });

@@ -10,8 +10,9 @@ var ObjectExpression = expressions.ObjectExpression;
 var LogicalExpression = expressions.LogicalExpression;
 var ArithmeticExpression = expressions.ArithmeticExpression;
 var LiteralExpression = expressions.LiteralExpression;
-var MethodCallExpression = expressions.MethodCallExpression;
 var ComparisonExpression = expressions.ComparisonExpression;
+var MethodCallExpression = expressions.MethodCallExpression;
+var MethodCallExpressionN = expressions.MethodCallExpressionN;
 
 var ExpressionTypes = {
     LogicalExpression: 'LogicalExpression',
@@ -477,7 +478,14 @@ ClosureParser.prototype.parseSelect = function (func, params) {
             if (Object.prototype.hasOwnProperty.call(res, key)) {
                 var result = {};
                 var expressionProperty = res[key];
-                if (typeof expressionProperty.exprOf === 'function') {
+                if (expressionProperty instanceof MethodCallExpression) {
+                    Object.defineProperty(result, key, {
+                        configurable: true,
+                        enumerable: true,
+                        writable: true,
+                        value: MethodCallExpressionN.prototype.exprOf.call(expressionProperty)
+                    });
+                } else if (typeof expressionProperty.exprOf === 'function') {
                     Object.defineProperty(result, key, {
                         configurable: true,
                         enumerable: true,
