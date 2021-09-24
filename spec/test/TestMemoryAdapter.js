@@ -4,7 +4,7 @@ const { SqlUtils } =  require('../../utils');
 const { QueryExpression, QueryField } = require('../../query');
 const { MemoryFormatter } = require('./TestMemoryFormatter');
 const { TraceUtils } = require('@themost/common');
-
+const fs = require('fs');
 
 const INSTANCE_DB = new Map();
 const DateTimeRegex = /^\d{4}-([0]\d|1[0-2])-([0-2]\d|3[01])(?:[T ](\d+):(\d+)(?::(\d+)(?:\.(\d+))?)?)(?:Z(-?\d*))?([+-](\d+):(\d+))?$/;
@@ -61,7 +61,12 @@ class MemoryAdapter {
             else {
                 self.options.name = self.options.name || 'memory-db';
                 // create database connection
-                self.rawConnection = new SQL.Database();
+                let buffer = null;
+                if (this.options.database) {
+                    TraceUtils.debug(`Loading database from ${this.options.database}`);
+                    buffer = fs.readFileSync(this.options.database);
+                }
+                self.rawConnection = new SQL.Database(buffer);
                 TraceUtils.debug(`Database initialization for ${self.options.name} file=${self.rawConnection.filename} db=${self.rawConnection.db}`);
                 // set instance database
                 INSTANCE_DB.set(self.options.name, self.rawConnection);

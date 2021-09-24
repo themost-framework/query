@@ -1,5 +1,6 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 var _ = require('lodash');
+var LangUtils = require('@themost/common').LangUtils;
 /**
  * @class
  * @param {*=} p0 The left operand
@@ -314,6 +315,36 @@ ObjectExpression.prototype.exprOf = function() {
     return finalResult;
 }
 
+/**
+ * Creates a method call expression
+ * @class
+ * @constructor
+ */
+ function SimpleMethodCallExpression(name, args) {
+    SimpleMethodCallExpression.super_.bind(this)(name, args);
+}
+LangUtils.inherits(SimpleMethodCallExpression, MethodCallExpression);
+/**
+ * Converts the current method to the equivalent query expression e.g. { orderDate: { $year: [] } } which is equivalent with year(orderDate)
+ * @returns {*}
+ */
+ SimpleMethodCallExpression.prototype.exprOf = function() {
+    var method = {};
+    var name = '$'.concat(this.name);
+    //set arguments array
+    method[name] = {};
+    if (this.args.length===0)
+        throw new Error('Unsupported method expression. Method arguments cannot be empty.');
+    var arg = null;
+    if (typeof this.args[0].exprOf === 'function') {
+        arg = this.args[0].exprOf();
+    } else {
+        arg = this.args[0]
+    }
+    Object.assign(method[name], arg);
+    return method;
+};
+
 if (typeof exports !== 'undefined')
 {
     module.exports.Operators =  Operators;
@@ -325,6 +356,7 @@ if (typeof exports !== 'undefined')
     module.exports.LogicalExpression =  LogicalExpression;
     module.exports.SequenceExpression =  SequenceExpression;
     module.exports.ObjectExpression =  ObjectExpression;
+    module.exports.SimpleMethodCallExpression =  SimpleMethodCallExpression;
     /**
      * @param {*=} left The left operand
      * @param {string=} operator The operator

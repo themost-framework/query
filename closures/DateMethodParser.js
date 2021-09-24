@@ -1,6 +1,7 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 
 var MethodCallExpression = require('../expressions').MethodCallExpression;
+var SimpleMethodCallExpression = require('../expressions').SimpleMethodCallExpression;
 var PrototypeMethodParser = require('./PrototypeMethodParser').PrototypeMethodParser;
 var LangUtils = require('@themost/common').LangUtils;
 
@@ -14,11 +15,11 @@ function DateMethodParser() {
 LangUtils.inherits(DateMethodParser, PrototypeMethodParser);
 
 DateMethodParser.prototype.getFullYear = function(args) {
-    return new MethodCallExpression('year', args);
+    return new SimpleMethodCallExpression('year', args);
 }
 
 DateMethodParser.prototype.getYear = function(args) {
-    return new MethodCallExpression('year', args);
+    return new SimpleMethodCallExpression('year', args);
 }
 
 DateMethodParser.prototype.getMonth = function(args) {

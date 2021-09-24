@@ -7,6 +7,7 @@ var QueryExpression = query.QueryExpression;
 var QueryField = query.QueryField;
 var instanceOf = require('./instance-of').instanceOf;
 
+
 if (typeof Object.key !== 'function') {
     /**
      * Gets a string that represents the name of the very first property of an object. This operation may be used in anonymous object types.
@@ -194,6 +195,16 @@ SqlFormatter.prototype.formatWhere = function(where)
         return '';
     //get property value
     var propertyValue = where[property];
+    // add an exception for comparisons and hold backward compatibility
+    if (Object.prototype.hasOwnProperty.call(QueryExpression.ComparisonOperators, property)) {
+        if (Array.isArray(propertyValue)) {
+            var formatComparison = this[property];
+            if (typeof formatComparison !== 'function') {
+                throw new Error('Comparison formatter cannot be found');
+            }
+            return formatComparison.apply(this, propertyValue);
+        }
+    }
     switch (property) {
         case '$not':
             return '(NOT ' + self.formatWhere(propertyValue) + ')';
@@ -1139,6 +1150,70 @@ SqlFormatter.prototype.format = function(obj, s)
         return null;
 
 };
+
+SqlFormatter.prototype.$eq = function(left, right) {
+    if (right == null) {
+        return sprintf('%s IS NULL', this.escape(left));
+    }
+    if (Array.isArray(right)) {
+        return this.$in(left, right);
+    }
+    return sprintf('%s = %s', this.escape(left), this.escape(right));
+}
+
+SqlFormatter.prototype.$gt = function(left, right) {
+    return sprintf('%s > %s', this.escape(left), this.escape(right));
+}
+
+SqlFormatter.prototype.$gte = function(left, right) {
+    return sprintf('%s >= %s', this.escape(left), this.escape(right));
+}
+
+SqlFormatter.prototype.$lt = function(left, right) {
+    return sprintf('%s < %s', this.escape(left), this.escape(right));
+}
+
+SqlFormatter.prototype.$lte = function(left, right) {
+    return sprintf('%s <= %s', this.escape(left), this.escape(right));
+}
+
+SqlFormatter.prototype.$in = function(left, right) {
+    var leftOperand = this.escape(left);
+    if (right == null) {
+        return sprintf('%s IS NULL', leftOperand);
+    }
+    if (Array.isArray(right)) {
+        if (right.length === 0) {
+            return sprintf('%s IS NULL', leftOperand);
+        }
+        var self = this;
+        var values = right.map( function(x) {
+            return self.escape(x);
+        });
+        var rightOperand = values.join(', ');
+        return sprintf('%s IN (%s)', leftOperand, rightOperand);
+    }
+    throw new Error('Invalid in expression. Right operand must be an array');
+}
+
+SqlFormatter.prototype.$nin = function(left, right) {
+    var leftOperand = this.escape(left);
+    if (right == null) {
+        return sprintf('NOT %s IS NULL', leftOperand);
+    }
+    if (Array.isArray(right)) {
+        if (right.length === 0) {
+            return sprintf('NOT %s IS NULL', leftOperand);
+        }
+        var self = this;
+        var values = right.map( function(x) {
+            return self.escape(x);
+        });
+        var rightOperand = values.join(', ');
+        return sprintf('NOT %s IN (%s)', leftOperand, rightOperand);
+    }
+    throw new Error('Invalid in expression. Right operand must be an array');
+}
 
 if (typeof exports !== 'undefined') {
     module.exports = {

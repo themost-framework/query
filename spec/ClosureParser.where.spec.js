@@ -3,162 +3,154 @@ const {QueryExpression} = require("../query");
 // eslint-disable-next-line no-unused-vars
 const { round, min, max } = require('../closures');
 const { MemoryAdapter } = require('./test/TestMemoryAdapter');
-const { initDatabase } = require('./test/TestMemoryDatabase');
 
 describe('ClosureParser', () => {
-    beforeAll(async () => {
-        await initDatabase();
-    });
+    /**
+     * @type {MemoryAdapter}
+     */
+     let db;
+     beforeAll(() => {
+         db = new MemoryAdapter({
+             name: 'local',
+             database: './spec/db/local.db'
+         });
+     });
+     afterAll((done) => {
+         if (db) {
+             db.close();
+             return done();
+         }
+     })
     it('should use object property to an equal expression', async () => {
         let a = new QueryExpression().select( x => {
-            x.CustomerID,
-            x.CustomerName
+            x.id,
+            x.familyName,
+            x.givenName
         })
-        .from('Customers').where( x => {
-            return x.CustomerID === 78;
+        .from('PersonData').where( x => {
+            return x.id === 355;
         });
         expect(a.$where).toEqual({
-                "CustomerID": 78 
+                "id": 355 
             });
-        let result = await new MemoryAdapter().executeAsync(a);
+        let result = await db.executeAsync(a);
         expect(result).toBeTruthy();
         expect(result.length).toBe(1);
-        expect(result[0].CustomerID).toBe(78);
+        expect(result[0].id).toBe(355);
         
-    });
-
-    it('should use object property to an equal expression', async () => {
-        let a = new QueryExpression().select( x => {
-            return {
-                CustomerID: x.CustomerID,
-                Name: x.CustomerName
-            };
-        })
-        .from('Customers').where( x => {
-            return x.CustomerID === 78;
-        });
-        let result = await new MemoryAdapter().executeAsync(a);
-        expect(result).toBeTruthy();
-        expect(result.length).toBe(1);
-        expect(result[0].CustomerID).toBe(78);
-        expect(result[0].Name).toBeTruthy();
     });
 
     it('should use greater than expression', async () => {
         let a = new QueryExpression().select( x => {
-            x.CustomerID,
-            x.CustomerName,
-            x.ContactName
+            x.id,
+            x.name,
+            x.price
         })
-        .from('Customers').where( x => {
-            return x.CustomerID > 78;
+        .from('ProductData').where( x => {
+            return x.price > 1000;
         });
-        let result = await new MemoryAdapter().executeAsync(a);
+        let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.CustomerID).toBeGreaterThan(78);
+            expect(x.price).toBeGreaterThan(1000);
         });
     });
     it('should use lower than expression', async () => {
         let a = new QueryExpression().select( x => {
-            x.CustomerID,
-            x.CustomerName,
-            x.ContactName
+            x.id,
+            x.name,
+            x.price
         })
-        .from('Customers').where( x => {
-            return x.CustomerID < 78;
+        .from('ProductData').where( x => {
+            return x.price < 400;
         });
-        let result = await new MemoryAdapter().executeAsync(a);
+        let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.CustomerID).toBeLessThan(78);
+            expect(x.price).toBeLessThan(1000);
         });
     });
 
     it('should use between expression', async () => {
         let a = new QueryExpression().select( x => {
-            x.CustomerID,
-            x.CustomerName,
-            x.ContactName
+            x.id,
+            x.name,
+            x.price
         })
-        .from('Customers').where( x => {
-            return x.CustomerID > 78 && x.CustomerID < 81;
+        .from('ProductData').where( x => {
+            return x.price >= 400 && x.price < 500;
         });
-        let result = await new MemoryAdapter().executeAsync(a);
+        let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.CustomerID).toBeGreaterThan(78);
-            expect(x.CustomerID).toBeLessThan(81);
+            expect(x.price).toBeGreaterThanOrEqual(400);
+            expect(x.price).toBeLessThan(500);
         });
     });
 
     it('should use greater than or equal expression', async () => {
         let a = new QueryExpression().select( x => {
-            x.CustomerID,
-            x.CustomerName,
-            x.ContactName
+            x.id,
+            x.name,
+            x.price
         })
-        .from('Customers').where( x => {
-            return x.CustomerID >= 78;
+        .from('ProductData').where( x => {
+            return x.price >= 1000;
         });
-        let result = await new MemoryAdapter().executeAsync(a);
+        let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.CustomerID).toBeGreaterThanOrEqual(78);
+            expect(x.price).toBeGreaterThanOrEqual(1000);
         });
     });
 
     it('should use lower than or equal expression', async () => {
         let a = new QueryExpression().select( x => {
-            x.CustomerID,
-            x.CustomerName,
-            x.ContactName
+            x.id,
+            x.name,
+            x.price
         })
-        .from('Customers').where( x => {
-            return x.CustomerID <= 78;
+        .from('ProductData').where( x => {
+            return x.price <= 460.9;
         });
-        let result = await new MemoryAdapter().executeAsync(a);
+        let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.CustomerID).toBeLessThanOrEqual(78);
+            expect(x.price).toBeLessThanOrEqual(460.9);
         });
     });
 
     
     it('should use parameters', async () => {
-        let maximumPrice = 30;
+        let maximumPrice = 400;
         let a = new QueryExpression().select( x => {
-            x.ProductID,
-            x.ProductName,
-            x.Price
+            x.name,
+            x.price
         })
-        .from('Products').where( x => {
-            return x.Price < maximumPrice;
+        .from('ProductData').where( x => {
+            return x.price < maximumPrice;
         }, {
              maximumPrice
         });
-        let result = await new MemoryAdapter().executeAsync(a);
+        let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.Price / 1.25).toBeLessThan(30);
+            expect(x.price).toBeLessThan(maximumPrice);
         });
     });
 
-    it('should use Date.prototype.getFullYear()', async () => {
+    fit('should use Date.prototype.getFullYear()', async () => {
         let a = new QueryExpression().select( x => {
-            x.OrderID,
-            x.Customer,
-            x.Employee,
-            x.OrderDate,
-            x.Shipper
+            x.product,
+            x.orderDate
         })
-        .from('Orders').where( x => {
-            return x.OrderDate.getFullYear() === 1996;
-        });
-        let result = await new MemoryAdapter().executeAsync(a);
+        .from('OrderData').where( x => {
+            return x.OrderDate.getFullYear() === 2019;
+        }).take(10);
+        let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.OrderDate.getFullYear()).toBe(1996);
+            expect(x.orderDate.getFullYear()).toBe(2019);
         });
     });
 
