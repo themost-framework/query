@@ -1,7 +1,7 @@
 const {QueryExpression, QueryEntity} = require("../query");
 
 // eslint-disable-next-line no-unused-vars
-const { round, min, max } = require('../closures');
+const { round, min, max, count } = require('../closures');
 const { MemoryAdapter } = require('./test/TestMemoryAdapter');
 
 describe('ClosureParser', () => {
@@ -685,4 +685,106 @@ describe('ClosureParser', () => {
         expect(result[0].maximumPrice).toBe(results[0].price);
         
     });
+
+    it('should use order by', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.price
+        }).from(Products).where( x => {
+            return x.category === 'Laptops';
+        }).orderBy((x) => {
+            x.price
+        });
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+        results.forEach( (x, index) => {
+            if (index > 0) {
+                expect(x.price).toBeGreaterThanOrEqual(results[index-1].price);
+            }
+        });
+        
+    });
+
+    it('should use order by descending', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.price
+        }).from(Products).where( x => {
+            return x.category === 'Laptops';
+        }).orderByDescending((x) => {
+            x.price
+        });
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+        results.forEach( (x, index) => {
+            if (index > 0) {
+                expect(x.price).toBeLessThanOrEqual(results[index-1].price);
+            }
+        });
+        
+    });
+
+    it('should use then by', async () => {
+        const People = new QueryEntity('PersonData');
+        let a = new QueryExpression().select( x => {
+            x.familyName,
+            x.givenName
+        }).from(People).orderBy((x) => {
+            x.familyName
+        }).thenBy((x) => x.givenName);
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+        results.forEach( (x, index) => {
+            if (index > 0) {
+                expect(x.familyName).toBeGreaterThanOrEqual(results[index-1].familyName);
+                if (x.familyName === results[index-1].familyName) {
+                    expect(x.givenName).toBeGreaterThanOrEqual(results[index-1].givenName);
+                }
+            }
+        });
+        
+    });
+
+    it('should use then by descending', async () => {
+        const People = new QueryEntity('PersonData');
+        let a = new QueryExpression().select( x => {
+            x.familyName,
+            x.givenName
+        }).from(People)
+            .orderByDescending((x) => x.familyName)
+            .thenByDescending((x) => x.givenName).take(50);
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+        results.forEach( (x, index) => {
+            if (index > 0) {
+                expect(x.familyName).toBeLessThanOrEqual(results[index-1].familyName);
+                if (x.familyName === results[index-1].familyName) {
+                    expect(x.givenName).toBeLessThanOrEqual(results[index-1].givenName);
+                }
+            }
+        });
+        
+    });
+
+    it('should use group by', async () => {
+        const Orders = new QueryEntity('OrderData');
+        let a = new QueryExpression().select( x => {
+            return {
+                orderedItem: x.orderedItem,
+                total: count(x.id)
+            }
+        }).from(Orders)
+            .groupBy((x) => x.orderedItem)
+            .orderByDescending((x) => {
+                return {
+                    total: count(x.id)
+                };
+            })
+            .take(10);
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+    });
+
 });

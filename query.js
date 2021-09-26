@@ -688,7 +688,8 @@ QueryExpression.prototype.orderBy = function(field) {
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
         // get closure
-        var fields = closureParser.parseSelect.apply(closureParser);
+        var selectArgs = Array.from(arguments);
+        var fields = closureParser.parseSelect.apply(closureParser, selectArgs);
         var self = this;
         self.$order = fields.map(function(item) {
             return { $asc: item };
@@ -715,7 +716,8 @@ QueryExpression.prototype.orderByDescending = function(field) {
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
         // get closure
-        var fields = closureParser.parseSelect.apply(closureParser);
+        var selectArgs = Array.from(arguments);
+        var fields = closureParser.parseSelect.apply(closureParser, selectArgs);
         var self = this;
         self.$order = fields.map(function(item) {
             return { $desc: item };
@@ -742,11 +744,12 @@ QueryExpression.prototype.thenBy = function(field) {
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
         // get closure and params
-        var fields = closureParser.parseSelect.apply(closureParser);
+        var selectArgs = Array.from(arguments);
+        var fields = closureParser.parseSelect.apply(closureParser, selectArgs);
         // and return
         var self = this;
-        if (Array.isArray(self.$order)) {
-            throw new Error('QueryExpression.thenBy() statement should be called after QueryExpression.order() or QueryExpression.orderDescending()');
+        if (Array.isArray(self.$order) === false) {
+            throw new Error('QueryExpression.thenBy() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
         }
         fields.forEach(function(item) {
             self.$order.push({ $asc: item })
@@ -772,11 +775,12 @@ QueryExpression.prototype.thenByDescending = function(field) {
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
         // get closure and params
-        var fields = closureParser.parseSelect.apply(closureParser);
+        var selectArgs = Array.from(arguments);
+        var fields = closureParser.parseSelect.apply(closureParser, selectArgs);
         // and return
         var self = this;
-        if (Array.isArray(self.$order)) {
-            throw new Error('QueryExpression.thenByDescending() statement should be called after QueryExpression.order() or QueryExpression.orderDescending()');
+        if (Array.isArray(self.$order) === false) {
+            throw new Error('QueryExpression.thenByDescending() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
         }
         fields.forEach(function(item) {
             self.$order.push({ $desc: item })
@@ -801,13 +805,26 @@ QueryExpression.prototype.thenByDescending = function(field) {
 /* eslint-disable-next-line no-unused-vars */
 QueryExpression.prototype.groupBy = function(field) {
 
+    var fields;
+    if (typeof field === 'function') {
+        var closureParser = new ClosureParser();
+        // get closure and params
+        var selectArgs = Array.from(arguments);
+        fields = closureParser.parseSelect.apply(closureParser, selectArgs);
+        // and return
+        this.$group = fields.map(function(item) {
+            return { $desc: item };
+        })
+        return this;
+    }
+
     // get argument
     var arr = Array.prototype.slice.call(arguments);
     if (arr.length === 0) {
         return this;
     }
     // validate arguments
-    var fields = [];
+    fields = [];
     arr.forEach( function (x) {
         // backward compatibility
         // any argument may be an array of fields

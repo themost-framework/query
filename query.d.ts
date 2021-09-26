@@ -41,6 +41,7 @@ export declare class QueryExpression {
     thenByDescending(name: string): QueryExpression;
     thenByDescending<T>(expr: (value: T) => any): QueryExpression;
     groupBy(...field: Array<any>): QueryExpression;
+    groupBy<T>(expr: (value: T) => any): QueryExpression;
     or(field: any): QueryExpression;
     and(field: any): QueryExpression;
     equal(value: any): QueryExpression;
