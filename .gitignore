@@ -103,6 +103,7 @@ dist
 # Development
 .idea
 .vscode
+.devcontainer
 .theia
 .DS_Store
 
