@@ -31,9 +31,9 @@ describe('SqlFormatter', () => {
                 orderStatusName: OrderStatusTypes.name,
                 productName: Products.name
             }
-        }).join(Products).with((x) => {
+        }).leftJoin(Products).with((x) => {
             return x.orderedItem === Products.id;
-        }).join(OrderStatusTypes).with((x) => {
+        }).leftJoin(OrderStatusTypes).with((x) => {
             return x.orderStatus === OrderStatusTypes.id;
         }).orderByDescending((x) => x.orderDate).take(25);
         const results = await db.executeAsync(q);

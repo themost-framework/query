@@ -655,6 +655,39 @@ QueryExpression.prototype.join = function(entity, props, alias) {
     //and return this object
     return this;
 };
+
+/**
+ * Initializes a left join expression with the specified entity
+ * @param {*} entity
+ * @param {Array=} props
+ * @param {String=} alias
+ * @returns {QueryExpression}
+ */
+QueryExpression.prototype.leftJoin = function() {
+    var args = Array.from(arguments);
+    this.join.apply(this, args);
+    if (this.privates.expand && this.privates.expand.$entity) {
+        this.privates.expand.$entity.$join = 'left';
+    }
+    return this;
+}
+
+/**
+ * Initializes a right join expression with the specified entity
+ * @param {*} entity
+ * @param {Array=} props
+ * @param {String=} alias
+ * @returns {QueryExpression}
+ */
+ QueryExpression.prototype.rightJoin = function() {
+    var args = Array.from(arguments);
+    this.join.apply(this, args);
+    if (this.privates.expand && this.privates.expand.$entity) {
+        this.privates.expand.$entity.$join = 'right';
+    }
+    return this;
+}
+
 /**
  * Sets the join expression of the last join entity
  * @param obj {Array|*}

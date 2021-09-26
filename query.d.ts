@@ -32,6 +32,10 @@ export declare class QueryExpression {
     from(alias: string): QueryExpression;
     join(entity: any, props?: any, alias?: any): QueryExpression;
     join(entity: QueryEntity): QueryExpression;
+    leftJoin(entity: any, props?: any, alias?: any): QueryExpression;
+    leftJoin(entity: QueryEntity): QueryExpression;
+    rightJoin(entity: any, props?: any, alias?: any): QueryExpression;
+    rightJoin(entity: QueryEntity): QueryExpression;
     with(obj: any): QueryExpression;
     with<T>(expr: (value: T) => any): QueryExpression;
     orderBy(field: string): QueryExpression;
