@@ -67,6 +67,14 @@ export declare class SimpleMethodCallExpression extends MethodCallExpression {
     exprOf(): any;
 }
 
+export declare class SimpleMethodCallExpression extends MethodCallExpression {
+    constructor(name: string, args: Array<any>);
+}
+
+export declare class AggregateComparisonExpression extends ComparisonExpression {
+    constructor(left: any, operator: string, right:any);
+}
+
 export declare function createArithmeticExpression(left: any, operator:string, right: any): ArithmeticExpression;
 
 export declare function createComparisonExpression(left: any, operator:string, right: any): ComparisonExpression;

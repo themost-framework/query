@@ -23,27 +23,27 @@ DateMethodParser.prototype.getYear = function(args) {
 }
 
 DateMethodParser.prototype.getMonth = function(args) {
-    return new MethodCallExpression('month', args);
+    return new SimpleMethodCallExpression('month', args);
 }
 
 DateMethodParser.prototype.getDate = function(args) {
-    return new MethodCallExpression('dayOfMonth', args);
+    return new SimpleMethodCallExpression('dayOfMonth', args);
 }
 
 DateMethodParser.prototype.toDate = function(args) {
-    return new MethodCallExpression('date', args);
+    return new SimpleMethodCallExpression('date', args);
 }
 
 DateMethodParser.prototype.getHours = function(args) {
-    return new MethodCallExpression('hour', args);
+    return new SimpleMethodCallExpression('hour', args);
 }
 
 DateMethodParser.prototype.getMinutes = function(args) {
-    return new MethodCallExpression('minute', args);
+    return new SimpleMethodCallExpression('minute', args);
 }
 
 DateMethodParser.prototype.getSeconds = function(args) {
-    return new MethodCallExpression('second', args);
+    return new SimpleMethodCallExpression('second', args);
 }
 
 module.exports.DateMethodParser = DateMethodParser;

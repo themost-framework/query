@@ -332,17 +332,52 @@ LangUtils.inherits(SimpleMethodCallExpression, MethodCallExpression);
     var method = {};
     var name = '$'.concat(this.name);
     //set arguments array
-    method[name] = {};
+    
     if (this.args.length===0)
         throw new Error('Unsupported method expression. Method arguments cannot be empty.');
-    var arg = null;
-    if (typeof this.args[0].exprOf === 'function') {
-        arg = this.args[0].exprOf();
+    if (this.args.length === 1) {
+        method[name] = {};
+        var arg = null;
+        if (typeof this.args[0].exprOf === 'function') {
+            arg = this.args[0].exprOf();
+        } else {
+            arg = this.args[0]
+        }
+        Object.assign(method[name], arg);
+        return method;
     } else {
-        arg = this.args[0]
+        method[name] = this.args.map(function(item) {
+            if (typeof item.exprOf === 'function') {
+                return item.exprOf();
+            } else {
+                return item;
+            }
+        });
+        return method;
     }
-    Object.assign(method[name], arg);
-    return method;
+    
+};
+
+/**
+ * Creates a method call expression
+ * @class
+ * @constructor
+ */
+ function AggregateComparisonExpression(left, op, right) {
+    AggregateComparisonExpression.super_.bind(this)(left, op, right);
+}
+LangUtils.inherits(AggregateComparisonExpression, ComparisonExpression);
+/**
+ * Converts the current method to the equivalent query expression e.g. { orderDate: { $year: [] } } which is equivalent with year(orderDate)
+ * @returns {*}
+ */
+ AggregateComparisonExpression.prototype.exprOf = function() {
+    var result = {};
+    result[this.operator] = [
+        (typeof this.left.exprOf === 'function') ? this.left.exprOf() : this.left,
+        (typeof this.right.exprOf === 'function') ? this.right.exprOf() : this.right
+    ];
+    return result;
 };
 
 if (typeof exports !== 'undefined')
@@ -357,6 +392,7 @@ if (typeof exports !== 'undefined')
     module.exports.SequenceExpression =  SequenceExpression;
     module.exports.ObjectExpression =  ObjectExpression;
     module.exports.SimpleMethodCallExpression =  SimpleMethodCallExpression;
+    module.exports.AggregateComparisonExpression =  AggregateComparisonExpression;
     /**
      * @param {*=} left The left operand
      * @param {string=} operator The operator

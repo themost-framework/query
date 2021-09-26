@@ -156,10 +156,18 @@ SqlFormatter.prototype.escape = function(value,unquoted)
                 key0 = keys[0];
             if (_.isString(key0) && /^\$/.test(key0) && _.isFunction(this[key0])) {
                 var exprFunc = this[key0];
+                var args;
                 //get arguments
-                var args = _.map(keys, function(x) {
-                    return value[x];
-                });
+                // if function has an array of arguments e.g.
+                // title.startsWith('Introduction')
+                // { $startWith: [{ $name : "title" }, 'Introduction'] }
+                if (Array.isArray(value[key0])) {
+                    args = value[key0];
+                } else {
+                    args = _.map(keys, function(x) {
+                        return value[x];
+                    });
+                }
                 return exprFunc.apply(this, args);
             }
         }

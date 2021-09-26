@@ -7,7 +7,7 @@ var SequenceExpression = expressions.SequenceExpression;
 var MemberExpression = expressions.MemberExpression;
 var ArithmeticExpression = expressions.ArithmeticExpression;
 var LogicalExpression = expressions.LogicalExpression;
-var ComparisonExpression = expressions.ComparisonExpression;
+var AggregateComparisonExpression = expressions.AggregateComparisonExpression;
 var MethodCallExpression = expressions.MethodCallExpression;
 var isArithmeticOperator = expressions.isArithmeticOperator;
 var isComparisonOperator = expressions.isComparisonOperator;
@@ -460,7 +460,7 @@ ClosureParser.prototype.parseBinary = function(expr) {
             }
         }
         else if (isComparisonOperator(op)) {
-            return new ComparisonExpression(left, op, right);
+            return new AggregateComparisonExpression(left, op, right);
         }
         else {
             throw new Error('Unsupported binary expression');
