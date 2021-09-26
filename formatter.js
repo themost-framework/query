@@ -1019,7 +1019,7 @@ SqlFormatter.prototype.formatDelete = function(obj)
 
 SqlFormatter.prototype.escapeName = function(name) {
     if (typeof name === 'string')
-        return name.replace(/(\w+)$|^(\w+)$/g, this.settings.nameFormat);
+        return name.replace(/(\w+)/g, this.settings.nameFormat);
     if (typeof name === 'object' && Object.prototype.hasOwnProperty.call(name, '$name')) {
         return this.escapeName(name.$name);
     }

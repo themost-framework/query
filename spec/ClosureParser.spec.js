@@ -33,7 +33,7 @@ describe('ClosureParser', () => {
         });
         expect(a.$where).toEqual({
                 $eq: [
-                    { $name: "id" },
+                    { $name: "PersonData.id" },
                     355
                 ]
             });

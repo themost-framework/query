@@ -350,7 +350,17 @@ QueryExpression.prototype.where = function(expr, params)
 {
     if (typeof expr === 'function') {
         // parse closure
-        this.$where = new ClosureParser().parseFilter(expr, params);
+        var self = this;
+        var closureParser = new ClosureParser();
+        Object.assign(closureParser, {
+            resolveMember: function(member) {
+                if (self.$collection) {
+                    return self.$collection.concat('.', member);
+                }
+                return member;
+            }
+        });
+        this.$where = closureParser.parseFilter(expr, params);
         return this;
     }
     if (_.isNil(expr))
@@ -495,6 +505,15 @@ QueryExpression.prototype.select = function(field)
     // handle closure
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
+        var self = this;
+        Object.assign(closureParser, {
+            resolveMember: function(member) {
+                if (self.$collection) {
+                    return self.$collection.concat('.', member);
+                }
+                return member;
+            }
+        });
         // get closure and params
         var selectArgs = Array.from(arguments);
         fields = closureParser.parseSelect.apply(closureParser, selectArgs);
@@ -582,6 +601,12 @@ QueryExpression.prototype.from = function(entity) {
     else {
         name = entity.valueOf();
     }
+    Object.defineProperty(this, '$collection', {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value: name
+    });
     if (this.privates.fields) {
         //initialize $select property
         this.$select = {};
@@ -637,10 +662,26 @@ QueryExpression.prototype.join = function(entity, props, alias) {
  */
 QueryExpression.prototype.with = function(obj) {
 
-    if (_.isNil(obj))
+    if (obj == null) {
         return this;
-    if (_.isNil(this.privates.expand))
+    }
+    if (this.privates.expand == null) {
         throw new Error('Join entity cannot be empty when adding a join expression. Use QueryExpression.join(entity, props) before.');
+    }
+    if (typeof obj === 'function') {
+        // parse closure and return
+        var self = this;
+        var closureParser = new ClosureParser();
+        Object.assign(closureParser, {
+            resolveMember: function(member) {
+                if (self.$collection) {
+                    return self.$collection.concat('.', member);
+                }
+                return member;
+            }
+        });
+        return this.with(closureParser.parseFilter(obj));
+    }
     if (obj instanceof QueryExpression)
     {
         /**
@@ -687,10 +728,18 @@ QueryExpression.prototype.orderBy = function(field) {
 
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
+        var self = this;
+        Object.assign(closureParser, {
+            resolveMember: function(member) {
+                if (self.$collection) {
+                    return self.$collection.concat('.', member);
+                }
+                return member;
+            }
+        });
         // get closure
         var selectArgs = Array.from(arguments);
         var fields = closureParser.parseSelect.apply(closureParser, selectArgs);
-        var self = this;
         self.$order = fields.map(function(item) {
             return { $asc: item };
         });
@@ -715,10 +764,18 @@ QueryExpression.prototype.orderByDescending = function(field) {
 
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
+        var self = this;
+        Object.assign(closureParser, {
+            resolveMember: function(member) {
+                if (self.$collection) {
+                    return self.$collection.concat('.', member);
+                }
+                return member;
+            }
+        });
         // get closure
         var selectArgs = Array.from(arguments);
         var fields = closureParser.parseSelect.apply(closureParser, selectArgs);
-        var self = this;
         self.$order = fields.map(function(item) {
             return { $desc: item };
         });
@@ -743,11 +800,19 @@ QueryExpression.prototype.thenBy = function(field) {
 
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
+        var self = this;
+        Object.assign(closureParser, {
+            resolveMember: function(member) {
+                if (self.$collection) {
+                    return self.$collection.concat('.', member);
+                }
+                return member;
+            }
+        });
         // get closure and params
         var selectArgs = Array.from(arguments);
         var fields = closureParser.parseSelect.apply(closureParser, selectArgs);
         // and return
-        var self = this;
         if (Array.isArray(self.$order) === false) {
             throw new Error('QueryExpression.thenBy() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
         }
@@ -774,11 +839,19 @@ QueryExpression.prototype.thenByDescending = function(field) {
 
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
+        var self = this;
+        Object.assign(closureParser, {
+            resolveMember: function(member) {
+                if (self.$collection) {
+                    return self.$collection.concat('.', member);
+                }
+                return member;
+            }
+        });
         // get closure and params
         var selectArgs = Array.from(arguments);
         var fields = closureParser.parseSelect.apply(closureParser, selectArgs);
         // and return
-        var self = this;
         if (Array.isArray(self.$order) === false) {
             throw new Error('QueryExpression.thenByDescending() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
         }
@@ -808,6 +881,15 @@ QueryExpression.prototype.groupBy = function(field) {
     var fields;
     if (typeof field === 'function') {
         var closureParser = new ClosureParser();
+        var self = this;
+        Object.assign(closureParser, {
+            resolveMember: function(member) {
+                if (self.$collection) {
+                    return self.$collection.concat('.', member);
+                }
+                return member;
+            }
+        });
         // get closure and params
         var selectArgs = Array.from(arguments);
         fields = closureParser.parseSelect.apply(closureParser, selectArgs);
