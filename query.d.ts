@@ -32,10 +32,14 @@ export declare class QueryExpression {
     from(alias: string): QueryExpression;
     join(entity: any, props?: any, alias?: any): QueryExpression;
     with(obj: any): QueryExpression;
-    orderBy(name: string): QueryExpression;
-    orderByDescending(name: string): QueryExpression;
-    thenBy(name: string): QueryExpression;
+    orderBy(field: string): QueryExpression;
+    orderBy<T>(expr: (value: T) => any): QueryExpression;
+    orderByDescending(field: string): QueryExpression;
+    orderByDescending<T>(expr: (value: T) => any): QueryExpression;
+    thenBy(field: string): QueryExpression;
+    thenBy<T>(expr: (value: T) => any): QueryExpression;
     thenByDescending(name: string): QueryExpression;
+    thenByDescending<T>(expr: (value: T) => any): QueryExpression;
     groupBy(...field: Array<any>): QueryExpression;
     or(field: any): QueryExpression;
     and(field: any): QueryExpression;

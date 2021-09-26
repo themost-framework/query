@@ -680,63 +680,116 @@ QueryExpression.prototype.with = function(obj) {
 // noinspection JSUnusedGlobalSymbols
 /**
  * Applies an ascending ordering to a query expression
- * @param name {string|Array}
+ * @param {string|*} field
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.orderBy = function(name) {
+QueryExpression.prototype.orderBy = function(field) {
 
-    if (_.isNil(name))
+    if (typeof field === 'function') {
+        var closureParser = new ClosureParser();
+        // get closure
+        var fields = closureParser.parseSelect.apply(closureParser);
+        var self = this;
+        self.$order = fields.map(function(item) {
+            return { $asc: item };
+        });
+        // and return
+        return this;
+    }
+
+    if (_.isNil(field))
         return this;
     if (_.isNil(this.$order))
         this.$order = [];
-    this.$order.push({ $asc: name });
+    this.$order.push({ $asc: field });
     return this;
 };
 // noinspection JSUnusedGlobalSymbols
 /**
  * Applies a descending ordering to a query expression
- * @param name
+ * @param {string|*} field
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.orderByDescending = function(name) {
+QueryExpression.prototype.orderByDescending = function(field) {
 
-    if (_.isNil(name))
+    if (typeof field === 'function') {
+        var closureParser = new ClosureParser();
+        // get closure
+        var fields = closureParser.parseSelect.apply(closureParser);
+        var self = this;
+        self.$order = fields.map(function(item) {
+            return { $desc: item };
+        });
+        // and return
+        return this;
+    }
+
+    if (_.isNil(field))
         return this;
     if (_.isNil(this.$order))
         this.$order = [];
-    this.$order.push({ $desc: name });
+    this.$order.push({ $desc: field });
     return this;
 };
 
 /**
  * Performs a subsequent ordering in a query expression
- * @param name {string|Array}
+ * @param {String|*} field
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.thenBy = function(name) {
+QueryExpression.prototype.thenBy = function(field) {
 
-    if (_.isNil(name))
+    if (typeof field === 'function') {
+        var closureParser = new ClosureParser();
+        // get closure and params
+        var fields = closureParser.parseSelect.apply(closureParser);
+        // and return
+        var self = this;
+        if (Array.isArray(self.$order)) {
+            throw new Error('QueryExpression.thenBy() statement should be called after QueryExpression.order() or QueryExpression.orderDescending()');
+        }
+        fields.forEach(function(item) {
+            self.$order.push({ $asc: item })
+        })
+        return this;
+    }
+
+    if (_.isNil(field))
         return this;
     if (_.isNil(this.$order))
-    //throw exception (?)
         return this;
-    this.$order.push({ $asc: name });
+    this.$order.push({ $asc: field });
     return this;
 };
 
 /**
  * Performs a subsequent ordering in a query expression
- * @param name {string|Array}
+ * @param {string|*} field
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.thenByDescending = function(name) {
+QueryExpression.prototype.thenByDescending = function(field) {
 
-    if (_.isNil(name))
+    if (typeof field === 'function') {
+        var closureParser = new ClosureParser();
+        // get closure and params
+        var fields = closureParser.parseSelect.apply(closureParser);
+        // and return
+        var self = this;
+        if (Array.isArray(self.$order)) {
+            throw new Error('QueryExpression.thenByDescending() statement should be called after QueryExpression.order() or QueryExpression.orderDescending()');
+        }
+        fields.forEach(function(item) {
+            self.$order.push({ $desc: item })
+        })
+        return this;
+    }
+
+    if (_.isNil(field))
         return this;
     if (_.isNil(this.$order))
     //throw exception (?)
         return this;
-    this.$order.push({ $desc: name });
+    this.$order.push({ $desc: field });
     return this;
 };
 // noinspection JSUnusedGlobalSymbols
