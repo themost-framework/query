@@ -1,6 +1,5 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 
-var MethodCallExpression = require('../expressions').MethodCallExpression;
 var SimpleMethodCallExpression = require('../expressions').SimpleMethodCallExpression;
 var PrototypeMethodParser = require('./PrototypeMethodParser').PrototypeMethodParser;
 var LangUtils = require('@themost/common').LangUtils;
@@ -45,10 +44,6 @@ StringMethodParser.prototype.indexOf = function(args) {
 
 
 StringMethodParser.prototype.substr = function(args) {
-    return new SimpleMethodCallExpression('substr', args);
-}
-
-StringMethodParser.prototype.substring = function(args) {
     return new SimpleMethodCallExpression('substr', args);
 }
 

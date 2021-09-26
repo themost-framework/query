@@ -397,7 +397,292 @@ describe('ClosureParser', () => {
 
     });
 
+    it('should use String.prototype.substr()', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name
+        }).from(Products).where( x => {
+            return x.name.substr(2) === 'msung Galaxy S4';
+        });
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.name.substr(2)).toBe('msung Galaxy S4');
+        });
+        a = new QueryExpression().select( x => {
+            x.name
+        }).from(Products).where( x => {
+            return x.name.substr(2, 5) === 'msung';
+        });
+        result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.name.substr(2, 5)).toBe('msung');
+        });
+    });
 
-    
+    it('should use String.prototype.trim()', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name
+        }).from(Products).where( x => {
+            return x.name.trim() === 'Samsung Galaxy Note 3';
+        });
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.name.trim()).toBe('Samsung Galaxy Note 3');
+        });
+    });
 
+    it('should use String.prototype.concat()', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category
+        }).from(Products).where( x => {
+            return x.name.concat(', Product') === 'Samsung Galaxy Note 3, Product';
+        });
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.name.concat(', Product')).toBe('Samsung Galaxy Note 3, Product');
+        });
+    });
+
+    it('should use String.prototype.includes()', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category
+        }).from(Products).where( x => {
+            return x.name.includes('Apple') === true;
+        });
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.name.includes('Apple')).toBeTrue();
+        });
+    });
+
+    it('should use add', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category,
+            x.price
+        }).from(Products).where( x => {
+            return x.price + 50 > 450;
+        }).take(10);
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.price + 50).toBeGreaterThan(450);
+        });
+    });
+
+    it('should use substract', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category,
+            x.price
+        }).from(Products).where( x => {
+            return x.price - 50 < 400;
+        }).take(10);
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.price - 50).toBeLessThan(400);
+        });
+    });
+
+    it('should use multiply', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category,
+            x.price
+        }).from(Products).where( x => {
+            return x.price * 0.75 < 400;
+        }).take(10);
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.price * 0.75).toBeLessThan(400);
+        });
+
+        a = new QueryExpression().select( x => {
+            x.name,
+            x.category,
+            x.price
+        }).from(Products).where( x => {
+            return (x.price * 0.75) + 100 < 400;
+        }).take(10);
+        result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect((x.price * 0.75) + 100).toBeLessThan(400);
+        });
+    });
+
+    it('should use divide', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category,
+            x.price
+        }).from(Products).where( x => {
+            return x.price / 1.25 < 400;
+        }).take(10);
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.price / 1.25).toBeLessThan(400);
+        });
+    });
+
+    it('should use modulo', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category,
+            x.price
+        }).from(Products).where( x => {
+            return x.price % 122 < 1;
+        }).take(10);
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.price % 122).toBeLessThan(1);
+        });
+    });
+
+    it('should use bitand', async () => {
+        const Orders = new QueryEntity('OrderData');
+        let a = new QueryExpression().select( x => {
+            x.orderedItem,
+            x.orderDate
+        }).from(Orders).where( x => {
+            return x.orderDate.getMonth() % 2 === 1;
+        }).take(10);
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.orderDate.getMonth() % 2).toBe(0);
+        });
+    });
+
+    it('should use floor', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category,
+            x.price
+        }).from(Products).where( x => {
+            return Math.floor(x.price) === 122;
+        }).take(10);
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(Math.floor(x.price)).toBe(122);
+        });
+    });
+
+    it('should use floor', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category,
+            x.price
+        }).from(Products).where( x => {
+            return Math.ceil(x.price) === 123;
+        }).take(10);
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(Math.ceil(x.price)).toBe(123);
+        });
+    });
+
+    it('should use round', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.category,
+            x.price
+        }).from(Products).where( x => {
+            return round(x.price, 2) > 122 && round(x.price, 2) < 230;
+        }).take(10);
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(round(x.price, 2)).toBeGreaterThan(122);
+            expect(round(x.price, 2)).toBeLessThan(230);
+        });
+    });
+
+    it('should use min', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            return {
+                minimumPrice: min(x.price)
+            }
+        }).from(Products).where( x => {
+            return x.category === 'Laptops';
+        });
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+
+        a = new QueryExpression().select( x => {
+            x.price
+        }).from(Products).where( x => {
+            return x.category === 'Laptops';
+        });
+        let results1 = await db.executeAsync(a);
+
+        const results = results1.sort((a, b) => {
+            if (a.price > b.price) {
+                return 1;
+            }
+            if (a.price < b.price) {
+                return -1;
+            }
+            return 0;
+        });
+        expect(result[0].minimumPrice).toBe(results[0].price);
+        
+    });
+
+    it('should use max', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            return {
+                maximumPrice: max(x.price)
+            }
+        }).from(Products).where( x => {
+            return x.category === 'Laptops';
+        });
+        let result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+
+        a = new QueryExpression().select( x => {
+            x.price
+        }).from(Products).where( x => {
+            return x.category === 'Laptops';
+        });
+        let results1 = await db.executeAsync(a);
+
+        const results = results1.sort((a, b) => {
+            if (a.price > b.price) {
+                return -1;
+            }
+            if (a.price < b.price) {
+                return 1;
+            }
+            return 0;
+        });
+        expect(result[0].maximumPrice).toBe(results[0].price);
+        
+    });
 });
