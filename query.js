@@ -652,6 +652,19 @@ QueryExpression.prototype.join = function(entity, props, alias) {
             obj.$as=alias;
     }
     this.privates.expand =  { $entity: obj };
+    // set current join entity
+    var collectionName = null;
+    if (this.privates.expand.$entity.$as != null) {
+        collectionName = this.privates.expand.$entity.$as
+    } else if (typeof this.privates.expand.$entity.name === 'function') {
+        collectionName = this.privates.expand.$entity.name();
+    }
+    Object.defineProperty(this, '$joinCollection', {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value: collectionName
+    });
     //and return this object
     return this;
 };
@@ -709,6 +722,12 @@ QueryExpression.prototype.with = function(obj) {
             resolveMember: function(member) {
                 if (self.$collection) {
                     return self.$collection.concat('.', member);
+                }
+                return member;
+            },
+            resolveJoinMember: function(member) {
+                if (self.$joinCollection) {
+                    return self.$joinCollection.concat('.', member);
                 }
                 return member;
             }

@@ -31,10 +31,10 @@ describe('SqlFormatter', () => {
                 orderStatusName: OrderStatusTypes.name,
                 productName: Products.name
             }
-        }).leftJoin(Products).with((x) => {
-            return x.orderedItem === Products.id;
-        }).leftJoin(OrderStatusTypes).with((x) => {
-            return x.orderStatus === OrderStatusTypes.id;
+        }).leftJoin(Products).with((x, y) => {
+            return x.orderedItem === y.id;
+        }).leftJoin(OrderStatusTypes).with((x, y) => {
+            return x.orderStatus === y.id;
         }).orderByDescending((x) => x.orderDate).take(25);
         const results = await db.executeAsync(q);
         expect(results.length).toBeTruthy();

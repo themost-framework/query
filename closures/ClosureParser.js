@@ -472,12 +472,25 @@ ClosureParser.prototype.parseBinary = function(expr) {
 ClosureParser.prototype.parseMember = function(expr) {
     var self = this;
     if (expr.property) {
-        var namedParam = self.namedParams[0];
-        if (namedParam == null) {
+        if (self.namedParams.length === 0) {
             throw new Error('Invalid or missing closure parameter');
         }
-        if (expr.object.name===namedParam.name) {
-            var member = self.resolveMember(expr.property.name);
+        // get first parameter
+        var namedParam0 = self.namedParams[0];
+        // find parameter by name
+        var namedParam = self.namedParams.find(function(item) {
+            return item.name === expr.object.name;
+        });
+        if (namedParam != null) {
+            var member;
+            // if named parameter is the first parameter
+            if (namedParam0 == namedParam) {
+                // resolve member
+                member = self.resolveMember(expr.property.name);
+            } else {
+                // otherwise resolve member of joined collection
+                member = self.resolveJoinMember(expr.property.name);
+            }
             return new MemberExpression(member);
         }
         else {
@@ -618,6 +631,14 @@ ClosureParser.prototype.parseLiteral = function(expr) {
  * @param {string} member
  */
 ClosureParser.prototype.resolveMember = function(member) {
+    return member;
+}
+
+/**
+ * Abstract function which resolves entity based on the given member name
+ * @param {string} member
+ */
+ ClosureParser.prototype.resolveJoinMember = function(member) {
     return member;
 }
 

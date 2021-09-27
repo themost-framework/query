@@ -25,5 +25,6 @@ export declare class ClosureParser {
     parseIdentifier(expr: any): any;
     parseLiteral(expr: any): any;
     resolveMember(member: any): any;
+    resolveJoinMember(member: any): any;
     resolveMethod(method: any): any;
 }

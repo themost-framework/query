@@ -37,7 +37,7 @@ export declare class QueryExpression {
     rightJoin(entity: any, props?: any, alias?: any): QueryExpression;
     rightJoin(entity: QueryEntity): QueryExpression;
     with(obj: any): QueryExpression;
-    with<T>(expr: (value: T) => any): QueryExpression;
+    with<T,J>(expr: (value: T, otherValue: J) => any): QueryExpression;
     orderBy(field: string): QueryExpression;
     orderBy<T>(expr: (value: T) => any): QueryExpression;
     orderByDescending(field: string): QueryExpression;
