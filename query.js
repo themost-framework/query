@@ -732,7 +732,8 @@ QueryExpression.prototype.with = function(obj) {
                 return member;
             }
         });
-        return this.with(closureParser.parseFilter(obj));
+        var args = Array.from(arguments);
+        return this.with(closureParser.parseFilter.apply(closureParser, args));
     }
     if (obj instanceof QueryExpression)
     {

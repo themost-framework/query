@@ -479,7 +479,7 @@ ClosureParser.prototype.parseMember = function(expr) {
         var namedParam0 = self.namedParams[0];
         // find parameter by name
         var namedParam = self.namedParams.find(function(item) {
-            return item.name === expr.object.name;
+            return (item.name === expr.object.name);
         });
         if (namedParam != null) {
             var member;
@@ -500,11 +500,18 @@ ClosureParser.prototype.parseMember = function(expr) {
                 value = memberExpressionToString(expr);
                 return new MemberExpression(value);
             }
-            if (expr.object.object.name===namedParam.name) {
-                //get closure parameter expression e.g. x.title.length
+            // find identifier name
+            var object1 = expr;
+            while(object1.object != null) {
+                object1 = object1.object;
+            }
+            namedParam = self.namedParams.find(function(item) {
+                return (item.name === object1.name);
+            });
+            if (object1.name===namedParam.name) {
+                //get closure parameter expression e.g. x.customer.name
                 var property = expr.property.name;
-                var result = self.parseMember(expr.object);
-                return new MethodCallExpression(property, [result]);
+                return new MemberExpression(expr.object.property.name + '.' + property);
             }
             else {
                 //evaluate object member value e.g. item.title or item.status.id
