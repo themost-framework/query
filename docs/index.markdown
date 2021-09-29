@@ -4,3 +4,15 @@
 
 layout: home
 ---
+
+@themost/query introduces a comprehensive set of tools and classes for querying data against any database engine.
+
+The following instance of QueryExpression
+
+    const query = new QueryExpression().from('UserData')
+        .select('id', 'name', 'dateCreated')
+        .where('name).equal('alexis.rees@example.com');
+
+produces this equivalent SQL statement:
+
+    SELECT "id", "name", "dateCreated" FROM "UserData" WHERE "name" = 'alexis.rees@example.com'
