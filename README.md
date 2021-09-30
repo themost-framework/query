@@ -12,7 +12,7 @@
 MOST Web Framework 2.0 **Codename Blueshift** Query Module
 
 
-License: [BSD-3-Clause](https://github.com/kbarbounakis/themost/blob/master/LICENSE)
+License: [BSD-3-Clause](https://github.com/themost-framework/themost-query/blob/master/LICENSE)
 
 ## Usage
 
@@ -22,6 +22,4 @@ Install @themost/query
 
 ## Development
 
-This repo is a submodule of [MOST Web Framework](http://github.com/themost-framework/themost)
-
-    git clone http://github.com/themost-framework/themost.git
+    git clone http://github.com/themost-framework/themost-query.git
