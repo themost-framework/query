@@ -7,6 +7,8 @@ title: Getting started
 nav_order: 1
 ---
 
+# Getting started
+
 @themost/query introduces a comprehensive set of tools and classes for querying data against any database engine.
 
 The following instance of QueryExpression
