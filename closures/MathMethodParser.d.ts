@@ -9,4 +9,5 @@ export declare class MathMethodParser {
     static floor(args: any[]): MethodCallExpression;
     static min(args: any[]): MethodCallExpression;
     static max(args: any[]): MethodCallExpression;
+    static mean(args: any[]): MethodCallExpression;
 }

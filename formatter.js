@@ -543,8 +543,12 @@ SqlFormatter.prototype.$date = function(p0) {
 };
 
 
-SqlFormatter.prototype.$floor = function(p0) { return sprintf('FLOOR(%s)', this.escape(p0)); };
-SqlFormatter.prototype.$ceiling = function(p0) { return sprintf('CEILING(%s)', this.escape(p0)); };
+SqlFormatter.prototype.$floor = function(p0) { 
+    return sprintf('FLOOR(%s)', this.escape(p0)); 
+};
+SqlFormatter.prototype.$ceiling = function(p0) { 
+    return sprintf('CEILING(%s)', this.escape(p0)); 
+};
 
 
 /**
@@ -1089,7 +1093,12 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
                 var fn = this[prop];
                 if (typeof fn === 'function') {
                     var args = expr[prop];
-                    s = fn.apply(this,args);
+                    if (Array.isArray(args)) {
+                        s = fn.apply(this,args);
+                    } else {
+                        s = fn.call(this,args);
+                    }
+                    
                 }
                 else
                     throw new Error('The specified function is not yet implemented.');
@@ -1167,6 +1176,16 @@ SqlFormatter.prototype.$eq = function(left, right) {
         return this.$in(left, right);
     }
     return sprintf('%s = %s', this.escape(left), this.escape(right));
+}
+
+SqlFormatter.prototype.$ne = function(left, right) {
+    if (right == null) {
+        return sprintf('(NOT %s IS NULL)', this.escape(left));
+    }
+    if (Array.isArray(right)) {
+        return this.$nin(left, right);
+    }
+    return sprintf('(NOT %s = %s)', this.escape(left), this.escape(right));
 }
 
 SqlFormatter.prototype.$gt = function(left, right) {

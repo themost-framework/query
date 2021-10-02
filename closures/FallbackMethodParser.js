@@ -1,6 +1,6 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 
-var MethodCallExpression = require('../expressions').MethodCallExpression;
+var SimpleMethodCallExpression = require('../expressions').SimpleMethodCallExpression;
 
 /**
  * @class
@@ -21,54 +21,57 @@ FallbackMethodParser.prototype.test = function (name) {
 }
 
 FallbackMethodParser.count = function(args) {
-    return new MethodCallExpression('count', args);
+    return new SimpleMethodCallExpression('count', args);
 }
 FallbackMethodParser.round = function(args) {
-    return new MethodCallExpression('round', args);
+    return new SimpleMethodCallExpression('round', args);
 }
 
 FallbackMethodParser.floor = function(args) {
-    return new MethodCallExpression('floor', args);
+    return new SimpleMethodCallExpression('floor', args);
 }
 
 FallbackMethodParser.ceil = function(args) {
-    return new MethodCallExpression('ceil', args);
+    return new SimpleMethodCallExpression('ceil', args);
 }
 
 FallbackMethodParser.mod = function(args) {
-    return new MethodCallExpression('mod', args);
+    return new SimpleMethodCallExpression('mod', args);
 }
 
 FallbackMethodParser.add = function(args) {
-    return new MethodCallExpression('add', args);
+    return new SimpleMethodCallExpression('add', args);
 }
 
 FallbackMethodParser.subtract = function(args) {
-    return new MethodCallExpression('subtract', args);
+    return new SimpleMethodCallExpression('subtract', args);
 }
 
 FallbackMethodParser.multiply = function(args) {
-    return new MethodCallExpression('multiply', args);
+    return new SimpleMethodCallExpression('multiply', args);
 }
 
 FallbackMethodParser.divide = function(args) {
-    return new MethodCallExpression('divide', args);
+    return new SimpleMethodCallExpression('divide', args);
 }
 
 FallbackMethodParser.bitAnd = function(args) {
-    return new MethodCallExpression('bit', args);
+    return new SimpleMethodCallExpression('bit', args);
 }
 FallbackMethodParser.mean = function(args) {
-    return new MethodCallExpression('avg', args);
+    return new SimpleMethodCallExpression('avg', args);
+}
+FallbackMethodParser.avg = function(args) {
+    return new SimpleMethodCallExpression('avg', args);
 }
 FallbackMethodParser.sum = function(args) {
-    return new MethodCallExpression('sum', args);
+    return new SimpleMethodCallExpression('sum', args);
 }
 FallbackMethodParser.min = function(args) {
-    return new MethodCallExpression('min', args);
+    return new SimpleMethodCallExpression('min', args);
 }
 FallbackMethodParser.max = function(args) {
-    return new MethodCallExpression('max', args);
+    return new SimpleMethodCallExpression('max', args);
 }
 
 module.exports.FallbackMethodParser = FallbackMethodParser;

@@ -135,6 +135,15 @@ function sum() {
 
 // noinspection JSCommentMatchesSignature
 /**
+ * @param {string|*} value
+ * @returns {number}
+ */
+ function length(value) {
+    return value.length;
+}
+
+// noinspection JSCommentMatchesSignature
+/**
  * @param {...*} args
  * @returns {number}
  */
@@ -692,6 +701,8 @@ module.exports.min = min;
 module.exports.max = max;
 module.exports.sum = sum;
 module.exports.mean = mean;
+module.exports.avg = mean;
+module.exports.length = length;
 module.exports.ClosureParser = ClosureParser;
 
 

@@ -39,4 +39,12 @@ MathMethodParser.max = function(args) {
     return new SimpleMethodCallExpression('max', args);
 }
 
+MathMethodParser.mean = function(args) {
+    return new SimpleMethodCallExpression('avg', args);
+}
+
+MathMethodParser.avg = function(args) {
+    return new SimpleMethodCallExpression('avg', args);
+}
+
 module.exports.MathMethodParser = MathMethodParser;

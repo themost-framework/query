@@ -152,7 +152,7 @@ describe('ClosureParser', () => {
     it('should use Date.prototype.getFullYear()', async () => {
         const Orders = new QueryEntity('OrderData');
         let a = new QueryExpression().select( x => {
-            x.product,
+            x.orderedItem,
             x.orderDate
         })
         .from(Orders).where( x => {
@@ -168,7 +168,7 @@ describe('ClosureParser', () => {
     it('should use Date.prototype.getYear()', async () => {
         const Orders = new QueryEntity('OrderData');
         let a = new QueryExpression().select( x => {
-            x.product,
+            x.orderedItem,
             x.orderDate
         })
         .from(Orders).where( x => {

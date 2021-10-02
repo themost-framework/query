@@ -59,5 +59,4 @@ StringMethodParser.prototype.includes = function(args) {
     return new SimpleMethodCallExpression('contains', args);
 }
 
-
 module.exports.StringMethodParser = StringMethodParser;

@@ -8,6 +8,8 @@ export declare function min(...args: any): any;
 export declare function max(...args: any): any;
 export declare function sum(...args: any): any;
 export declare function mean(...args: any): any;
+export declare function avg(...args: any): any;
+export declare function length(value: any): any;
 
 /**
  * @class
