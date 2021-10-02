@@ -504,6 +504,18 @@ QueryExpression.prototype.select = function(field)
     var fields = [];
     // handle closure
     if (typeof field === 'function') {
+        // get closure and params
+        var selectArgs = Array.from(arguments);
+        if (this.$collection == null) {
+            // hold select closure to process them after from() clause
+            Object.defineProperty(this, '_selectClosure', {
+                configurable: true,
+                enumerable: false,
+                value: selectArgs,
+                writable: true
+            });
+            return this;
+        }
         var closureParser = new ClosureParser();
         var self = this;
         Object.assign(closureParser, {
@@ -514,8 +526,6 @@ QueryExpression.prototype.select = function(field)
                 return member;
             }
         });
-        // get closure and params
-        var selectArgs = Array.from(arguments);
         fields = closureParser.parseSelect.apply(closureParser, selectArgs);
         if (this.privates.entity) {
             this.$select = {};
@@ -607,6 +617,13 @@ QueryExpression.prototype.from = function(entity) {
         writable: true,
         value: name
     });
+    // if temporary select closure is defined
+    if (this._selectClosure != null) {
+        // parse select closure
+        this.select.apply(this, this._selectClosure);
+        // remove it and continue
+        delete this._selectClosure;
+    }
     if (this.privates.fields) {
         //initialize $select property
         this.$select = {};
