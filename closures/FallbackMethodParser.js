@@ -1,6 +1,7 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 
 var SimpleMethodCallExpression = require('../expressions').SimpleMethodCallExpression;
+var MethodCallExpression = require('../expressions').MethodCallExpression;
 
 /**
  * @class
@@ -10,7 +11,7 @@ function FallbackMethodParser() {
     //
 }
 FallbackMethodParser.prototype.test = function (name) {
-    var matches = /\.(\w+)$/.exec(name);
+    var matches = /^(\w+)$/g.exec(name);
     if (matches == null) {
         return;
     }
@@ -24,7 +25,7 @@ FallbackMethodParser.count = function(args) {
     return new SimpleMethodCallExpression('count', args);
 }
 FallbackMethodParser.round = function(args) {
-    return new SimpleMethodCallExpression('round', args);
+    return new MethodCallExpression('round', args);
 }
 
 FallbackMethodParser.floor = function(args) {

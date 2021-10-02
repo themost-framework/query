@@ -397,7 +397,7 @@ describe('QueryExpression.where', () => {
         expect(results.length).toBe(total);
     });
 
-    it('should use avg', async () => {
+    fit('should use avg', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
             .select((x) => {

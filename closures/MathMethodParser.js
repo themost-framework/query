@@ -1,6 +1,7 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 
 var SimpleMethodCallExpression = require('../expressions').SimpleMethodCallExpression;
+var MethodCallExpression = require('../expressions').MethodCallExpression;
 
 /**
  * @class
@@ -30,7 +31,7 @@ MathMethodParser.ceil = function(args) {
     return new SimpleMethodCallExpression('ceiling', args);
 }
 MathMethodParser.round = function(args) {
-    return new SimpleMethodCallExpression('round', args);
+    return new MethodCallExpression('round', args);
 }
 MathMethodParser.min = function(args) {
     return new SimpleMethodCallExpression('min', args);
