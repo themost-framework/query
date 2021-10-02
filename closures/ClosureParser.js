@@ -159,6 +159,14 @@ function mean() {
     return args.reduce(reducer) / args.length;
 }
 
+function getObjectExpressionIdentifier(object) {
+    var object1 = object;
+    while(object1.object != null) {
+        object1 = object1.object;
+    }
+    return object1.name;
+}
+
 /**
  * @class
  * @constructor
@@ -575,14 +583,14 @@ ClosureParser.prototype.parseMethod = function(expr) {
         name = expr.callee.name;
     }
     var args = [];
-    var needsEvaluation = true;
+    var needsEvaluation = false;
     var thisName;
     if (name == null) {
         if (expr.callee.object != null) {
-            if (expr.callee.object.object != null) {
-                if (expr.callee.object.object.name===self.namedParams[0].name) {
-                    return self.parseMethodCall(expr);
-                }
+            // find identifier name
+            name = getObjectExpressionIdentifier(expr.callee.object);
+            if (name===self.namedParams[0].name) {
+                return self.parseMethodCall(expr);
             }
         }
         name = memberExpressionToString(expr.callee);
@@ -592,9 +600,9 @@ ClosureParser.prototype.parseMethod = function(expr) {
     expr.arguments.forEach(function(arg) {
         var result = self.parseCommon(arg);
         args.push(result);
-        if (!(result instanceof LiteralExpression)) {
-            needsEvaluation = false;
-        }
+        // if (!(result instanceof LiteralExpression)) {
+        //     needsEvaluation = false;
+        // }
     });
     if (needsEvaluation) {
         var fn = self.eval(name);

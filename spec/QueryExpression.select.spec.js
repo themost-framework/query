@@ -69,8 +69,39 @@ describe('SqlFormatter', () => {
             .from(People)
             .leftJoin(PostalAddresses).with((x, y) => {
                 return x.address === y.id;
-            }).take(25);
+            }).where((x) => {
+                return x.givenName.includes('Vin') === true;
+            })
+            .take(25);
         results = await db.executeAsync(query);
         expect(results.length).toBeTruthy();
+    });
+
+    it('should use select and nested filter', async () => {
+        const People = new QueryEntity('PersonData').as('customer');
+        const Orders = new QueryEntity('OrderData');
+        const PostalAddresses = new QueryEntity('PostalAddressData').as('address');
+        let query = new QueryExpression()
+            .select((x) => {
+                x.orderedItem,
+                x.customer.familyName,
+                x.customer.givenName,
+                x.customer.address.addressLocality
+            })
+            .from(Orders)
+            .leftJoin(People).with((x, y) => {
+                return x.customer === y.id;
+            })
+            .leftJoin(PostalAddresses).with((x, y) => {
+                return x.customer.address === y.id;
+            }).where((x) => {
+                return x.customer.address.addressLocality.includes('Cambridge') === true;
+            })
+            .take(25);
+        let results = await db.executeAsync(query);
+        expect(results.length).toBeTruthy();
+        results.forEach((item) => {
+            expect(item.addressLocality.includes('Cambridge')).toBeTruthy();
+        });
     });
 });
