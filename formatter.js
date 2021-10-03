@@ -440,14 +440,17 @@ SqlFormatter.prototype.$trim = function(p0)
 
 
 /**
- * Implements concat(a,b) expression formatter.
- * @param {*} p0
- * @param {*} p1
+ * Implements concat(a,b,...) expression formatter.
+ * @param {...*} p0
  * @returns {string}
  */
-SqlFormatter.prototype.$concat = function(p0, p1)
+SqlFormatter.prototype.$concat = function()
 {
-    return sprintf('CONCAT(%s,%s)', this.escape(p0),  this.escape(p1));
+    var args = Array.from(arguments);
+    var self = this;
+    return sprintf('CONCAT(%s)', args.map(function(arg) {
+        return self.escape(arg);
+    }).join(', '));
 };
 
 
@@ -1240,6 +1243,26 @@ SqlFormatter.prototype.$nin = function(left, right) {
         return sprintf('NOT %s IN (%s)', leftOperand, rightOperand);
     }
     throw new Error('Invalid in expression. Right operand must be an array');
+}
+
+SqlFormatter.prototype.$avg = function(arg) {
+    return sprintf('AVG(%s)', this.escape(arg));
+}
+
+SqlFormatter.prototype.$min = function(arg) {
+    return sprintf('MIN(%s)', this.escape(arg));
+}
+
+SqlFormatter.prototype.$max = function(arg) {
+    return sprintf('MAX(%s)', this.escape(arg));
+}
+
+SqlFormatter.prototype.$sum = function(arg) {
+    return sprintf('SUM(%s)', this.escape(arg));
+}
+
+SqlFormatter.prototype.$count = function(arg) {
+    return sprintf('COUNT(%s)', this.escape(arg));
 }
 
 if (typeof exports !== 'undefined') {

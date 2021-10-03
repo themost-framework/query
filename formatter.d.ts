@@ -23,7 +23,7 @@ export declare class SqlFormatter {
     $length(p0:any): string;
     $ifnull(p0:any, p1:any): string;
     $trim(p0:any): string;
-    $concat(p0:any, p1:any): string;
+    $concat(...p0:any): string;
     $indexof(p0:any, p1:any): string;
     $substring(p0: any, pos: number, length?: number): string;
     $substr(p0: any, pos: number, length?: number): string;

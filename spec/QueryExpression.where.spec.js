@@ -372,17 +372,18 @@ describe('QueryExpression.where', () => {
         let query = new QueryExpression()
             .select((x) => {
                 return {
+                    category: x.category,
                     total: count(x.id)
                 }
             })
             .from(Products)
-            .where((x) => {
-                return x.category === 'Laptops';
-            })
-            .take(1);
+            .groupBy((x) => x.category);
         let results = await db.executeAsync(query);
-        expect(results.length).toBe(1);
-        const total = results[0].total;
+        expect(results.length).toBeTruthy();
+
+        const total = results.find((item) => {
+            return item.category === 'Laptops'
+        }).total;
 
         query = new QueryExpression()
             .select((x) => {
@@ -397,7 +398,7 @@ describe('QueryExpression.where', () => {
         expect(results.length).toBe(total);
     });
 
-    fit('should use avg', async () => {
+    it('should use avg', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
             .select((x) => {

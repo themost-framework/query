@@ -228,12 +228,16 @@ MethodCallExpression.prototype.exprOf = function() {
             else
                 method[name].push(arg);
         }
-        // result[member] = method;
-        return method;
     }
     else {
-        throw new Error('Unsupported method expression. The first argument of a method expression must be always a MemberExpression.');
+        method[name].push.apply(method[name], this.args.map(function(arg) {
+            if (typeof arg.exprOf === 'function') {
+                return arg.exprOf();
+            }
+            return arg;
+        }));
     }
+    return method;
 
 };
 
