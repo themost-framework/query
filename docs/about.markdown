@@ -4,6 +4,8 @@ title: About
 permalink: /about/
 ---
 
+# About @themost/query
+
 @themost/query Copyright (c) 2017-2021, THEMOST LP All rights reserved
 
 BSD 3-Clause License
