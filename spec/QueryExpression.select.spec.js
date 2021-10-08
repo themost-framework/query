@@ -104,4 +104,29 @@ describe('SqlFormatter', () => {
             expect(item.addressLocality.includes('Cambridge')).toBeTruthy();
         });
     });
+
+    it('should use select and constants', async () => {
+        const Products = new QueryEntity('ProductData');
+        let query = new QueryExpression()
+            .select((x, today) => {
+                return {
+                    id: x.id,
+                    date1: today,
+                    name: x.name
+                }
+            }, {
+                today: new Date()
+            })
+            .from(Products)
+            .where((x) => {
+                return x.category === 'Laptops';
+            })
+            .take(25);
+        let results = await db.executeAsync(query);
+        expect(results.length).toBeTruthy();
+        results.forEach((item) => {
+            expect(item.date1).toBeTruthy();
+        });
+    });
+
 });

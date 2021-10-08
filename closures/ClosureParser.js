@@ -11,6 +11,7 @@ var AggregateComparisonExpression = expressions.AggregateComparisonExpression;
 var MethodCallExpression = expressions.MethodCallExpression;
 var isArithmeticOperator = expressions.isArithmeticOperator;
 var isComparisonOperator = expressions.isComparisonOperator;
+var instanceOf = require('../instance-of').instanceOf;
 
 var parse = require('esprima').parse;
 var Args = require('@themost/common').Args;
@@ -227,6 +228,18 @@ ClosureParser.prototype.parseSelect = function(func, params) {
         return Object.keys(res).map( function(key) {
             if (Object.prototype.hasOwnProperty.call(res, key)) {
                 var result = {};
+                if (instanceOf(res[key], LiteralExpression)) {
+                    Object.defineProperty(result, key, {
+                        configurable: true,
+                        enumerable: true,
+                        writable: true,
+                        value: {
+                            $literal: res[key].value
+                        }
+                    });
+                    return result;
+                }
+                
                 Object.defineProperty(result, key, {
                     configurable: true,
                     enumerable: true,

@@ -1,6 +1,6 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 var _ = require("lodash");
-var LangUtils = require("@themost/common/utils").LangUtils;
+var LangUtils = require("@themost/common").LangUtils;
 var sprintf = require('sprintf').sprintf;
 var expressions = require('./expressions');
 /**

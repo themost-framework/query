@@ -1089,6 +1089,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
             case '$sum':
                 s= sprintf('SUM(%s)',Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
                 break;
+            case '$literal':
             case '$value':
                 s= this.escapeConstant(name);
                 break;
