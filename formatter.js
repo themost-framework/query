@@ -750,7 +750,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
         escapedEntity = $this.escapeName(entity)
     }
     //add basic SELECT statement
-    if (obj["$fixed"]) {
+    if (Object.prototype.hasOwnProperty.call(obj, '$fixed') && obj.$fixed === true) {
         sql = sql.concat('SELECT * FROM (', $this.formatFixedSelect(obj), ') ', escapedEntity);
     }
     else {
