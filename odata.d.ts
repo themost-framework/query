@@ -1,5 +1,5 @@
-// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
-import {defaultCipherList} from "constants";
+// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2021, THEMOST LP All rights reserved
+
 import {MemberExpression, MethodCallExpression} from "./expressions";
 
 export declare interface TokenType {
@@ -102,21 +102,22 @@ export declare class OpenDataParser {
     static isIdentifierChar(c: any): boolean;
     static isDigit(c: any): boolean;
 
-    parse(str: string, callback: (err?: Error, res?: any) => void);
+    parse(str: string, callback: (err?: Error, res?: any) => void): void;
+    parseAsync(): Promise<any>;
     getOperator(token: string): string;
-    moveNext();
-    expect();
-    expectAny();
-    atEnd();
-    atStart();
-    parseCommon(callback: (err?: Error, res?: any) => void);
-    parseCommonItem(callback: (err?: Error, res?: any) => void);
+    moveNext(): void;
+    expect(): void;
+    expectAny(): void;
+    atEnd(): boolean;
+    atStart(): boolean;
+    parseCommon(callback: (err?: Error, res?: any) => void): void;
+    parseCommonItem(callback: (err?: Error, res?: any) => void): void;
     createExpression(left: any,operator: string, right: any): any;
-    parseMethodCall(callback: (err?: Error, res?: MethodCallExpression) => void);
-    parseMethodCallArguments(args: Array<any>, callback: (err?: Error, res?: any) => void);
-    parseMember(callback: (err?: Error, res?: MemberExpression) => void);
-    resolveMember(member: any, callback: (err?: Error, res?: any) => void);
-    resolveMethod(method: any, args: Array<any>, callback: (err?: Error, res?: any) => void);
+    parseMethodCall(callback: (err?: Error, res?: MethodCallExpression) => void): void;
+    parseMethodCallArguments(args: Array<any>, callback: (err?: Error, res?: any) => void): void;
+    parseMember(callback: (err?: Error, res?: MemberExpression) => void): void;
+    resolveMember(member: any, callback: (err?: Error, res?: any) => void): void;
+    resolveMethod(method: any, args: Array<any>, callback: (err?: Error, res?: any) => void): void;
     toList():Array<Token>;
     getNext(): Token;
     parseSyntax(): SyntaxToken;
@@ -128,7 +129,7 @@ export declare class OpenDataParser {
     parseDateTimeOffsetString(value: string): LiteralToken;
     parseSpecialString(value: string, stringType: string): any;
     parseString(): LiteralToken;
-    skipDigits(current: any);
+    skipDigits(current: any): any;
     parseNumeric(): LiteralToken;
     parseSign(): Token;
 
