@@ -1,9 +1,9 @@
-// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
-var _formatter = require("./formatter");
-var _odata = require("./odata");
-var _expressions = require("./expressions");
-var _query = require("./query");
-var _utils = require("./utils");
+// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2021, THEMOST LP All rights reserved
+const _formatter = require('./formatter');
+const _odata = require('./odata');
+const _expressions = require('./expressions');
+const _query = require('./query');
+const _utils = require('./utils');
 
 module.exports.SqlFormatter = _formatter.SqlFormatter;
 
