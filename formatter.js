@@ -1,11 +1,9 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
-var SqlUtils = require('./utils').SqlUtils;
-var sprintf = require('sprintf').sprintf;
-var _ = require('lodash');
-var query = require('./query');
-var QueryExpression = query.QueryExpression;
-var QueryField = query.QueryField;
-var instanceOf = require('./instance-of').instanceOf;
+const {SqlUtils} = require('./utils');
+const {sprintf} = require('sprintf');
+const _ = require('lodash');
+const {QueryExpression, QueryField} = require('./query');
+const {instanceOf} = require('./instance-of');
 
 
 if (typeof Object.key !== 'function') {
@@ -17,7 +15,7 @@ if (typeof Object.key !== 'function') {
     Object.key = function(obj) {
         if (typeof obj === 'undefined' || obj === null)
             return null;
-        for(var prop in obj) {
+        for(let prop in obj) {
             if (Object.prototype.hasOwnProperty.call(obj, prop))
                 return prop;
         }
@@ -25,16 +23,16 @@ if (typeof Object.key !== 'function') {
     }
 }
 
-var aliasKeyword = ' AS ';
+const ALIAS_KEYWORD = ' AS ';
 /**
  * @this SqlFormatter
  */
 function getAliasKeyword() {
     if (Object.prototype.hasOwnProperty.call(this.settings, 'useAliasKeyword') === false) {
-        return aliasKeyword;
+        return ALIAS_KEYWORD;
     }
     if (this.settings.useAliasKeyword) {
-        return aliasKeyword;
+        return ALIAS_KEYWORD;
     }
     return ' ';
 }
@@ -77,7 +75,7 @@ function SqlFormatter() {
  */
 SqlFormatter.prototype.formatComparison = function(comparison)
 {
-    var key;
+    let key;
     if (_.isNil(comparison))
         return '(%s IS NULL)';
     if (typeof comparison === 'object')
@@ -85,7 +83,7 @@ SqlFormatter.prototype.formatComparison = function(comparison)
         if (comparison instanceof Date) {
             return '(%s'.concat(sprintf('=%s)',this.escape(comparison)));
         }
-        var compares = [];
+        let compares = [];
         for(key in comparison) {
             if (Object.prototype.hasOwnProperty.call(comparison, key))
                 compares.push(key);
@@ -93,12 +91,12 @@ SqlFormatter.prototype.formatComparison = function(comparison)
         if (compares.length===0)
             return '(%s IS NULL)';
         else {
-            var arr = [];
-            for (var i = 0; i < compares.length; i++) {
+            let arr = [];
+            for (let i = 0; i < compares.length; i++) {
                 key = compares[i];
                 if (QueryExpression.ComparisonOperators[key]===undefined)
                     throw new Error(sprintf('Unknown operator %s.', key));
-                var escapedValue = this.escape(comparison[key]);
+                let escapedValue = this.escape(comparison[key]);
                 switch (key) {
                     case '$eq': arr.push('(%s'.concat('=',escapedValue,')'));break;
                     case '$lt': arr.push('(%s'.concat('<',escapedValue,')'));break;
@@ -127,7 +125,7 @@ SqlFormatter.prototype.formatComparison = function(comparison)
 };
 
 SqlFormatter.prototype.isComparison = function(obj) {
-    var key = Object.key(obj);
+    let key = Object.key(obj);
     return (/^\$(eq|ne|lt|lte|gt|gte|in|nin|text|regex)$/g.test(key));
 };
 
@@ -152,11 +150,11 @@ SqlFormatter.prototype.escape = function(value,unquoted)
             return this.escapeName(value.$name);
         else {
             //check if value is a known expression e.g. { $length:"name" }
-            var keys = _.keys(value),
+            let keys = _.keys(value),
                 key0 = keys[0];
             if (_.isString(key0) && /^\$/.test(key0) && _.isFunction(this[key0])) {
-                var exprFunc = this[key0];
-                var args;
+                let exprFunc = this[key0];
+                let args;
                 //get arguments
                 // if function has an array of arguments e.g.
                 // title.startsWith('Introduction')
@@ -195,30 +193,37 @@ SqlFormatter.prototype.escapeConstant = function(value,unquoted)
  */
 SqlFormatter.prototype.formatWhere = function(where)
 {
-    var self = this;
+    let self = this;
 
     //get expression (the first property of the object)
-    var keys = Object.keys(where), property = keys[0];
+    let keys = Object.keys(where), property = keys[0];
     if (typeof property === 'undefined')
         return '';
     //get property value
-    var propertyValue = where[property];
+    let propertyValue = where[property];
     // add an exception for comparisons and hold backward compatibility
     if (Object.prototype.hasOwnProperty.call(QueryExpression.ComparisonOperators, property)) {
         if (Array.isArray(propertyValue)) {
-            var formatComparison = this[property];
+            let formatComparison = this[property];
             if (typeof formatComparison !== 'function') {
                 throw new Error('Comparison formatter cannot be found');
             }
             return formatComparison.apply(this, propertyValue);
         }
     }
+    let separator;
+    let comparison;
+    let op = null;
+    let sql = null;
+    let escapedProperty;
+    let fn;
+    let p1;
     switch (property) {
         case '$not':
             return '(NOT ' + self.formatWhere(propertyValue) + ')';
         case '$and':
         case '$or':
-            var separator = property==='$or' ? ' OR ' : ' AND ';
+            separator = property==='$or' ? ' OR ' : ' AND ';
             //property value must be an array
             if (!_.isArray(propertyValue))
                 throw new Error('Invalid query argument. A logical expression must contain one or more comparison expressions.');
@@ -228,16 +233,15 @@ SqlFormatter.prototype.formatWhere = function(where)
                 return self.formatWhere(x);
             }).join(separator) + ')';
         default:
-            var comparison = propertyValue;
-            var op =  null, sql = null;
+            comparison = propertyValue;
             if (isQueryField_(comparison)) {
                 op = '$eq';
                 comparison = {$eq:propertyValue};
             }
             else if (_.isArray(comparison)) {
-                op = "$in";
+                op = '$in';
                 comparison = {
-                    "$in": propertyValue
+                    '$in': propertyValue
                 }
             }
             else if (typeof comparison === 'object' && comparison !== null) {
@@ -250,7 +254,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                 comparison = {$eq:propertyValue};
             }
             //escape property name
-            var escapedProperty = this.escapeName(property);
+            escapedProperty = this.escapeName(property);
             switch (op) {
                 case '$text':
                     return self.$text({ $name:property}, comparison.$text.$search);
@@ -290,7 +294,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                     }
                     else if (typeof comparison.$in === 'object') {
                         //try to validate if comparison.$in is a select query expression (sub-query support)
-                        var q1 = _.assign(new QueryExpression(), comparison.$in);
+                        let q1 = _.assign(new QueryExpression(), comparison.$in);
                         if (q1.$select) {
                             //if sub query is a select expression
                             return sprintf('(%s IN (%s))', escapedProperty, self.format(q1));
@@ -309,7 +313,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                     }
                     else if (typeof comparison.$in === 'object') {
                         //try to validate if comparison.$nin is a select query expression (sub-query support)
-                        var q2 = _.assign(new QueryExpression(), comparison.$in);
+                        let q2 = _.assign(new QueryExpression(), comparison.$in);
                         if (q2.$select) {
                             //if sub query is a select expression
                             return sprintf('(NOT %s IN (%s))', escapedProperty, self.format(q2));
@@ -323,16 +327,17 @@ SqlFormatter.prototype.formatWhere = function(where)
                     // and the property value contains an array of all others parameters (if any) and the comparison operator
                     // e.g. { Price: { $add: [5, { $gt:100} ]} } where we are trying to find elements that meet the following query expression: (Price+5)>100
                     // The identifier <Price> is the first parameter, the constant 5 is the second
-                    var fn = this[op], p1 = comparison[op];
+                    fn = this[op];
+                    p1 = comparison[op];
                     if (typeof fn === 'function')
                     {
-                        var args = [];
-                        var argn = null;
+                        let args = [];
+                        let argn = null;
                         //push identifier
                         args.push({ $name:property });
                         if (_.isArray(p1)) {
                             //push other parameters
-                            for (var j = 0; j < p1.length-1; j++) {
+                            for (let j = 0; j < p1.length-1; j++) {
                                 args.push(p1[j]);
                             }
                             //get comparison argument (last item of the arguments' array)
@@ -349,8 +354,8 @@ SqlFormatter.prototype.formatWhere = function(where)
 
                         }
                         //call formatter function
-                        var f0 = fn.apply(this, args);
-                        return self.formatComparison(argn).replace(/%s/g, f0.replace('$','\$'));
+                        let f0 = fn.apply(this, args);
+                        return self.formatComparison(argn).replace(/%s/g, f0.replace('$','\\$'));
                     }
                     else {
                         //equal expression
@@ -446,8 +451,8 @@ SqlFormatter.prototype.$trim = function(p0)
  */
 SqlFormatter.prototype.$concat = function()
 {
-    var args = Array.from(arguments);
-    var self = this;
+    let args = Array.from(arguments);
+    let self = this;
     return sprintf('CONCAT(%s)', args.map(function(arg) {
         return self.escape(arg);
     }).join(', '));
@@ -690,11 +695,11 @@ SqlFormatter.prototype.formatCount = function(query) {
         throw new Error('Invalid query expression. Expected a valid select expression.')
     }
     //get count alias
-    var alias = this.$count || "__count__";
+    let alias = this.$count || '__count__';
     //format select statement (ignore paging parameters even if there are exist)
-    var sql = this.formatSelect(query);
+    let sql = this.formatSelect(query);
     //return final count expression by setting the derived sql statement as sub-query
-    return "SELECT COUNT(*) AS " + this.escapeName(alias) + " FROM (" + sql + ") " + this.escapeName("c0");
+    return 'SELECT COUNT(*) AS ' + this.escapeName(alias) + ' FROM (' + sql + ') ' + this.escapeName('c0');
 };
 
 /**
@@ -703,8 +708,8 @@ SqlFormatter.prototype.formatCount = function(query) {
  * @returns {string}
  */
 SqlFormatter.prototype.formatFixedSelect = function(obj) {
-    var self = this;
-    var fields = obj.fields();
+    let self = this;
+    let fields = obj.fields();
     return 'SELECT ' + _.map(fields, function(x) { return self.format(x,'%f'); }).join(', ');
 };
 
@@ -715,12 +720,12 @@ SqlFormatter.prototype.formatFixedSelect = function(obj) {
  */
 SqlFormatter.prototype.formatSelect = function(obj)
 {
-    var $this = this, sql = '', escapedEntity;
+    let $this = this, sql = '', escapedEntity;
     if (_.isNil(obj.$select))
         throw new Error('Select expression cannot be empty at this context.');
     //get entity name
-    var entity = Object.key(obj.$select);
-    var joins = [];
+    let entity = Object.key(obj.$select);
+    let joins = [];
     if (!_.isNil(obj.$expand))
     {
         if (_.isArray(obj.$expand))
@@ -729,17 +734,17 @@ SqlFormatter.prototype.formatSelect = function(obj)
             joins.push(obj.$expand);
     }
     //get entity fields
-    var fields = obj.fields();
+    let fields = obj.fields();
     //if fields is not an array
     if (!_.isArray(fields))
         throw new Error('Select expression does not contain any fields or the collection of fields is of the wrong type.');
 
     //validate entity reference (if any)
     if (obj.$ref && obj.$ref[entity]) {
-        var entityRef = obj.$ref[entity];
+        let entityRef = obj.$ref[entity];
         //escape entity ref
         if (instanceOf(entityRef, QueryExpression)) {
-            escapedEntity = "(" + this.format(entityRef) + ") " + $this.escapeName(entity);
+            escapedEntity = '(' + this.format(entityRef) + ') ' + $this.escapeName(entity);
         }
         else {
             escapedEntity = entityRef.$as ?  $this.escapeName(entityRef.name) + getAliasKeyword.bind($this)() + $this.escapeName(entityRef.$as) : $this.escapeName(entityRef.name);
@@ -765,6 +770,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
     {
         //enumerate joins
         _.forEach(joins, function(x) {
+            let table;
             if (instanceOf(x.$entity, QueryExpression)) {
                 //get on statement (the join comparison)
                 sql = sql.concat(sprintf(' INNER JOIN (%s)', $this.format(x.$entity)));
@@ -774,9 +780,9 @@ SqlFormatter.prototype.formatSelect = function(obj)
             }
             else {
                 //get join table name
-                var table = Object.key(x.$entity);
+                table = Object.key(x.$entity);
                 //get on statement (the join comparison)
-                var joinType = (x.$entity.$join || 'inner').toUpperCase();
+                let joinType = (x.$entity.$join || 'inner').toUpperCase();
                 sql = sql.concat(' '+ joinType + ' JOIN ').concat($this.escapeName(table));
                 //add alias
                 if (x.$entity.$as)
@@ -787,7 +793,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
                 if (x.$with.length!==2)
                     throw new Error('Invalid join comparison expression.');
                 //get left and right expression
-                var left = x.$with[0],
+                let left = x.$with[0],
                     right = x.$with[1],
                 //the default left table is the query entity
                     leftTable =  entity,
@@ -799,10 +805,10 @@ SqlFormatter.prototype.formatSelect = function(obj)
                 if (typeof right === 'object') {
                     rightTable = Object.key(right);
                 }
-                var leftFields = left[leftTable], rightFields = right[rightTable] ;
-                for (var i = 0; i < leftFields.length; i++)
+                let leftFields = left[leftTable], rightFields = right[rightTable] ;
+                for (let i = 0; i < leftFields.length; i++)
                 {
-                    var leftExpr = null, rightExpr = null;
+                    let leftExpr = null, rightExpr = null;
                     if (typeof leftFields[i] === 'object')
                         leftExpr = leftFields[i];
                     else {
@@ -827,7 +833,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
     if (_.isObject(obj.$where))
     {
         if (_.isObject(obj.$prepared)) {
-            var where1 = { $and: [obj.$where, obj.$prepared] };
+            let where1 = { $and: [obj.$where, obj.$prepared] };
             sql = sql.concat(' WHERE ',this.formatWhere(where1));
         }
         else {
@@ -856,7 +862,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
  */
 SqlFormatter.prototype.formatLimitSelect = function(obj) {
 
-    var sql=this.formatSelect(obj);
+    let sql=this.formatSelect(obj);
     if (obj.$take) {
         if (obj.$skip)
         //add limit and skip records
@@ -870,7 +876,7 @@ SqlFormatter.prototype.formatLimitSelect = function(obj) {
 
 SqlFormatter.prototype.formatField = function(obj)
 {
-    var self = this;
+    let self = this;
     if (_.isNil(obj))
         return '';
     if (typeof obj === 'string')
@@ -885,8 +891,8 @@ SqlFormatter.prototype.formatField = function(obj)
         if (Object.prototype.hasOwnProperty.call(obj, '$value'))
             return this.escapeConstant(obj['$value']);
         //get table name
-        var tableName = Object.key(obj);
-        var fields = [];
+        let tableName = Object.key(obj);
+        let fields = [];
         if (!_.isArray(obj[tableName])) {
             fields.push(obj[tableName])
         }
@@ -909,12 +915,12 @@ SqlFormatter.prototype.formatField = function(obj)
  */
 SqlFormatter.prototype.formatOrder = function(obj)
 {
-    var self = this;
+    let self = this;
     if (!_.isArray(obj))
         return '';
-    var sql = _.map(obj, function(x)
+    let sql = _.map(obj, function(x)
     {
-        var f = x.$desc ? x.$desc : x.$asc;
+        let f = x.$desc ? x.$desc : x.$asc;
         if (_.isNil(f))
             throw new Error('An order by object must have either ascending or descending property.');
         if (_.isArray(f)) {
@@ -935,14 +941,14 @@ SqlFormatter.prototype.formatOrder = function(obj)
  */
 SqlFormatter.prototype.formatGroupBy = function(obj)
 {
-    var self = this;
+    let self = this;
     if (!_.isArray(obj))
         return '';
-    var arr = [];
+    let arr = [];
     _.forEach(obj, function(x) {
         arr.push(self.format(x, '%ff'));
     });
-    var sql = arr.join(', ');
+    let sql = arr.join(', ');
     if (sql.length>0)
         return ' GROUP BY '.concat(sql);
     return sql;
@@ -955,21 +961,21 @@ SqlFormatter.prototype.formatGroupBy = function(obj)
  */
 SqlFormatter.prototype.formatInsert = function(obj)
 {
-    var self= this, sql = '';
+    let self= this, sql = '';
     if (_.isNil(obj.$insert))
         throw new Error('Insert expression cannot be empty at this context.');
     //get entity name
-    var entity = Object.key(obj.$insert);
+    let entity = Object.key(obj.$insert);
     //get entity fields
-    var obj1 = obj.$insert[entity];
-    var props = [];
-    for(var prop in obj1)
+    let obj1 = obj.$insert[entity];
+    let props = [];
+    for(let prop in obj1)
         if (Object.prototype.hasOwnProperty.call(obj1, prop))
             props.push(prop);
     sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(' , _.map(props, function(x) { return self.escapeName(x); }).join(', '), ') VALUES (',
         _.map(props, function(x)
         {
-            var value = obj1[x];
+            let value = obj1[x];
             return self.escape(value!==null ? value: null);
         }).join(', ') ,')');
     return sql;
@@ -982,22 +988,22 @@ SqlFormatter.prototype.formatInsert = function(obj)
  */
 SqlFormatter.prototype.formatUpdate = function(obj)
 {
-    var self= this, sql = '';
+    let self= this, sql = '';
     if (!_.isObject(obj.$update))
         throw new Error('Update expression cannot be empty at this context.');
     //get entity name
-    var entity = Object.key(obj.$update);
+    let entity = Object.key(obj.$update);
     //get entity fields
-    var obj1 = obj.$update[entity];
-    var props = [];
-    for(var prop in obj1)
+    let obj1 = obj.$update[entity];
+    let props = [];
+    for(let prop in obj1)
         if (Object.prototype.hasOwnProperty.call(obj1, prop))
             props.push(prop);
     //add basic INSERT statement
     sql = sql.concat('UPDATE ', self.escapeName(entity), ' SET ',
         _.map(props, function(x)
         {
-            var value = obj1[x];
+            let value = obj1[x];
             return self.escapeName(x).concat('=', self.escape(value!==null ? value: null));
         }).join(', '));
     if (_.isObject(obj.$where))
@@ -1012,11 +1018,11 @@ SqlFormatter.prototype.formatUpdate = function(obj)
  */
 SqlFormatter.prototype.formatDelete = function(obj)
 {
-    var sql = '';
+    let sql = '';
     if (_.isNil(obj.$delete))
         throw new Error('Delete expression cannot be empty at this context.');
     //get entity name
-    var entity = obj.$delete;
+    let entity = obj.$delete;
     //add basic INSERT statement
     sql = sql.concat('DELETE FROM ', this.escapeName(entity));
     if (_.isObject(obj.$where))
@@ -1052,24 +1058,26 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
     if (!isQueryField_(obj))
         throw new Error('Invalid argument. An instance of QueryField class is expected.');
     //get property
-    var prop = Object.key(obj);
+    let prop = Object.key(obj);
     if (_.isNil(prop))
         return null;
-    var useAlias = (format==='%f');
+    let useAlias = (format==='%f');
     if (prop==='$name') {
         return (this.settings.forceAlias && useAlias) ? this.escapeName(obj.$name).concat(' AS ', this.escapeName(obj.getName())) : this.escapeName(obj.$name);
     }
     else {
-        var expr = obj[prop];
+        let expr = obj[prop];
         if (_.isNil(expr))
             throw new Error('Field definition cannot be empty while formatting.');
         if (typeof expr === 'string') {
             return useAlias ? this.escapeName(expr).concat(' AS ', this.escapeName(prop)) : expr;
         }
         //get aggregate expression
-        var alias = prop;
+        let alias = prop;
         prop = Object.key(expr);
-        var name = expr[prop], s;
+        let name = expr[prop]
+        let s;
+        let fn;
         switch (prop) {
             case '$name':
                 s= this.escapeName(name);
@@ -1094,9 +1102,9 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
                 s= this.escapeConstant(name);
                 break;
             default :
-                var fn = this[prop];
+                fn = this[prop];
                 if (typeof fn === 'function') {
-                    var args = expr[prop];
+                    let args = expr[prop];
                     if (Array.isArray(args)) {
                         s = fn.apply(this,args);
                     } else {
@@ -1126,7 +1134,7 @@ SqlFormatter.prototype.format = function(obj, s)
         if ((s ==='%f') || (s ==='%ff'))
         {
             //field formatting
-            var field = new QueryField();
+            let field = new QueryField();
             if (typeof obj === 'string')
                 field.select(obj);
             else
@@ -1143,7 +1151,7 @@ SqlFormatter.prototype.format = function(obj, s)
     /**
      * @type {QueryExpression}
      */
-    var query = null;
+    let query = null;
     //cast object to QueryExpression
     if (instanceOf(obj, QueryExpression))
         query = obj;
@@ -1209,7 +1217,7 @@ SqlFormatter.prototype.$lte = function(left, right) {
 }
 
 SqlFormatter.prototype.$in = function(left, right) {
-    var leftOperand = this.escape(left);
+    let leftOperand = this.escape(left);
     if (right == null) {
         return sprintf('%s IS NULL', leftOperand);
     }
@@ -1217,18 +1225,18 @@ SqlFormatter.prototype.$in = function(left, right) {
         if (right.length === 0) {
             return sprintf('%s IS NULL', leftOperand);
         }
-        var self = this;
-        var values = right.map( function(x) {
+        let self = this;
+        let values = right.map( function(x) {
             return self.escape(x);
         });
-        var rightOperand = values.join(', ');
+        let rightOperand = values.join(', ');
         return sprintf('%s IN (%s)', leftOperand, rightOperand);
     }
     throw new Error('Invalid in expression. Right operand must be an array');
 }
 
 SqlFormatter.prototype.$nin = function(left, right) {
-    var leftOperand = this.escape(left);
+    let leftOperand = this.escape(left);
     if (right == null) {
         return sprintf('NOT %s IS NULL', leftOperand);
     }
@@ -1236,11 +1244,11 @@ SqlFormatter.prototype.$nin = function(left, right) {
         if (right.length === 0) {
             return sprintf('NOT %s IS NULL', leftOperand);
         }
-        var self = this;
-        var values = right.map( function(x) {
+        let self = this;
+        let values = right.map( function(x) {
             return self.escape(x);
         });
-        var rightOperand = values.join(', ');
+        let rightOperand = values.join(', ');
         return sprintf('NOT %s IN (%s)', leftOperand, rightOperand);
     }
     throw new Error('Invalid in expression. Right operand must be an array');
@@ -1266,8 +1274,6 @@ SqlFormatter.prototype.$count = function(arg) {
     return sprintf('COUNT(%s)', this.escape(arg));
 }
 
-if (typeof exports !== 'undefined') {
-    module.exports = {
-        SqlFormatter:SqlFormatter
-    }
+module.exports = {
+    SqlFormatter
 }
