@@ -3,23 +3,23 @@ export declare interface ExpressionBase {
     exprOf(): any;
 }
 
-export declare class Operators {
-    static Not : string;
-    static Mul : string;
-    static Div : string;
-    static Mod : string;
-    static Add : string;
-    static Sub : string;
-    static Lt : string;
-    static Gt : string;
-    static Le : string;
-    static Ge : string;
-    static Eq : string;
-    static Ne : string;
-    static In : string;
-    static NotIn : string;
-    static And : string;
-    static Or : string;
+export declare const Operators: {
+    Not : string,
+    Mul : string,
+    Div : string,
+    Mod : string,
+    Add : string,
+    Sub : string,
+    Lt : string,
+    Gt : string,
+    Le : string,
+    Ge : string,
+    Eq : string,
+    Ne : string,
+    In : string,
+    NotIn : string,
+    And : string,
+    Or : string,
 }
 
 export declare class ArithmeticExpression implements ExpressionBase {
@@ -53,27 +53,22 @@ export declare class ComparisonExpression implements ExpressionBase {
     static isComparisonOperator(op: string): boolean;
 
     constructor(left: any, operator: string, right:any);
-    exprOf(): any;
 }
 
 export declare class MethodCallExpression implements ExpressionBase {
     constructor(name: string, args: Array<any>);
-    exprOf(): any;
 }
 
 export declare class SequenceExpression implements ExpressionBase {
     constructor();
-    exprOf(): any;
 }
 
 export declare class ObjectExpression implements ExpressionBase {
     constructor();
-    exprOf(): any;
 }
 
 export declare class SimpleMethodCallExpression extends MethodCallExpression {
     constructor(name: string, args: Array<any>);
-    exprOf(): any;
 }
 
 export declare class AggregateComparisonExpression extends ComparisonExpression {
