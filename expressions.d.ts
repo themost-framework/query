@@ -51,20 +51,23 @@ export declare class LiteralExpression implements ExpressionBase {
 export declare class ComparisonExpression implements ExpressionBase {
 
     static isComparisonOperator(op: string): boolean;
-
     constructor(left: any, operator: string, right:any);
+    exprOf(): any;
 }
 
 export declare class MethodCallExpression implements ExpressionBase {
     constructor(name: string, args: Array<any>);
+    exprOf(): any;
 }
 
 export declare class SequenceExpression implements ExpressionBase {
     constructor();
+    exprOf(): any;
 }
 
 export declare class ObjectExpression implements ExpressionBase {
     constructor();
+    exprOf(): any;
 }
 
 export declare class SimpleMethodCallExpression extends MethodCallExpression {

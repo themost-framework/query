@@ -108,7 +108,7 @@ class QueryExpression {
         //get entity fields
         let fields = [];
         //get fields
-        let re = QueryField.fieldNameExpression, arr = this.$select[entity] || [];
+        let re = QueryField.FieldNameExpression, arr = this.$select[entity] || [];
         _.forEach(arr, function (x) {
             if (typeof x === 'string') {
                 re.lastIndex = 0;
@@ -1576,7 +1576,7 @@ class QueryField {
             if (typeof this.$name === 'string') {
                 //check if an entity is already defined
                 name = this.$name;
-                if (QueryField.fieldNameExpression.test(name))
+                if (QueryField.FieldNameExpression.test(name))
                     //if not append entity name
                     this.$name = entity.concat('.', name);
 
@@ -1600,7 +1600,7 @@ class QueryField {
             if (_.isNil(aggregate))
                 throw new Error('Field expression cannot be empty at this context');
             name = expr[aggregate];
-            if (QueryField.fieldNameExpression.test(name))
+            if (QueryField.FieldNameExpression.test(name))
                 //if not append entity name
                 expr[aggregate] = entity.concat('.', name);
 
@@ -1758,7 +1758,7 @@ class QueryField {
         }
         if (typeof name === 'string') {
             //check if an entity is already defined
-            let re = new RegExp(QueryField.fieldNameExpression.source);
+            let re = new RegExp(QueryField.FieldNameExpression.source);
             if (re.test(name))
                 return name;
 
@@ -1998,7 +1998,7 @@ class QueryField {
     }
 }
 
-QueryField.fieldNameExpression = /^[A-Za-z_0-9]+$/;
+QueryField.FieldNameExpression = /^[A-Za-z_0-9]+$/;
 
 class QueryFieldComparer {
     constructor() {

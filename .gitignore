@@ -109,3 +109,7 @@ dist
 
 # TernJS port file
 .tern-port
+
+#docs
+docs/.jekyll-cache
+docs/_site

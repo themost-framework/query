@@ -1,5 +1,32 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2021, THEMOST LP All rights reserved
 export declare class QueryExpression {
+
+    static ComparisonOperators: {
+        $eq: string | '$eq',
+        $ne: string | '$ne',
+        $gt: string | '$gt',
+        $gte: string | '$gte',
+        $lt: string | '$lt',
+        $lte: string | '$lte',
+        $in: string | '$in',
+        $nin:  string | '$nin'
+    };
+
+    static LogicalOperators: {
+        $or: string | '$or',
+        $and: string | '$and',
+        $not: string | '$not',
+        $nor: string | '$nor'
+    }
+
+    static EvaluationOperators: {
+        $mod: string | '$mod',
+        $add: string | '$add',
+        $sub: string | '$sub',
+        $mul: string | '$mul',
+        $div: string | '$div'
+    }
+
     $select?: any;
     $delete?: any;
     $update?: any;
@@ -92,6 +119,7 @@ export declare class QueryExpression {
 }
 
 export declare class QueryField {
+    static FieldNameExpression: RegExp;
     constructor(name?: string);
     $name: string;
 
