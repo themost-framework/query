@@ -1020,7 +1020,7 @@ Token.TokenType = {
     Syntax: 'Syntax'
 };
 
-Token.TokenOperator = {
+Token.Operator = {
     Not:'$not',
     Mul:'$mul',
     Div:'$div',

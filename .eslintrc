@@ -7,6 +7,15 @@
       // Only ESLint 6.2.0 and later support ES2020.
       "ecmaVersion": 2020
   },
+  "globals": {
+      "describe": false,
+      "it": false,
+      "fdescribe": false,
+      "fit": false,
+      "beforeEach": false,
+      "afterEach": false,
+      "expect": false
+  },
   "rules": {
       "no-var":"warn",
       "quotes": ["warn", "single"],
