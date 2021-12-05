@@ -1,11 +1,8 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2021, THEMOST LP All rights reserved
 
 const {sprintf} = require('sprintf');
+const {instanceOf} = require('./instance-of');
 const {
-    isLogicalOperator, isLogicalExpression,
-    isArithmeticOperator, isArithmeticExpression,
-    isComparisonOperator,
-    isMemberExpression, isMethodCallExpression,
     LogicalExpression, ArithmeticExpression,
     ComparisonExpression, MethodCallExpression,
     MemberExpression
@@ -76,22 +73,22 @@ class OpenDataParser {
     getOperator(token) {
         if (token.type === Token.TokenType.Identifier) {
             switch (token.identifier) {
-                case "and": return Token.Operator.And;
-                case "or": return Token.Operator.Or;
-                case "eq": return Token.Operator.Eq;
-                case "ne": return Token.Operator.Ne;
-                case "lt": return Token.Operator.Lt;
-                case "le": return Token.Operator.Le;
-                case "gt": return Token.Operator.Gt;
-                case "ge": return Token.Operator.Ge;
-                case "in": return Token.Operator.In;
-                case "nin": return Token.Operator.NotIn;
-                case "add": return Token.Operator.Add;
-                case "sub": return Token.Operator.Sub;
-                case "mul": return Token.Operator.Mul;
-                case "div": return Token.Operator.Div;
-                case "mod": return Token.Operator.Mod;
-                case "not": return Token.Operator.Not;
+                case 'and': return Token.Operator.And;
+                case 'or': return Token.Operator.Or;
+                case 'eq': return Token.Operator.Eq;
+                case 'ne': return Token.Operator.Ne;
+                case 'lt': return Token.Operator.Lt;
+                case 'le': return Token.Operator.Le;
+                case 'gt': return Token.Operator.Gt;
+                case 'ge': return Token.Operator.Ge;
+                case 'in': return Token.Operator.In;
+                case 'nin': return Token.Operator.NotIn;
+                case 'add': return Token.Operator.Add;
+                case 'sub': return Token.Operator.Sub;
+                case 'mul': return Token.Operator.Mul;
+                case 'div': return Token.Operator.Div;
+                case 'mod': return Token.Operator.Mod;
+                case 'not': return Token.Operator.Not;
             }
         }
         return null;
@@ -224,7 +221,7 @@ class OpenDataParser {
                             else {
                                 //create odata expression
                                 let expr = self.createExpression(result, op, right);
-                                if (!self.atEnd() && (isLogicalOperator(self.getOperator(self.currentToken)))) {
+                                if (!self.atEnd() && (LogicalExpression.isLogicalOperator(self.getOperator(self.currentToken)))) {
                                     let op2 = self.getOperator(self.currentToken);
                                     self.moveNext();
                                     return self.parseCommon(function (err, result) {
@@ -251,9 +248,9 @@ class OpenDataParser {
      */
     createExpression(left, operator, right) {
 
-        if (isLogicalOperator(operator)) {
+        if (LogicalExpression.isLogicalOperator(operator)) {
             let expr = null;
-            if (isLogicalExpression(left)) {
+            if (instanceOf(left, LogicalExpression)) {
                 if (left.operator === operator) {
                     expr = new LogicalExpression(operator);
                     for (let i = 0; i < left.args.length; i++) {
@@ -272,13 +269,15 @@ class OpenDataParser {
             }
             return expr;
         }
-        else if (isArithmeticOperator(operator)) {
+        else if (ArithmeticExpression.isArithmeticOperator(operator)) {
             return new ArithmeticExpression(left, operator, right);
         }
-        else if (isArithmeticExpression(left) || isMethodCallExpression(left) || isMemberExpression(left)) {
+        else if (instanceOf(left, ArithmeticExpression) ||
+            instanceOf(left, MethodCallExpression) ||
+            instanceOf(left, MemberExpression)) {
             return new ComparisonExpression(left, operator, right);
         }
-        else if (isComparisonOperator(operator)) {
+        else if (ComparisonExpression.isComparisonOperator(operator)) {
             return new ComparisonExpression(left, operator, right);
         }
         else {
@@ -584,31 +583,31 @@ class OpenDataParser {
         let lastOffset = _offset;
         _offset = _current;
         switch (name) {
-            case "INF":
+            case 'INF':
                 this.current = _current; this.offset = _offset;
                 return LiteralToken.PositiveInfinity;
 
-            case "-INF":
+            case '-INF':
                 this.current = _current; this.offset = _offset;
                 return LiteralToken.NegativeInfinity;
 
-            case "Nan":
+            case 'Nan':
                 this.current = _current; this.offset = _offset;
                 return LiteralToken.NaN;
 
-            case "true":
+            case 'true':
                 this.current = _current; this.offset = _offset;
                 return LiteralToken.True;
 
-            case "false":
+            case 'false':
                 this.current = _current; this.offset = _offset;
                 return LiteralToken.False;
 
-            case "null":
+            case 'null':
                 this.current = _current; this.offset = _offset;
                 return LiteralToken.Null;
 
-            case "-":
+            case '-':
                 this.current = _current; this.offset = _offset;
                 return SyntaxToken.Negative;
 
@@ -625,12 +624,12 @@ class OpenDataParser {
         if (_offset < _source.length && _source.charAt(_offset) === '\'') {
             let stringType;
             switch (name) {
-                case "X": stringType = LiteralToken.StringType.Binary; break;
-                case "binary": stringType = LiteralToken.StringType.Binary; break;
-                case "datetime": stringType = LiteralToken.StringType.DateTime; break;
-                case "guid": stringType = LiteralToken.StringType.Guid; break;
-                case "time": stringType = LiteralToken.StringType.Time; break;
-                case "datetimeoffset": stringType = LiteralToken.StringType.DateTimeOffset; break;
+                case 'X': stringType = LiteralToken.StringType.Binary; break;
+                case 'binary': stringType = LiteralToken.StringType.Binary; break;
+                case 'datetime': stringType = LiteralToken.StringType.DateTime; break;
+                case 'guid': stringType = LiteralToken.StringType.Guid; break;
+                case 'time': stringType = LiteralToken.StringType.Time; break;
+                case 'datetimeoffset': stringType = LiteralToken.StringType.DateTimeOffset; break;
                 default: stringType = LiteralToken.StringType.None; break;
             }
 
@@ -661,7 +660,7 @@ class OpenDataParser {
             return null;
         let match = value.match(OpenDataParser.DurationRegex);
         if (match) {
-            let negative = (match[1] === "-");
+            let negative = (match[1] === '-');
             let year = match[2].length > 0 ? parseInt(match[2]) : 0, month = match[3].length > 0 ? parseInt(match[3]) : 0, day = match[4].length > 0 ? parseInt(match[4]) : 0, hour = match[5].length > 0 ? parseInt(match[5]) : 0, minute = match[6].length > 0 ? parseInt(match[6]) : 0, second = match[7].length > 0 ? parseFloat(match[7]) : 0;
             return new LiteralToken(new TimeSpan(!negative, year, month, day, hour, minute, second), LiteralToken.LiteralType.Duration);
         }

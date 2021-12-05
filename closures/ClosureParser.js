@@ -9,8 +9,9 @@ var ArithmeticExpression = expressions.ArithmeticExpression;
 var LogicalExpression = expressions.LogicalExpression;
 var AggregateComparisonExpression = expressions.AggregateComparisonExpression;
 var MethodCallExpression = expressions.MethodCallExpression;
-var isArithmeticOperator = expressions.isArithmeticOperator;
-var isComparisonOperator = expressions.isComparisonOperator;
+var ComparisonExpression = expressions.ComparisonExpression;
+var isComparisonOperator = ComparisonExpression.isComparisonOperator;
+var isArithmeticOperator = ArithmeticExpression.isArithmeticOperator;
 var instanceOf = require('../instance-of').instanceOf;
 
 var parse = require('esprima').parse;
