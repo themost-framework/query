@@ -14,7 +14,9 @@
       "fit": false,
       "beforeEach": false,
       "afterEach": false,
-      "expect": false
+      "expect": false,
+      "beforeAll": false,
+      "afterAll": false
   },
   "rules": {
       "no-var":"warn",

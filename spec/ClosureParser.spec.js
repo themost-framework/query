@@ -549,7 +549,7 @@ describe('ClosureParser', () => {
             x.category,
             x.price
         }).from(Products).where( x => {
-            return x.price % 122 < 1;
+            return (x.price % 122) < 1;
         }).take(10);
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
@@ -564,12 +564,12 @@ describe('ClosureParser', () => {
             x.orderedItem,
             x.orderDate
         }).from(Orders).where( x => {
-            return x.orderDate.getMonth() % 2 === 1;
+            return (x.orderDate.getMonth() & 1) === 0;
         }).take(10);
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.orderDate.getMonth() % 2).toBe(0);
+            expect((x.orderDate.getMonth() + 1) & 1).toBe(0);
         });
     });
 

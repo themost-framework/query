@@ -4,7 +4,7 @@ const {Args} = require('@themost/common');
 const _ = require('lodash');
 const {ClosureParser} = require('./closures');
 const aggregate = Symbol();
-require('./natives');
+require('./polyfills');
 
 class QueryParameter {
     constructor() {
