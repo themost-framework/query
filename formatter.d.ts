@@ -1,11 +1,4 @@
-/**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
- *
- * Use of this source code is governed by an BSD-3-Clause license that can be
- * found in the LICENSE file at https://themost.io/license
- */
+// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 import {QueryExpression} from "./query";
 
 export declare interface FormatterSettings {
@@ -30,7 +23,7 @@ export declare class SqlFormatter {
     $length(p0:any): string;
     $ifnull(p0:any, p1:any): string;
     $trim(p0:any): string;
-    $concat(p0:any, p1:any): string;
+    $concat(...p0:any): string;
     $indexof(p0:any, p1:any): string;
     $substring(p0: any, pos: number, length?: number): string;
     $substr(p0: any, pos: number, length?: number): string;

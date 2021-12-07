@@ -1,21 +1,24 @@
 {
   "name": "@themost/query",
-  "version": "2.5.0",
+  "version": "2.7.1-next.1",
   "description": "MOST Web Framework Codename Blueshift - Query Module",
   "main": "index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
   "peerDependencies": {
     "@themost/common": "^2.5.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/themost-framework/themost.git"
+    "url": "git+https://github.com/themost-framework/query.git"
   },
   "author": "Kyriakos Barbounakis <k.barbounakis@gmail.com>",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/themost-framework/themost/issues"
+    "url": "https://github.com/themost-framework/query/issues"
   },
-  "homepage": "https://github.com/themost-framework/themost#readme",
+  "homepage": "https://github.com/themost-framework/query#readme",
   "dependencies": {
     "async": "0.2.10",
     "esprima": "^4.0.0",
@@ -24,29 +27,12 @@
     "symbol": "^0.3.1"
   },
   "devDependencies": {
-    "eslint": "^4.12.1"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "node": true,
-      "es6": false,
-      "jquery": true
-    },
-    "globals": {
-      "describe": false,
-      "it": false
-    },
-    "extends": "eslint:recommended",
-    "rules": {
-      "no-console": "warn",
-      "no-invalid-this": "warn",
-      "no-undef": "error",
-      "no-unused-vars": "warn",
-      "strict": [
-        2,
-        "never"
-      ]
-    }
+    "@types/jasmine": "^3.5.14",
+    "dotenv": "^8.2.0",
+    "eslint": "^8.4.0",
+    "eslint-plugin-node": "^11.1.0",
+    "jasmine": "^3.6.1",
+    "jasmine-spec-reporter": "^5.0.2",
+    "sql.js": "^1.3.0"
   }
 }
