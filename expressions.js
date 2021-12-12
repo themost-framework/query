@@ -382,6 +382,26 @@ class SelectAnyExpression {
     }
 }
 
+class OrderByAnyExpression {
+    constructor(expr, direction) {
+        this.expression = expr;
+        this.direction = direction || 'asc';
+    }
+    exprOf() {
+        if (this.as != null) {
+            const res = {};
+            Object.defineProperty(res, this.as, {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: this.expression.exprOf()
+            });
+            return res;
+        }
+        throw new Error('Expression alias cannot be empty');
+    }
+}
+
 module.exports = {
     Operators,
     ArithmeticExpression,
@@ -394,6 +414,7 @@ module.exports = {
     ObjectExpression,
     SimpleMethodCallExpression,
     AggregateComparisonExpression,
-    SelectAnyExpression
+    SelectAnyExpression,
+    OrderByAnyExpression
 }
 

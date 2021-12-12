@@ -83,7 +83,12 @@ export declare class AggregateComparisonExpression extends ComparisonExpression 
 }
 
 export declare class SelectAnyExpression implements SelectExpressionBase {
-    constructor(expr: ExpressionBase, alias?: string);
+    constructor(expr: ExpressionBase, alias: string);
+    exprOf(): any;
+}
+
+export declare class OrderByAnyExpression implements SelectExpressionBase {
+    constructor(expr: ExpressionBase, direction?: string | 'asc' | 'desc');
     exprOf(): any;
 }
 

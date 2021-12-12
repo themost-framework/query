@@ -16,9 +16,17 @@ describe('OpenDataParser', () => {
         });
     });
 
-    it('should parser select', async() => {
+    it('should parse select statement', async() => {
         const parser = new OpenDataParser();
-        let expr = await parser.parseSelectSequenceAsync('id,year(dateCreated) as yearCreated');
+        let expr = await parser.parseSelectSequenceAsync('id,year(dateCreated) as yearCreated,name,dateCreated');
+        expect(expr).toBeTruthy();
+        expr = await parser.parseSelectSequenceAsync('id,year(orderedItem/releaseDate) as yearReleased');
+        expect(expr).toBeTruthy();
+    });
+
+    it('should parser order by statement', async() => {
+        const parser = new OpenDataParser();
+        let expr = await parser.parseOrderSequenceAsync('releaseDate desc,name');
         expect(expr).toBeTruthy();
     });
 

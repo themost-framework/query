@@ -8,6 +8,7 @@ const {
     MemberExpression
 } = require('./expressions');
 const { SelectAnyExpression } = require('./expressions');
+const { OrderByAnyExpression } = require('./expressions');
 
 class OpenDataParser {
     constructor() {
@@ -224,7 +225,53 @@ class OpenDataParser {
                             this.moveNext();
                     }
                 }
-            
+            results.push(result);
+            if (this.atEnd() === false && this.currentToken.syntax === SyntaxToken.Comma.syntax) {
+                this.moveNext();
+            }
+        }
+        return results;
+    }
+
+    parseOrderSequence(str, callback) {
+        callback = callback || function () {
+            //
+        };
+        return this.parseOrderSequenceAsync(str).then(function(results) {
+            return callback(results);
+        }).catch(function(err) {
+            return callback(err);
+        });
+    }
+
+    /**
+     * 
+     * @returns {Promise<Array<*>>}
+     */
+     async parseOrderSequenceAsync(str) {
+        this.source = str;
+        //get tokens
+        this.tokens = this.toList();
+        //reset offset
+        this.offset = 0; this.current = 0;
+        const tokens = this.tokens;
+        if (tokens.length === 0) {
+            return;
+        }
+        const results = [];
+        while(this.atEnd() == false) {
+            let result = await this.parseCommonItemAsync();
+            let direction = 'asc';
+            if (this.currentToken && this.currentToken.type === Token.TokenType.Identifier &&
+                (this.currentToken.identifier.toLowerCase() === 'asc' || 
+                    this.currentToken.identifier.toLowerCase() === 'desc')) {
+                    direction = this.currentToken.identifier.toLowerCase();
+                    result = new OrderByAnyExpression(result, direction);
+                    // go to next token
+                    this.moveNext();
+                } else {
+                    result = new OrderByAnyExpression(result, direction);
+                }
             results.push(result);
             if (this.atEnd() === false && this.currentToken.syntax === SyntaxToken.Comma.syntax) {
                 this.moveNext();
@@ -346,7 +393,7 @@ class OpenDataParser {
         switch (this.currentToken.type) {
             case Token.TokenType.Identifier:
                 //if next token is an open parenthesis token and the current token is not an operator. current=indexOf, next=(
-                if (self.nextToken.syntax === SyntaxToken.ParenOpen.syntax
+                if (self.nextToken && self.nextToken.syntax === SyntaxToken.ParenOpen.syntax
                     && self.getOperator(self.currentToken) == null) {
                     //then parse method call
                     self.parseMethodCall(callback);

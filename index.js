@@ -4,7 +4,7 @@ const {Token, LiteralToken, SyntaxToken,
     IdentifierToken, OpenDataParser} = require('./odata');
 const {LogicalExpression, MethodCallExpression, LiteralExpression,
     MemberExpression, ArithmeticExpression, ComparisonExpression,
-    Operators} = require('./expressions');
+    Operators, SelectAnyExpression} = require('./expressions');
 const {QueryField, QueryEntity, QueryExpression} = require('./query');
 const {SqlUtils, QueryUtils} = require('./utils');
 
@@ -26,5 +26,6 @@ module.exports = {
     LiteralExpression,
     MemberExpression,
     ArithmeticExpression,
-    ComparisonExpression
+    ComparisonExpression,
+    SelectAnyExpression
 }
