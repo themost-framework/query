@@ -26,7 +26,7 @@ describe('OpenDataParser', () => {
 
     it('should parser order by statement', async() => {
         const parser = new OpenDataParser();
-        let expr = await parser.parseOrderSequenceAsync('releaseDate desc,name');
+        let expr = await parser.parseOrderBySequenceAsync('releaseDate desc,name');
         expect(expr).toBeTruthy();
     });
 

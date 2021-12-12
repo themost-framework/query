@@ -233,11 +233,11 @@ class OpenDataParser {
         return results;
     }
 
-    parseOrderSequence(str, callback) {
+    parseOrderBySequence(str, callback) {
         callback = callback || function () {
             //
         };
-        return this.parseOrderSequenceAsync(str).then(function(results) {
+        return this.parseOrderBySequenceAsync(str).then(function(results) {
             return callback(results);
         }).catch(function(err) {
             return callback(err);
@@ -248,7 +248,7 @@ class OpenDataParser {
      * 
      * @returns {Promise<Array<*>>}
      */
-     async parseOrderSequenceAsync(str) {
+     async parseOrderBySequenceAsync(str) {
         this.source = str;
         //get tokens
         this.tokens = this.toList();

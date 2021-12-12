@@ -134,8 +134,8 @@ export declare class OpenDataParser {
     parseSign(): Token;
     parseSelectSequence(str: string, callback: (err?: Error, res?: any) => void): void;
     parseSelectSequenceAsync(str: string): Promise<Array<any>>;
-    parseOrderSequence(str: string, callback: (err?: Error, res?: any) => void): void;
-    parseOrderSequenceAsync(str: string): Promise<Array<any>>;
+    parseOrderBySequence(str: string, callback: (err?: Error, res?: any) => void): void;
+    parseOrderBySequenceAsync(str: string): Promise<Array<any>>;
     
 
 }
