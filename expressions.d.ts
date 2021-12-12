@@ -3,6 +3,10 @@ export declare interface ExpressionBase {
     exprOf(): any;
 }
 
+export declare interface SelectExpressionBase extends ExpressionBase {
+    as?: string;
+}
+
 export declare const Operators: {
     Not : string,
     Mul : string,
@@ -76,6 +80,11 @@ export declare class SimpleMethodCallExpression extends MethodCallExpression {
 
 export declare class AggregateComparisonExpression extends ComparisonExpression {
     constructor(left: any, operator: string, right:any);
+}
+
+export declare class SelectAnyExpression implements SelectExpressionBase {
+    constructor(expr: ExpressionBase, alias?: string);
+    exprOf(): any;
 }
 
 

@@ -7,6 +7,8 @@ const {
     ComparisonExpression, MethodCallExpression,
     MemberExpression
 } = require('./expressions');
+const { SelectAnyExpression } = require('./expressions');
+
 class OpenDataParser {
     constructor() {
         /**
@@ -182,6 +184,55 @@ class OpenDataParser {
     atStart() {
         return this.offset === 0;
     }
+
+    parseSelectSequence(str, callback) {
+        callback = callback || function () {
+            //
+        };
+        return this.parseSelectSequenceAsync(str).then(function(results) {
+            return callback(results);
+        }).catch(function(err) {
+            return callback(err);
+        });
+    }
+
+    /**
+     * 
+     * @returns {Promise<Array<*>>}
+     */
+    async parseSelectSequenceAsync(str) {
+        this.source = str;
+        //get tokens
+        this.tokens = this.toList();
+        //reset offset
+        this.offset = 0; this.current = 0;
+        const tokens = this.tokens;
+        if (tokens.length === 0) {
+            return;
+        }
+        const results = [];
+        while(this.atEnd() == false) {
+            let result = await this.parseCommonItemAsync();
+            if (this.currentToken && this.currentToken.type === Token.TokenType.Identifier &&
+                this.currentToken.identifier.toLowerCase() === 'as') {
+                    // get next token
+                    this.moveNext();
+                    // get alias identifier
+                    if (this.currentToken != null &&
+                        this.currentToken.type === Token.TokenType.Identifier) {
+                            result = new SelectAnyExpression(result, this.currentToken.identifier);
+                            this.moveNext();
+                    }
+                }
+            
+            results.push(result);
+            if (this.atEnd() === false && this.currentToken.syntax === SyntaxToken.Comma.syntax) {
+                this.moveNext();
+            }
+        }
+        return results;
+    }
+
     /**
      * Parses OData token
      * @param {Function} callback
@@ -353,6 +404,22 @@ class OpenDataParser {
         }
 
     }
+
+    /**
+     * @returns {Promise<*>}
+     */
+    parseCommonItemAsync() {
+        const self = this;
+        return new Promise(function(resolve, reject) {
+            return self.parseCommonItem(function(err, result) {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(result);
+            });
+        });
+    }
+
     parseMethodCall(callback) {
         const self = this;
         //ensure callback
@@ -1003,6 +1070,16 @@ class Token {
     //noinspection JSUnusedGlobalSymbols
     isComma() {
         return (this.type === 'Syntax') && (this.syntax === ',');
+    }
+    /**
+     *
+     * @returns {boolean}
+     */
+    //noinspection JSUnusedGlobalSymbols
+    isAlias() {
+        return this.type === Token.TokenType.Identifier &&
+            this.identifier != null &&
+            this.identifier.toLowerCase() === 'as';
     }
     /**
      *

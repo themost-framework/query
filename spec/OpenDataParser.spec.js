@@ -16,4 +16,10 @@ describe('OpenDataParser', () => {
         });
     });
 
+    it('should parser select', async() => {
+        const parser = new OpenDataParser();
+        let expr = await parser.parseSelectSequenceAsync('id,year(dateCreated) as yearCreated');
+        expect(expr).toBeTruthy();
+    });
+
 });

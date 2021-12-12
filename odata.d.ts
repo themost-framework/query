@@ -132,6 +132,9 @@ export declare class OpenDataParser {
     skipDigits(current: any): any;
     parseNumeric(): LiteralToken;
     parseSign(): Token;
-
+    parseSelectSequence(str: string, callback: (err?: Error, res?: any) => void): void;
+    parseSelectSequenceAsync(str: string): Promise<Array<any>>;
+    
 
 }
+
