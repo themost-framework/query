@@ -970,21 +970,6 @@ class SqlFormatter {
                 case '$name':
                     s = this.escapeName(name);
                     break;
-                case '$count':
-                    s = sprintf('COUNT(%s)', Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
-                    break;
-                case '$min':
-                    s = sprintf('MIN(%s)', Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
-                    break;
-                case '$max':
-                    s = sprintf('MAX(%s)', Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
-                    break;
-                case '$avg':
-                    s = sprintf('AVG(%s)', Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
-                    break;
-                case '$sum':
-                    s = sprintf('SUM(%s)', Array.isArray(name) ? this.escapeName(name[0]) : this.escapeName(name));
-                    break;
                 case '$literal':
                 case '$value':
                     s = this.escapeConstant(name);
