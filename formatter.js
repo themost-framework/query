@@ -960,12 +960,22 @@ class SqlFormatter {
             if (typeof expr === 'string') {
                 return useAlias ? this.escapeName(expr).concat(' AS ', this.escapeName(prop)) : expr;
             }
+            let args;
+            let s;
+            let fn;
+            if (typeof this[prop] === 'function') {
+                fn = this[prop];
+                args = expr;
+                if (Array.isArray(args)) {
+                    return fn.apply(this, args);
+                } else {
+                    return fn.call(this, args);
+                }
+            }
             //get aggregate expression
             let alias = prop;
             prop = Object.key(expr);
             let name = expr[prop];
-            let s;
-            let fn;
             switch (prop) {
                 case '$name':
                     s = this.escapeName(name);
@@ -977,7 +987,7 @@ class SqlFormatter {
                 default:
                     fn = this[prop];
                     if (typeof fn === 'function') {
-                        let args = expr[prop];
+                        args = expr[prop];
                         if (Array.isArray(args)) {
                             s = fn.apply(this, args);
                         } else {

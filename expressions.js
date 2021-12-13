@@ -388,17 +388,14 @@ class OrderByAnyExpression {
         this.direction = direction || 'asc';
     }
     exprOf() {
-        if (this.as != null) {
-            const res = {};
-            Object.defineProperty(res, this.as, {
-                configurable: true,
-                enumerable: true,
-                writable: true,
-                value: this.expression.exprOf()
-            });
-            return res;
-        }
-        throw new Error('Expression alias cannot be empty');
+        const res = {};
+        Object.defineProperty(res, '$' + (this.direction || 'asc'), {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: this.expression.exprOf()
+        });
+        return res;
     }
 }
 
