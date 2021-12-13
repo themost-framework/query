@@ -20,7 +20,7 @@ describe('OpenDataParser', () => {
         });
     });
 
-    fit('should parse select statement', async() => {
+    it('should parse select statement', async() => {
         const parser = new OpenDataParser();
         let expr = await parser.parseSelectSequenceAsync('id,year(dateCreated) as yearCreated,name,dateCreated');
         expect(expr).toBeTruthy();
