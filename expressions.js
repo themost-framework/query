@@ -382,6 +382,26 @@ class SelectAnyExpression {
     }
 }
 
+class AnyExpressionFormatter {
+    constructor() {
+        //
+    }
+    /**
+     * @type {ExpressionBase}
+     */
+    format(expr) {
+        return expr.exprOf();
+    }
+    /**
+     * @type {Array<ExpressionBase>}
+     */
+     formatMany(expr) {
+        return expr.map(function(item) {
+            return item.exprOf();
+        });
+    }
+}
+
 class OrderByAnyExpression {
     constructor(expr, direction) {
         this.expression = expr;
@@ -412,6 +432,7 @@ module.exports = {
     SimpleMethodCallExpression,
     AggregateComparisonExpression,
     SelectAnyExpression,
-    OrderByAnyExpression
+    OrderByAnyExpression,
+    AnyExpressionFormatter
 }
 

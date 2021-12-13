@@ -199,7 +199,7 @@ class OpenDataParser {
 
     /**
      * 
-     * @returns {Promise<Array<*>>}
+     * @returns {Promise<Array<SelectAnyExpression>>}
      */
     async parseSelectSequenceAsync(str) {
         this.source = str;
@@ -231,6 +231,14 @@ class OpenDataParser {
             }
         }
         return results;
+    }
+
+    parseGroupBySequence(str, callback) {
+        return this.parseSelectSequence(str, callback);
+    }
+
+    parseGroupBySequenceAsync(str) {
+        return this.parseSelectSequenceAsync(str);
     }
 
     parseOrderBySequence(str, callback) {
