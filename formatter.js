@@ -984,6 +984,9 @@ class SqlFormatter {
                 case '$value':
                     s = this.escapeConstant(name);
                     break;
+                case '$count':
+                    s = this.$cnt(name);
+                    break;
                 default:
                     fn = this[prop];
                     if (typeof fn === 'function') {
@@ -1142,7 +1145,7 @@ class SqlFormatter {
     $sum(arg) {
         return sprintf('SUM(%s)', this.escape(arg));
     }
-    $count(arg) {
+    $cnt(arg) {
         return sprintf('COUNT(%s)', this.escape(arg));
     }
     $toLower(p0) {
