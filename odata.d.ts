@@ -1,5 +1,7 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2021, THEMOST LP All rights reserved
 
+import { ExpressionBase } from "./expressions";
+import { OrderByAnyExpression } from "./expressions";
 import {MemberExpression, MethodCallExpression} from "./expressions";
 
 export declare interface TokenType {
@@ -132,6 +134,13 @@ export declare class OpenDataParser {
     skipDigits(current: any): any;
     parseNumeric(): LiteralToken;
     parseSign(): Token;
-
+    parseSelectSequence(str: string, callback: (err?: Error, res?: Array<ExpressionBase>) => void): void;
+    parseSelectSequenceAsync(str: string): Promise<Array<ExpressionBase>>;
+    parseGroupBySequence(str: string, callback: (err?: Error, res?: Array<ExpressionBase>) => void): void;
+    parseGroupBySequenceAsync(str: string): Promise<Array<ExpressionBase>>;
+    parseOrderBySequence(str: string, callback: (err?: Error, res?: Array<OrderByAnyExpression>) => void): void;
+    parseOrderBySequenceAsync(str: string): Promise<Array<OrderByAnyExpression>>;
+    
 
 }
+
