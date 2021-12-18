@@ -124,4 +124,21 @@ describe('OpenDataParser', () => {
         ]);
     });
 
+    it('should parse expand statement with filter', async() => {
+        const parser = new OpenDataParser();
+        const expr = parser.parseExpandSequence(
+            'orders($filter=orderStatus/alternateName eq \'OrderStatusDelivered\';$top=10;$orderby=orderDate desc)'
+        );
+        expect(expr).toEqual([
+            {
+                name: 'orders',
+                options: {
+                    $filter: 'orderStatus/alternateName eq \'OrderStatusDelivered\'',
+                    $top: 10,
+                    $orderby: 'orderDate desc'
+                }
+            }
+        ]);
+    });
+
 });

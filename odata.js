@@ -9,6 +9,7 @@ const {
 } = require('./expressions');
 const { SelectAnyExpression } = require('./expressions');
 const { OrderByAnyExpression } = require('./expressions');
+const {trim} = require('lodash');
 
 class OpenDataParser {
     constructor() {
@@ -318,17 +319,23 @@ class OpenDataParser {
                 let str = '';
                 for (let index = offset; index < this.offset; index++) {
                     const element = this.tokens[index];
-                    if (element.type === Token.TokenType.Identifier && element.identifier === 'as') {
+                    if (element.type === Token.TokenType.Identifier && (element.isAlias() || element.isOrderDirection())) {
                         str += ' ' + element.toString() + ' ';
-                    } else {
+                    } else if (element.type === Token.TokenType.Identifier && this.getOperator(element) != null) {
+                        str += ' ' + element.toString() + ' ';
+                    }
+                    else {
                         str += element.toString();
                     }
                 }
-                let value = str;
-                // if (option === '$expand') {
-                //     const newParser = new OpenDataParser();
-                //     value = newParser.parseExpandSequence(str);
-                // }
+                let value;
+                if (option === '$top' || option === '$skip') {
+                    value = parseInt(trim(str), 10);
+                } else if (option === '$count') {
+                    value = (trim(str) === 'true' ? true : false);
+                } else {
+                    value = trim(str);
+                }
                 Object.defineProperty(result, option, {
                     configurable: true,
                     enumerable: true,
@@ -1274,6 +1281,12 @@ class Token {
         return this.type === Token.TokenType.Identifier &&
             this.identifier != null &&
             this.identifier.toLowerCase() === 'as';
+    }
+    isOrderDirection() {
+        return this.type === Token.TokenType.Identifier &&
+            this.identifier != null &&
+           ( this.identifier.toLowerCase() === 'desc' ||
+           this.identifier.toLowerCase() === 'asc');
     }
     /**
      *
