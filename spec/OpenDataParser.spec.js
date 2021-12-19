@@ -72,36 +72,42 @@ describe('OpenDataParser', () => {
 
     it('should parse expand statement', async() => {
         const parser = new OpenDataParser();
-        expect(parser.parseExpandSequence(
+        const expr = parser.parseExpandSequence(
             'customer($select=id,name;$expand=address),orderedItem'
-            )).toEqual([
+        );
+        expect(expr).toEqual([
             {
                 name: 'customer',
                 options: {
                     $select: 'id,name',
                     $expand: 'address'
-                }
+                },
+                source: 'customer($select=id,name;$expand=address)'
             },
             {
-                name: 'orderedItem'
+                name: 'orderedItem',
+                source: 'orderedItem'
             }
         ]);
     });
 
     it('should parse expand statement with select', async() => {
         const parser = new OpenDataParser();
-        expect(parser.parseExpandSequence(
+        const expr = parser.parseExpandSequence(
             'customer($select=id,name,year(dateCreated) as dateCreated;$expand=address),orderedItem'
-            )).toEqual([
+        );
+        expect(expr).toEqual([
             {
                 name: 'customer',
                 options: {
                     $select: 'id,name,year(dateCreated) as dateCreated',
                     $expand: 'address'
-                }
+                },
+                source: 'customer($select=id,name,year(dateCreated) as dateCreated;$expand=address)'
             },
             {
-                name: 'orderedItem'
+                name: 'orderedItem',
+                source: 'orderedItem'
             }
         ]);
     });
@@ -116,10 +122,12 @@ describe('OpenDataParser', () => {
                 name: 'customer',
                 options: {
                     $expand: 'address($expand=location)'
-                }
+                },
+                source: 'customer($expand=address($expand=location))'
             },
             {
-                name: 'orderedItem'
+                name: 'orderedItem',
+                source: 'orderedItem'
             }
         ]);
     });
@@ -136,7 +144,8 @@ describe('OpenDataParser', () => {
                     $filter: 'orderStatus/alternateName eq \'OrderStatusDelivered\'',
                     $top: 10,
                     $orderby: 'orderDate desc'
-                }
+                },
+                source: 'orders($filter=orderStatus/alternateName eq \'OrderStatusDelivered\';$top=10;$orderby=orderDate desc)'
             }
         ]);
     });

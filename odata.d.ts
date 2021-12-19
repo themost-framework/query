@@ -146,8 +146,22 @@ export declare class OpenDataParser {
             $expand?: string,
             $groupBy?: string,
             $orderBy?: string,
+            $levels?: any;
+            $top?: any;
+            $skip?: any;
         }
     }>;
+    parseExpandSequenceAsync(str: string): Promise<Array<{ name: string, options: {
+        $select?: string,
+        $filter?: string,
+        $expand?: string,
+        $groupBy?: string,
+        $orderBy?: string,
+        $levels?: any;
+        $top?: any;
+        $skip?: any;
+    }
+}>>;
 
 }
 

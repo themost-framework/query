@@ -227,20 +227,8 @@ class OpenDataParser {
                         this.moveNext();
                 }
             }
-            let token = '';
-            for (let index = offset; index < this.offset; index++) {
-                /**
-                 * @type {Token}
-                 */
-                const element = this.tokens[index];
-                if (element.type === Token.TokenType.Identifier && element.identifier === 'as') {
-                    token += ' ' + element.toString() + ' ';
-                } else {
-                    token += element.toString();
-                }
-            }
             Object.assign(result, {
-                token: token
+                source: this.getSource(offset, this.offset)
             });
             results.push(result);
             if (this.atEnd() === false && this.currentToken.syntax === SyntaxToken.Comma.syntax) {
@@ -264,20 +252,47 @@ class OpenDataParser {
         this.current = 0;
         this.offset = 0;
         const results = [];
+        // if expression has only one token
         if (this.tokens.length === 1) {
+            // and token is an identifier
             if (this.currentToken.type === Token.TokenType.Identifier) {
+                // push resul
                 results.push({
-                    name: this.currentToken.identifier
+                    name: this.currentToken.identifier,
+                    source: this.currentToken.identifier
                 });
+                // and return
                 return results;
             } else {
                 throw new Error('Invalid expand token. Expected identifier');
             }
-        } 
+        }
         while(this.atEnd() === false) {
-            results.push(this.parseExpandItem());
+            let offset = this.offset;
+            const result = this.parseExpandItem();
+            // set source
+            Object.assign(result, {
+                source: this.getSource(offset, this.offset)
+            });
+            results.push(result);
+            if (this.atEnd() === false && this.currentToken.syntax === SyntaxToken.Comma.syntax) {
+                this.moveNext();
+            }
         }
         return results;
+    }
+
+    getSource(start, end) {
+        let source = '';
+        for (let index = start; index < end; index++) {
+            const element = this.tokens[index];
+            source += element.source;
+        }
+        return source;
+    }
+
+    parseExpandSequenceAsync(str) {
+        return Promise.resolve(this.parseExpandSequence(str));
     }
 
     /**
@@ -316,25 +331,14 @@ class OpenDataParser {
                 }
                 let result = {};
                 // get string
-                let str = '';
-                for (let index = offset; index < this.offset; index++) {
-                    const element = this.tokens[index];
-                    if (element.type === Token.TokenType.Identifier && (element.isAlias() || element.isOrderDirection())) {
-                        str += ' ' + element.toString() + ' ';
-                    } else if (element.type === Token.TokenType.Identifier && this.getOperator(element) != null) {
-                        str += ' ' + element.toString() + ' ';
-                    }
-                    else {
-                        str += element.toString();
-                    }
-                }
+                let source = this.getSource(offset, this.offset);
                 let value;
-                if (option === '$top' || option === '$skip') {
-                    value = parseInt(trim(str), 10);
+                if (option === '$top' || option === '$skip' || option === '$levels') {
+                    value = parseInt(trim(source), 10);
                 } else if (option === '$count') {
-                    value = (trim(str) === 'true' ? true : false);
+                    value = (trim(source) === 'true' ? true : false);
                 } else {
-                    value = trim(str);
+                    value = trim(source);
                 }
                 Object.defineProperty(result, option, {
                     configurable: true,
@@ -352,11 +356,15 @@ class OpenDataParser {
                 name: this.currentToken.identifier,
                 options: {}
              };
-            this.moveNext();
-            if (this.atEnd()) {
+            if (this.nextToken == null) {
+                Object.assign(result, {
+                    source: this.currentToken.identifier
+                });
+                this.moveNext();
                 delete result.options;
                 return result;
             }
+            this.moveNext();
             if (this.currentToken.isParenOpen()) {
                 this.moveNext();
                 // parse expand options
@@ -365,7 +373,7 @@ class OpenDataParser {
                     Object.assign(result.options, option);
                     this.moveNext();
                 }
-                this.moveNext();
+                // this.moveNext();
             }
             return result;
         }
@@ -399,6 +407,7 @@ class OpenDataParser {
         }
         const results = [];
         while(this.atEnd() == false) {
+            let offset = this.offset;
             let result = await this.parseCommonItemAsync();
             let direction = 'asc';
             if (this.currentToken && this.currentToken.type === Token.TokenType.Identifier &&
@@ -411,6 +420,9 @@ class OpenDataParser {
                 } else {
                     result = new OrderByAnyExpression(result, direction);
                 }
+            Object.assign(result, {
+                source: this.getSource(offset, this.offset)
+            });
             results.push(result);
             if (this.atEnd() === false && this.currentToken.syntax === SyntaxToken.Comma.syntax) {
                 this.moveNext();
@@ -750,8 +762,11 @@ class OpenDataParser {
         this.current = 0;
         this.offset = 0;
         let result = [];
+        let offset = 0;
         let token = this.getNext();
         while (token) {
+            token.source = this.source.substring(offset, this.offset);
+            offset = this.offset;
             result.push(token);
             token = this.getNext();
         }
