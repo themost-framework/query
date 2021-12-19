@@ -41,6 +41,9 @@ describe('OpenDataParser', () => {
         let formatter = new SqlFormatter();
         let selectSql = formatter.formatSelect(select);
         expect(selectSql).toBeTruthy();
+
+        expr = await parser.parseSelectSequenceAsync('id,indexof(name, \'Samsung\') as index1');
+        expect(expr).toBeTruthy();
     });
 
     it('should parse group by statement', async() => {
@@ -65,6 +68,86 @@ describe('OpenDataParser', () => {
         orderBy = new AnyExpressionFormatter().formatMany(expr);
         orderBySql = formatter.formatOrder(orderBy);
         expect(trim(orderBySql)).toBe('ORDER BY YEAR(releaseDate) DESC, MONTH(releaseDate) DESC');
+    });
+
+    it('should parse expand statement', async() => {
+        const parser = new OpenDataParser();
+        const expr = parser.parseExpandSequence(
+            'customer($select=id,name;$expand=address),orderedItem'
+        );
+        expect(expr).toEqual([
+            {
+                name: 'customer',
+                options: {
+                    $select: 'id,name',
+                    $expand: 'address'
+                },
+                source: 'customer($select=id,name;$expand=address)'
+            },
+            {
+                name: 'orderedItem',
+                source: 'orderedItem'
+            }
+        ]);
+    });
+
+    it('should parse expand statement with select', async() => {
+        const parser = new OpenDataParser();
+        const expr = parser.parseExpandSequence(
+            'customer($select=id,name,year(dateCreated) as dateCreated;$expand=address),orderedItem'
+        );
+        expect(expr).toEqual([
+            {
+                name: 'customer',
+                options: {
+                    $select: 'id,name,year(dateCreated) as dateCreated',
+                    $expand: 'address'
+                },
+                source: 'customer($select=id,name,year(dateCreated) as dateCreated;$expand=address)'
+            },
+            {
+                name: 'orderedItem',
+                source: 'orderedItem'
+            }
+        ]);
+    });
+
+    it('should parse expand statement with another expand', async() => {
+        const parser = new OpenDataParser();
+        const expr = parser.parseExpandSequence(
+            'customer($expand=address($expand=location)),orderedItem'
+        );
+        expect(expr).toEqual([
+            {
+                name: 'customer',
+                options: {
+                    $expand: 'address($expand=location)'
+                },
+                source: 'customer($expand=address($expand=location))'
+            },
+            {
+                name: 'orderedItem',
+                source: 'orderedItem'
+            }
+        ]);
+    });
+
+    it('should parse expand statement with filter', async() => {
+        const parser = new OpenDataParser();
+        const expr = parser.parseExpandSequence(
+            'orders($filter=orderStatus/alternateName eq \'OrderStatusDelivered\';$top=10;$orderby=orderDate desc)'
+        );
+        expect(expr).toEqual([
+            {
+                name: 'orders',
+                options: {
+                    $filter: 'orderStatus/alternateName eq \'OrderStatusDelivered\'',
+                    $top: 10,
+                    $orderby: 'orderDate desc'
+                },
+                source: 'orders($filter=orderStatus/alternateName eq \'OrderStatusDelivered\';$top=10;$orderby=orderDate desc)'
+            }
+        ]);
     });
 
 });
