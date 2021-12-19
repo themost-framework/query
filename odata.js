@@ -413,6 +413,7 @@ class OpenDataParser {
             if (this.currentToken && this.currentToken.type === Token.TokenType.Identifier &&
                 (this.currentToken.identifier.toLowerCase() === 'asc' || 
                     this.currentToken.identifier.toLowerCase() === 'desc')) {
+                    result.source = this.getSource(offset, this.offset);
                     direction = this.currentToken.identifier.toLowerCase();
                     result = new OrderByAnyExpression(result, direction);
                     // go to next token
