@@ -1,12 +1,13 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 const {SqlUtils} = require('./utils');
-const {sprintf} = require('sprintf');
+const {sprintf} = require('sprintf-js');
 const _ = require('lodash');
 const {QueryExpression, QueryField} = require('./query');
 const {instanceOf} = require('./instance-of');
 require('./polyfills');
 
 const ALIAS_KEYWORD = ' AS ';
+const DEFAULT_COUNT_ALIAS = '__count__';
 /**
  * @this SqlFormatter
  */
@@ -606,7 +607,7 @@ class SqlFormatter {
             throw new Error('Invalid query expression. Expected a valid select expression.');
         }
         //get count alias
-        let alias = this.$count || '__count__';
+        let alias = query.$count || DEFAULT_COUNT_ALIAS;
         //format select statement (ignore paging parameters even if there are existing)
         let sql = this.formatSelect(query);
         //return final count expression by setting the derived sql statement as sub-query
@@ -984,9 +985,6 @@ class SqlFormatter {
                 case '$value':
                     s = this.escapeConstant(name);
                     break;
-                case '$count':
-                    s = this.$cnt(name);
-                    break;
                 default:
                     fn = this[prop];
                     if (typeof fn === 'function') {
@@ -996,9 +994,7 @@ class SqlFormatter {
                         } else {
                             s = fn.call(this, args);
                         }
-
                     }
-
                     else
                         throw new Error('The specified function is not yet implemented.');
             }
@@ -1145,7 +1141,7 @@ class SqlFormatter {
     $sum(arg) {
         return sprintf('SUM(%s)', this.escape(arg));
     }
-    $cnt(arg) {
+    $count(arg) {
         return sprintf('COUNT(%s)', this.escape(arg));
     }
     $toLower(p0) {

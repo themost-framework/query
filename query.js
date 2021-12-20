@@ -1,5 +1,5 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
-const {sprintf} = require('sprintf');
+const {sprintf} = require('sprintf-js');
 const {Args} = require('@themost/common');
 const _ = require('lodash');
 const {ClosureParser} = require('./closures');
