@@ -1,12 +1,32 @@
-/**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
- *
- * Use of this source code is governed by an BSD-3-Clause license that can be
- * found in the LICENSE file at https://themost.io/license
- */
+// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2021, THEMOST LP All rights reserved
 export declare class QueryExpression {
+
+    static ComparisonOperators: {
+        $eq: string | '$eq',
+        $ne: string | '$ne',
+        $gt: string | '$gt',
+        $gte: string | '$gte',
+        $lt: string | '$lt',
+        $lte: string | '$lte',
+        $in: string | '$in',
+        $nin:  string | '$nin'
+    };
+
+    static LogicalOperators: {
+        $or: string | '$or',
+        $and: string | '$and',
+        $not: string | '$not',
+        $nor: string | '$nor'
+    }
+
+    static EvaluationOperators: {
+        $mod: string | '$mod',
+        $add: string | '$add',
+        $sub: string | '$sub',
+        $mul: string | '$mul',
+        $div: string | '$div'
+    }
+
     $select?: any;
     $delete?: any;
     $update?: any;
@@ -33,15 +53,28 @@ export declare class QueryExpression {
     update(entity: string): QueryExpression;
     set(obj: any): QueryExpression;
     select(...field: Array<any>): QueryExpression;
+    select<T>(expr: (value: T, ...param: any) => any, params?: any): QueryExpression;
+    select<T,J>(expr: (value1: T, value2: J, ...param: any) => any, params?: any): QueryExpression;
     count(alias: string): QueryExpression;
     from(alias: string): QueryExpression;
     join(entity: any, props?: any, alias?: any): QueryExpression;
+    join(entity: QueryEntity): QueryExpression;
+    leftJoin(entity: any, props?: any, alias?: any): QueryExpression;
+    leftJoin(entity: QueryEntity): QueryExpression;
+    rightJoin(entity: any, props?: any, alias?: any): QueryExpression;
+    rightJoin(entity: QueryEntity): QueryExpression;
     with(obj: any): QueryExpression;
-    orderBy(name: string): QueryExpression;
-    orderByDescending(name: string): QueryExpression;
-    thenBy(name: string): QueryExpression;
+    with<T,J>(expr: (value: T, otherValue: J, ...param: any) => any, params?: any): QueryExpression;
+    orderBy(field: string): QueryExpression;
+    orderBy<T>(expr: (value: T) => any): QueryExpression;
+    orderByDescending(field: string): QueryExpression;
+    orderByDescending<T>(expr: (value: T) => any): QueryExpression;
+    thenBy(field: string): QueryExpression;
+    thenBy<T>(expr: (value: T) => any): QueryExpression;
     thenByDescending(name: string): QueryExpression;
+    thenByDescending<T>(expr: (value: T) => any): QueryExpression;
     groupBy(...field: Array<any>): QueryExpression;
+    groupBy<T>(expr: (value: T) => any): QueryExpression;
     or(field: any): QueryExpression;
     and(field: any): QueryExpression;
     equal(value: any): QueryExpression;
@@ -86,6 +119,7 @@ export declare class QueryExpression {
 }
 
 export declare class QueryField {
+    static FieldNameExpression: RegExp;
     constructor(name?: string);
     $name: string;
 

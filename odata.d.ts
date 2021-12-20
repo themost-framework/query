@@ -1,12 +1,7 @@
-/**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
- *
- * Use of this source code is governed by an BSD-3-Clause license that can be
- * found in the LICENSE file at https://themost.io/license
- */
-import {defaultCipherList} from "constants";
+// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2021, THEMOST LP All rights reserved
+
+import { ExpressionBase } from "./expressions";
+import { OrderByAnyExpression } from "./expressions";
 import {MemberExpression, MethodCallExpression} from "./expressions";
 
 export declare interface TokenType {
@@ -109,21 +104,22 @@ export declare class OpenDataParser {
     static isIdentifierChar(c: any): boolean;
     static isDigit(c: any): boolean;
 
-    parse(str: string, callback: (err?: Error, res?: any) => void);
+    parse(str: string, callback: (err?: Error, res?: any) => void): void;
+    parseAsync(): Promise<any>;
     getOperator(token: string): string;
-    moveNext();
-    expect();
-    expectAny();
-    atEnd();
-    atStart();
-    parseCommon(callback: (err?: Error, res?: any) => void);
-    parseCommonItem(callback: (err?: Error, res?: any) => void);
+    moveNext(): void;
+    expect(): void;
+    expectAny(): void;
+    atEnd(): boolean;
+    atStart(): boolean;
+    parseCommon(callback: (err?: Error, res?: any) => void): void;
+    parseCommonItem(callback: (err?: Error, res?: any) => void): void;
     createExpression(left: any,operator: string, right: any): any;
-    parseMethodCall(callback: (err?: Error, res?: MethodCallExpression) => void);
-    parseMethodCallArguments(args: Array<any>, callback: (err?: Error, res?: any) => void);
-    parseMember(callback: (err?: Error, res?: MemberExpression) => void);
-    resolveMember(member: any, callback: (err?: Error, res?: any) => void);
-    resolveMethod(method: any, args: Array<any>, callback: (err?: Error, res?: any) => void);
+    parseMethodCall(callback: (err?: Error, res?: MethodCallExpression) => void): void;
+    parseMethodCallArguments(args: Array<any>, callback: (err?: Error, res?: any) => void): void;
+    parseMember(callback: (err?: Error, res?: MemberExpression) => void): void;
+    resolveMember(member: any, callback: (err?: Error, res?: any) => void): void;
+    resolveMethod(method: any, args: Array<any>, callback: (err?: Error, res?: any) => void): void;
     toList():Array<Token>;
     getNext(): Token;
     parseSyntax(): SyntaxToken;
@@ -135,9 +131,37 @@ export declare class OpenDataParser {
     parseDateTimeOffsetString(value: string): LiteralToken;
     parseSpecialString(value: string, stringType: string): any;
     parseString(): LiteralToken;
-    skipDigits(current: any);
+    skipDigits(current: any): any;
     parseNumeric(): LiteralToken;
     parseSign(): Token;
-
+    parseSelectSequence(str: string, callback: (err?: Error, res?: Array<ExpressionBase>) => void): void;
+    parseSelectSequenceAsync(str: string): Promise<Array<ExpressionBase>>;
+    parseGroupBySequence(str: string, callback: (err?: Error, res?: Array<ExpressionBase>) => void): void;
+    parseGroupBySequenceAsync(str: string): Promise<Array<ExpressionBase>>;
+    parseOrderBySequence(str: string, callback: (err?: Error, res?: Array<OrderByAnyExpression>) => void): void;
+    parseOrderBySequenceAsync(str: string): Promise<Array<OrderByAnyExpression>>;
+    parseExpandSequence(str: string): Array<{ name: string, options: {
+            $select?: string,
+            $filter?: string,
+            $expand?: string,
+            $groupBy?: string,
+            $orderBy?: string,
+            $levels?: any;
+            $top?: any;
+            $skip?: any;
+        }
+    }>;
+    parseExpandSequenceAsync(str: string): Promise<Array<{ name: string, options: {
+        $select?: string,
+        $filter?: string,
+        $expand?: string,
+        $groupBy?: string,
+        $orderBy?: string,
+        $levels?: any;
+        $top?: any;
+        $skip?: any;
+    }
+}>>;
 
 }
+

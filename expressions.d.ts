@@ -1,93 +1,101 @@
-/**
- * @license
- * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2017, THEMOST LP All rights reserved
- *
- * Use of this source code is governed by an BSD-3-Clause license that can be
- * found in the LICENSE file at https://themost.io/license
- */
-
-export declare interface IExpression {
+// MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2021, THEMOST LP All rights reserved
+export declare interface ExpressionBase {
     exprOf(): any;
+    source?: string;
 }
 
-export declare class Operators {
-    static Not : string;
-    static Mul : string;
-    static Div : string;
-    static Mod : string;
-    static Add : string;
-    static Sub : string;
-    static Lt : string;
-    static Gt : string;
-    static Le : string;
-    static Ge : string;
-    static Eq : string;
-    static Ne : string;
-    static In : string;
-    static NotIn : string;
-    static And : string;
-    static Or : string;
+export declare interface SelectExpressionBase extends ExpressionBase {
+    as?: string;
 }
 
-export declare class ArithmeticExpression implements IExpression {
+export declare const Operators: {
+    Not : string,
+    Mul : string,
+    Div : string,
+    Mod : string,
+    Add : string,
+    Sub : string,
+    Lt : string,
+    Gt : string,
+    Le : string,
+    Ge : string,
+    Eq : string,
+    Ne : string,
+    In : string,
+    NotIn : string,
+    And : string,
+    Or : string,
+}
+
+export declare class ArithmeticExpression implements ExpressionBase {
+
+    static isArithmeticOperator(op: string): boolean;
+
     constructor(left: any, operator: string, right:any);
     exprOf(): any;
 }
 
-export declare class MemberExpression implements IExpression {
+export declare class MemberExpression implements ExpressionBase {
     constructor(name: string);
     exprOf(): any;
 }
 
-export declare class LogicalExpression implements IExpression {
+export declare class LogicalExpression implements ExpressionBase {
+
+    static isLogicalOperator(op: string): boolean;
+
     constructor(operator: string, args: Array<any>);
     exprOf(): any;
 }
 
-export declare class LiteralExpression implements IExpression {
+export declare class LiteralExpression implements ExpressionBase {
     constructor(value: any);
     exprOf(): any;
 }
 
-export declare class ComparisonExpression implements IExpression {
+export declare class ComparisonExpression implements ExpressionBase {
+
+    static isComparisonOperator(op: string): boolean;
     constructor(left: any, operator: string, right:any);
     exprOf(): any;
 }
 
-export declare class MethodCallExpression implements IExpression {
+export declare class MethodCallExpression implements ExpressionBase {
     constructor(name: string, args: Array<any>);
     exprOf(): any;
 }
 
-export declare function createArithmeticExpression(left: any, operator:string, right: any): ArithmeticExpression;
+export declare class SequenceExpression implements ExpressionBase {
+    constructor();
+    exprOf(): any;
+}
 
-export declare function createComparisonExpression(left: any, operator:string, right: any): ComparisonExpression;
+export declare class ObjectExpression implements ExpressionBase {
+    constructor();
+    exprOf(): any;
+}
 
-export declare function createMemberExpression(name: string): MemberExpression;
+export declare class SimpleMethodCallExpression extends MethodCallExpression {
+    constructor(name: string, args: Array<any>);
+}
 
-export declare function createLiteralExpression(value: any): LiteralExpression;
+export declare class AggregateComparisonExpression extends ComparisonExpression {
+    constructor(left: any, operator: string, right:any);
+}
 
-export declare function createMethodCallExpression(name: string, args: Array<any>): MethodCallExpression;
+export declare class SelectAnyExpression implements SelectExpressionBase {
+    constructor(expr: ExpressionBase, alias: string);
+    exprOf(): any;
+}
 
-export declare function createLogicalExpression(name: string, args: Array<any>): LogicalExpression;
+export declare class OrderByAnyExpression implements SelectExpressionBase {
+    constructor(expr: ExpressionBase, direction?: string | 'asc' | 'desc');
+    exprOf(): any;
+}
 
-export declare function isArithmeticExpression(any: any): boolean;
-
-export declare function isArithmeticOperator(op: string): boolean;
-
-export declare function isComparisonOperator(op: string): boolean;
-
-export declare function isLogicalOperator(op: string): boolean;
-
-export declare function isLogicalExpression(any: any): boolean;
-
-export declare function isComparisonExpression(any: any): boolean;
-
-export declare function isMemberExpression(any: any): boolean;
-
-export declare function isLiteralExpression(any: any): boolean;
-
-export declare function isMethodCallExpression(any: any): boolean;
+export declare class AnyExpressionFormatter {
+    format(expr: ExpressionBase): any;
+    formatMany(expr: Array<ExpressionBase>): any;
+}
 
 

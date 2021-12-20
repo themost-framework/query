@@ -1,2 +1,19 @@
+# nodejs
 node_modules
+
+# test
+spec
+
+# eslint
+.eslintrc
+.eslintignore
+
+# dotenv
+.env
+
+# ide
 .DS_Store
+.vscode
+.theia
+.idea
+.devcontainer
