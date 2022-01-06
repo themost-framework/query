@@ -5,7 +5,7 @@ const {Token, LiteralToken, SyntaxToken,
 const {LogicalExpression, MethodCallExpression, LiteralExpression,
     MemberExpression, ArithmeticExpression, ComparisonExpression,
     Operators, SelectAnyExpression, OrderByAnyExpression, AnyExpressionFormatter} = require('./expressions');
-const {QueryField, QueryEntity, QueryExpression} = require('./query');
+const {QueryField, QueryEntity, QueryExpression, QueryFieldRef, QueryValueRef} = require('./query');
 const {SqlUtils, QueryUtils} = require('./utils');
 
 module.exports = {
@@ -17,6 +17,8 @@ module.exports = {
     IdentifierToken,
     OpenDataParser,
     QueryField,
+    QueryFieldRef,
+    QueryValueRef,
     QueryEntity,
     QueryExpression,
     SqlUtils,
