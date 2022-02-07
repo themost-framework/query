@@ -8,10 +8,10 @@
     "install-peers": "add-peers"
   },
   "engines": {
-    "node": "^8.4.0"
+    "node": ">=8.4.0"
   },
   "peerDependencies": {
-    "@themost/common": "^2.5.0"
+    "@themost/common": "next"
   },
   "repository": {
     "type": "git",
