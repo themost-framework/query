@@ -46,6 +46,9 @@ module.exports.Operators = _expressions.Operators;
 module.exports.QueryField = _query.QueryField;
 module.exports.QueryEntity = _query.QueryEntity;
 module.exports.QueryExpression = _query.QueryExpression;
+module.exports.QueryFieldRef = _query.QueryFieldRef;
+module.exports.QueryValueRef = _query.QueryValueRef;
+module.exports.OpenDataQuery = _query.OpenDataQuery;
 
 module.exports.QueryUtils = _utils.QueryUtils;
 module.exports.SqlUtils = _utils.SqlUtils;
