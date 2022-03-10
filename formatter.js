@@ -15,7 +15,6 @@ var _ = require('lodash');
 var query = require('./query');
 var QueryExpression = query.QueryExpression;
 var QueryField = query.QueryField;
-var WildcardField = query.WildcardField;
 var instanceOf = require('./instance-of').instanceOf;
 
 if (typeof Object.key !== 'function') {
@@ -1036,10 +1035,6 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
     if (obj == null) {
         return null;
     }
-    if (instanceOf(obj, WildcardField)) {
-        var wildcardName = obj.getName().replace(/\.*$/, '');
-        return this.escapeName(wildcardName).concat('.*');
-    }
     if (!isQueryField_(obj))
         throw new Error('Invalid argument. An instance of QueryField class is expected.');
     //get property
@@ -1048,6 +1043,10 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
         return null;
     var useAlias = (format==='%f');
     if (prop==='$name') {
+        if (/\.\*$/.test(obj.$name)) {
+            var wildcard = obj.$name.replace(/\.\*$/, '');
+            return this.escapeName(wildcard).concat('.*');
+        }
         return (this.settings.forceAlias && useAlias) ? this.escapeName(obj.$name).concat(' AS ', this.escapeName(obj.getName())) : this.escapeName(obj.$name);
     }
     else {

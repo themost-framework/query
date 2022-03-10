@@ -2440,33 +2440,11 @@ function QueryFieldRef(entity, name) {
 function QueryValuedRef(value) {
     this.$value = value;
 }
-/**
- * @class
- */
-function WildcardField() {
-    this.$name = WildcardField.Wildcard;
-}
-WildcardField.Wildcard = '*';
-/**
- * 
- * @param {QueryEntity|string} entity 
- */
- WildcardField.prototype.from = function(entity) {
-    if (instanceOf(entity, QueryEntity)) {
-        var entityName = entity.$as || entity.name;
-        this.$name = entityName.name.concat(WildcardField.Wildcard);
-    }
-    this.$name = entity.toString().concat(WildcardField.Wildcard);
-}
-WildcardField.prototype.getName = function() {
-    return this.$name;
-}
 if (typeof exports !== 'undefined') {
     module.exports.QueryFieldRef = QueryFieldRef;
     module.exports.QueryValuedRef = QueryValuedRef;
     module.exports.QueryExpression = QueryExpression;
     module.exports.QueryField = QueryField;
-    module.exports.WildcardQueryField = WildcardField;
     module.exports.QueryEntity = QueryEntity;
     module.exports.OpenDataQuery = OpenDataQuery;
 }
