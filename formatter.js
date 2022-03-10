@@ -1014,7 +1014,7 @@ SqlFormatter.prototype.formatDelete = function(obj)
 
 SqlFormatter.prototype.escapeName = function(name) {
     if (typeof name === 'string')
-        return name.replace(/(\w+)$|^(\w+)$/g, this.settings.nameFormat);
+        return name.replace(/(\w+)/ig, this.settings.nameFormat);
     return name;
 };
 
@@ -1044,8 +1044,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
     var useAlias = (format==='%f');
     if (prop==='$name') {
         if (/\.\*$/.test(obj.$name)) {
-            var wildcard = obj.$name.replace(/\.\*$/, '');
-            return this.escapeName(wildcard).concat('.*');
+            return this.escapeName(obj.$name);
         }
         return (this.settings.forceAlias && useAlias) ? this.escapeName(obj.$name).concat(' AS ', this.escapeName(obj.getName())) : this.escapeName(obj.$name);
     }
