@@ -49,6 +49,7 @@ module.exports.QueryExpression = _query.QueryExpression;
 module.exports.QueryFieldRef = _query.QueryFieldRef;
 module.exports.QueryValueRef = _query.QueryValueRef;
 module.exports.OpenDataQuery = _query.OpenDataQuery;
+module.exports.WildcardField = _query.WildcardField;
 
 module.exports.QueryUtils = _utils.QueryUtils;
 module.exports.SqlUtils = _utils.SqlUtils;

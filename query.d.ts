@@ -223,3 +223,8 @@ export declare class QueryFieldRef {
 export declare class QueryValueRef {
     constructor(value: any);
 }
+
+export declare class WildcardField {
+    from(entity: QueryEntity | string): this;
+    getName(): string;
+}

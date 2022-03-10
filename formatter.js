@@ -15,6 +15,7 @@ var _ = require('lodash');
 var query = require('./query');
 var QueryExpression = query.QueryExpression;
 var QueryField = query.QueryField;
+var WildcardField = query.WildcardField;
 var instanceOf = require('./instance-of').instanceOf;
 
 if (typeof Object.key !== 'function') {
@@ -749,20 +750,24 @@ SqlFormatter.prototype.formatSelect = function(obj)
     {
         //enumerate joins
         _.forEach(joins, function(x) {
+            var joinType;
             if (instanceOf(x.$entity, QueryExpression)) {
-                //get on statement (the join comparison)
-                sql = sql.concat(sprintf(' INNER JOIN (%s)', $this.format(x.$entity)));
-                //add alias
-                if (x.$entity.$alias)
+                // get join type
+                joinType = (x.$entity.$join || 'inner').toUpperCase();
+                // append join statement 
+                sql = sql.concat(sprintf(' %s JOIN (%s)', joinType, $this.format(x.$entity)));
+                // add alias
+                if (x.$entity.$alias) {
                     sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$alias));
+                }
             }
             else {
-                //get join table name
+                // get join table name
                 var table = Object.key(x.$entity);
-                //get on statement (the join comparison)
-                var joinType = (x.$entity.$join || 'inner').toUpperCase();
+                // get on statement (the join comparison)
+                joinType = (x.$entity.$join || 'inner').toUpperCase();
                 sql = sql.concat(' '+ joinType + ' JOIN ').concat($this.escapeName(table));
-                //add alias
+                // add alias
                 if (x.$entity.$as)
                     sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$as));
             }
@@ -1028,8 +1033,13 @@ function isQueryField_(obj) {
 SqlFormatter.prototype.formatFieldEx = function(obj, format)
 {
 
-    if (_.isNil(obj))
+    if (obj == null) {
         return null;
+    }
+    if (instanceOf(obj, WildcardField)) {
+        var wildcardName = obj.getName().replace(/\.*$/, '');
+        return this.escapeName(wildcardName).concat('.*');
+    }
     if (!isQueryField_(obj))
         throw new Error('Invalid argument. An instance of QueryField class is expected.');
     //get property
