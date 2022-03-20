@@ -1,2 +1,19 @@
+# node
 node_modules
 .DS_Store
+
+# ide
+.theia
+.idea
+.vscode
+.gitpod.yml
+
+# test
+jest.config.js
+
+# eslint
+.eslintrc
+
+# babel
+babel.config.js
+
