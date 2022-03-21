@@ -679,18 +679,18 @@ class SqlFormatter {
             //enumerate joins
             _.forEach(joins, function (x) {
                 let table;
+                // get join direction or inner
+                let joinType = ((x.$entity && x.$entity.$join) || 'inner').toUpperCase();
                 if (instanceOf(x.$entity, QueryExpression)) {
-                    //get on statement (the join comparison)
-                    sql = sql.concat(sprintf(' INNER JOIN (%s)', $this.format(x.$entity)));
-                    //add alias
+                    // append joined query expression
+                    sql += sprintf(' %s JOIN (%s)', joinType, $this.format(x.$entity));
+                    // add alias
                     if (x.$entity.$alias)
                         sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$alias));
                 }
                 else {
                     //get join table name
                     table = Object.key(x.$entity);
-                    //get on statement (the join comparison)
-                    let joinType = (x.$entity.$join || 'inner').toUpperCase();
                     sql = sql.concat(' ' + joinType + ' JOIN ').concat($this.escapeName(table));
                     //add alias
                     if (x.$entity.$as)
