@@ -952,6 +952,9 @@ class SqlFormatter {
             return null;
         let useAlias = (format === '%f');
         if (prop === '$name') {
+            if (/\.\*$/.test(obj.$name)) {
+                return this.escapeName(obj.$name);
+            }
             return (this.settings.forceAlias && useAlias) ? this.escapeName(obj.$name).concat(' AS ', this.escapeName(obj.getName())) : this.escapeName(obj.$name);
         }
         else {
