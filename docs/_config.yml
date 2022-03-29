@@ -31,7 +31,7 @@ twitter_username: themost-framework
 github_username:  themost-framework
 
 # Build settings
-theme: just-the-docs
+# theme: just-the-docs
 # Github pages theme
 remote_theme: just-the-docs/just-the-docs
 plugins:
