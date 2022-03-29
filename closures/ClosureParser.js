@@ -15,7 +15,6 @@ let isArithmeticOperator = ArithmeticExpression.isArithmeticOperator;
 let instanceOf = require('../instance-of').instanceOf;
 
 let parse = require('esprima').parse;
-let Args = require('@themost/common').Args;
 let DateMethodParser = require('./DateMethodParser').DateMethodParser;
 let StringMethodParser = require('./StringMethodParser').StringMethodParser;
 let MathMethodParser = require('./MathMethodParser').MathMethodParser;
@@ -213,7 +212,9 @@ class ClosureParser {
             return;
         }
         this.params = params;
-        Args.check(typeof func === 'function', new Error('Select closure must a function.'));
+        if (typeof func !== 'function') {
+            throw new Error('Select closure must a function.');
+        }
         //convert the given function to javascript expression
         let expr = parse('void(' + func.toString() + ')');
         //validate expression e.g. return [EXPRESSION];

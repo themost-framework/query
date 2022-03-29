@@ -3,7 +3,6 @@ const initSqlJs = require('sql.js');
 const { SqlUtils } =  require('../../utils');
 const { QueryExpression, QueryField } = require('../../query');
 const { MemoryFormatter } = require('./TestMemoryFormatter');
-const { TraceUtils } = require('@themost/common');
 const fs = require('fs');
 
 const INSTANCE_DB = new Map();
@@ -63,11 +62,9 @@ class MemoryAdapter {
                 // create database connection
                 let buffer = null;
                 if (this.options.database) {
-                    TraceUtils.debug(`Loading database from ${this.options.database}`);
                     buffer = fs.readFileSync(this.options.database);
                 }
                 self.rawConnection = new SQL.Database(buffer);
-                TraceUtils.debug(`Database initialization for ${self.options.name} file=${self.rawConnection.filename} db=${self.rawConnection.db}`);
                 // set instance database
                 INSTANCE_DB.set(self.options.name, self.rawConnection);
             }
@@ -242,11 +239,7 @@ class MemoryAdapter {
                 transactionFunc.call(self, (err) => {
                     if (err) {
                         //rollback transaction
-                        self.execute('ROLLBACK;', null, rollbackError => {
-                            if (rollbackError) {
-                                TraceUtils.error(`An error occurred while transaction being rolled back.`);
-                                TraceUtils.error(rollbackError);
-                            }
+                        self.execute('ROLLBACK;', null, () => {
                             self.transaction = null;
                             return callback(err);
                         });
@@ -873,10 +866,6 @@ class MemoryAdapter {
 
                     //prepare statement - the traditional way
                     const prepared = self.prepare(sql, values);
-                    //log statement (optional)
-                    if (process.env.NODE_ENV==='development') {
-                        TraceUtils.log(`SQL:${prepared}, Parameters:${JSON.stringify(values)}`);
-                    }
                     let results;
                     let result = [];
                     //validate statement
@@ -914,7 +903,6 @@ class MemoryAdapter {
                             return callback(null, result);
                         }
                         catch (err) {
-                            TraceUtils.error(`SQL: ${prepared}`);
                             return callback(err);
                         }
                     }
@@ -925,7 +913,6 @@ class MemoryAdapter {
                             return callback();
                         }
                         catch (err) {
-                            TraceUtils.error(`SQL: ${prepared}`);
                             return callback(err);
                         }
 

@@ -1,6 +1,5 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 const {sprintf} = require('sprintf-js');
-const {Args} = require('@themost/common');
 const _ = require('lodash');
 const {ClosureParser} = require('./closures');
 const aggregate = Symbol();
@@ -1461,6 +1460,7 @@ class QueryExpression {
                 return this.escape(val.valueOf());
         }
 
+        // eslint-disable-next-line no-control-regex, no-useless-escape
         val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function (s) {
             switch (s) {
                 case '\0': return '\\0';
@@ -1553,8 +1553,6 @@ class QueryField {
      * @returns {QueryField}
      */
     select(name) {
-        // validate name
-        Args.notString(name, 'name');
         // clear object
         Object.clear(this);
         // set field name
@@ -1619,8 +1617,6 @@ class QueryField {
      * @returns {QueryField}
      */
     count(name) {
-        // validate name argument
-        Args.notString(name, 'name');
         //clear object
         Object.clear(this);
         // set count aggregate function
@@ -1645,8 +1641,6 @@ class QueryField {
      * @returns {QueryField}
      */
     sum(name) {
-        // validate field
-        Args.notString(name, 'name');
         //clear object
         Object.clear(this);
         // field as aggregate function e.g. { price: { $sum: 'price' } }
@@ -1677,8 +1671,6 @@ class QueryField {
      * @returns {QueryField}
      */
     average(name) {
-        // validate field
-        Args.notString(name, 'name');
         //clear object
         Object.clear(this);
         // set aggregate function
@@ -1703,8 +1695,6 @@ class QueryField {
      * @returns {QueryField}
      */
     max(name) {
-        // validate field
-        Args.notString(name, 'name');
         //clear object
         Object.clear(this);
         // set aggregate function

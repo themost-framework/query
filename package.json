@@ -4,14 +4,12 @@
   "description": "MOST Web Framework Codename ZeroGravity - Query Module",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine",
-    "install-peers": "add-peers"
+    "test": "jasmine"
   },
   "engines": {
     "node": ">=8.4.0"
   },
   "peerDependencies": {
-    "@themost/common": "next"
   },
   "repository": {
     "type": "git",
