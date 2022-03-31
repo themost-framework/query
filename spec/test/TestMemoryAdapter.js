@@ -1,9 +1,9 @@
 
-const initSqlJs = require('sql.js');
-const { SqlUtils } =  require('../../utils');
-const { QueryExpression, QueryField } = require('../../query');
-const { MemoryFormatter } = require('./TestMemoryFormatter');
-const fs = require('fs');
+import initSqlJs from 'sql.js';
+import { SqlUtils } from '../../src/index';
+import { QueryExpression, QueryField } from '../../src/index';
+import { MemoryFormatter } from './TestMemoryFormatter';
+import { readFileSync } from 'fs';
 
 const INSTANCE_DB = new Map();
 const DateTimeRegex = /^\d{4}-([0]\d|1[0-2])-([0-2]\d|3[01])(?:[T ](\d+):(\d+)(?::(\d+)(?:\.(\d+))?)?)(?:Z(-?\d*))?([+-](\d+):(\d+))?$/;
@@ -62,7 +62,7 @@ class MemoryAdapter {
                 // create database connection
                 let buffer = null;
                 if (this.options.database) {
-                    buffer = fs.readFileSync(this.options.database);
+                    buffer = readFileSync(this.options.database);
                 }
                 self.rawConnection = new SQL.Database(buffer);
                 // set instance database
@@ -1163,7 +1163,7 @@ function createInstance(options) {
     return new MemoryAdapter(options);
 }
 
-module.exports = {
+export {
     MemoryAdapter,
     createInstance
 };

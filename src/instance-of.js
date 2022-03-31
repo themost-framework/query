@@ -16,7 +16,7 @@ function instanceOf(any, ctor) {
     return !!(any && any.constructor && any.constructor.name === ctor.name);
 }
 
-module.exports = {
+export {
     instanceOf
 };
 

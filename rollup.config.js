@@ -1,14 +1,29 @@
 import { babel } from '@rollup/plugin-babel';
 import dts from 'rollup-plugin-dts';
-
-const config = [{
+const pkg = require('./package.json');
+const config = [
+  {
+    input: 'src/index.js',
+    output: {
+      file: 'dist/index.cjs.js',
+        format: 'cjs',
+        sourcemap: true
+    },
+    external: Object.keys(pkg.dependencies),
+    plugins: [babel({
+      babelHelpers: 'bundled'
+    })]
+},
+{
   input: 'src/index.js',
-  output: [
-    { file: 'dist/index.cjs.js', format: 'cjs' },
-    { file: 'dist/index.esm.js', format: 'esm' }
-  ],
+  output: {
+      file: 'dist/index.esm.js',
+      format: 'esm',
+      sourcemap: true
+  },
+  external: Object.keys(pkg.dependencies),
   plugins: [babel({
-    sourceMaps: true
+    babelHelpers: 'bundled'
   })]
 },
 {

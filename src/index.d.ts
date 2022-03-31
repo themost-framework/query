@@ -4,3 +4,8 @@ export * from "./odata";
 export * from "./expressions";
 export * from "./query";
 export * from "./utils";
+export * from './closures/ClosureParser';
+export * from './closures/PrototypeMethodParser';
+export * from './closures/MathMethodParser';
+export * from './closures/DateMethodParser';
+export * from './closures/StringMethodParser';

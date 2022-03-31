@@ -1,6 +1,6 @@
-const { QueryField } = require('../query');
-const { QueryEntity, QueryExpression } = require('../query');
-const { MemoryAdapter } = require('./test/TestMemoryAdapter');
+import { QueryField } from '../src/index';
+import { QueryEntity, QueryExpression } from '../src/index';
+import { MemoryAdapter } from './test/TestMemoryAdapter';
 
 describe('SqlFormatter', () => {
 

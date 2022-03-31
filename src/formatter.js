@@ -1,10 +1,10 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
-const {SqlUtils} = require('./utils');
-const {sprintf} = require('sprintf-js');
-const _ = require('lodash');
-const {QueryExpression, QueryField} = require('./query');
-const {instanceOf} = require('./instance-of');
-require('./polyfills');
+import { SqlUtils } from './utils';
+import { sprintf } from 'sprintf-js';
+import { isNil, isString, isFunction, map, forEach, isObject } from 'lodash';
+import { QueryExpression, QueryField } from './query';
+import { instanceOf } from './instance-of';
+import './polyfills';
 
 const ALIAS_KEYWORD = ' AS ';
 const DEFAULT_COUNT_ALIAS = '__count__';
@@ -59,7 +59,7 @@ class SqlFormatter {
      */
     formatComparison(comparison) {
         let key;
-        if (_.isNil(comparison))
+        if (isNil(comparison))
             return '(%s IS NULL)';
         if (typeof comparison === 'object') {
             if (comparison instanceof Date) {
@@ -117,7 +117,7 @@ class SqlFormatter {
      * @returns {string} - The equivalent SQL string value
      */
     escape(value, unquoted) {
-        if (_.isNil(value))
+        if (isNil(value))
             return SqlUtils.escape(null);
 
         if (typeof value === 'object') {
@@ -129,7 +129,7 @@ class SqlFormatter {
             else {
                 //check if value is a known expression e.g. { $length:"name" }
                 let keys = Object.keys(value), key0 = keys[0];
-                if (_.isString(key0) && /^\$/.test(key0) && _.isFunction(this[key0])) {
+                if (isString(key0) && /^\$/.test(key0) && isFunction(this[key0])) {
                     let exprFunc = this[key0];
                     let args;
                     // if function has an array of arguments e.g.
@@ -138,7 +138,7 @@ class SqlFormatter {
                     if (Array.isArray(value[key0])) {
                         args = value[key0];
                     } else {
-                        args = _.map(keys, function (x) {
+                        args = map(keys, function (x) {
                             return value[x];
                         });
                     }
@@ -203,7 +203,7 @@ class SqlFormatter {
                     throw new Error('Invalid query argument. A logical expression must contain one or more comparison expressions.');
                 if (propertyValue.length === 0)
                     return '';
-                return '(' + _.map(propertyValue, function (x) {
+                return '(' + map(propertyValue, function (x) {
                     return self.formatWhere(x);
                 }).join(separator) + ')';
             default:
@@ -233,7 +233,7 @@ class SqlFormatter {
                     case '$text':
                         return self.$text({ $name: property }, comparison.$text.$search);
                     case '$eq':
-                        if (_.isNil(comparison.$eq))
+                        if (isNil(comparison.$eq))
                             return sprintf('(%s IS NULL)', escapedProperty);
                         return sprintf('(%s=%s)', escapedProperty, self.escape(comparison.$eq));
                     case '$gt':
@@ -245,7 +245,7 @@ class SqlFormatter {
                     case '$lte':
                         return sprintf('(%s<=%s)', escapedProperty, self.escape(comparison.$lte));
                     case '$ne':
-                        if (_.isNil(comparison.$ne))
+                        if (isNil(comparison.$ne))
                             return sprintf('(NOT %s IS NULL)', escapedProperty);
                         if (comparison != null) {
                             if (Array.isArray(comparison.$ne)) {
@@ -262,7 +262,7 @@ class SqlFormatter {
                         if (Array.isArray(comparison.$in)) {
                             if (comparison.$in.length === 0)
                                 return sprintf('(%s IN (NULL))', escapedProperty);
-                            sql = '('.concat(escapedProperty, ' IN (', _.map(comparison.$in, function (x) {
+                            sql = '('.concat(escapedProperty, ' IN (', map(comparison.$in, function (x) {
                                 return self.escape(x !== null ? x : null);
                             }).join(', '), '))');
                             return sql;
@@ -281,7 +281,7 @@ class SqlFormatter {
                         if (Array.isArray(comparison.$nin)) {
                             if (comparison.$nin.length === 0)
                                 return sprintf('(NOT %s IN (NULL))', escapedProperty);
-                            sql = '(NOT '.concat(escapedProperty, ' IN (', _.map(comparison.$nin, function (x) {
+                            sql = '(NOT '.concat(escapedProperty, ' IN (', map(comparison.$nin, function (x) {
                                 return self.escape(x !== null ? x : null);
                             }).join(', '), '))');
                             return sql;
@@ -352,7 +352,7 @@ class SqlFormatter {
      */
     $startswith(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '';
         return sprintf('(%s REGEXP \'^%s\')', this.escape(p0), this.escape(p1, true));
     }
@@ -365,7 +365,7 @@ class SqlFormatter {
      */
     $endswith(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '';
         return sprintf('(%s REGEXP \'%s$$\')', this.escape(p0), this.escape(p1, true));
     }
@@ -377,7 +377,7 @@ class SqlFormatter {
      */
     $regex(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '';
         return sprintf('(%s REGEXP \'%s\')', this.escape(p0), this.escape(p1, true));
     }
@@ -482,7 +482,7 @@ class SqlFormatter {
      */
     $text(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '';
         if (p1.valueOf().toString().length === 0)
             return '';
@@ -510,7 +510,7 @@ class SqlFormatter {
      * @returns {string}
      */
     $round(p0, p1) {
-        if (_.isNil(p1))
+        if (isNil(p1))
             p1 = 0;
         return sprintf('ROUND(%s,%s)', this.escape(p0), this.escape(p1));
     }
@@ -522,7 +522,7 @@ class SqlFormatter {
      */
     $add(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '0';
         return sprintf('(%s + %s)', this.escape(p0), this.escape(p1));
     }
@@ -533,7 +533,7 @@ class SqlFormatter {
      * @returns {boolean}
      */
     isField(obj) {
-        if (_.isNil(obj))
+        if (isNil(obj))
             return false;
         if (typeof obj === 'object')
             if (Object.prototype.hasOwnProperty.call(obj, '$name'))
@@ -548,7 +548,7 @@ class SqlFormatter {
      */
     $sub(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '0';
         return sprintf('(%s - %s)', this.escape(p0), this.escape(p1));
     }
@@ -559,7 +559,7 @@ class SqlFormatter {
      */
     $mul(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '0';
         return sprintf('(%s * %s)', this.escape(p0), this.escape(p1));
     }
@@ -570,7 +570,7 @@ class SqlFormatter {
      */
     $mod(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '0';
         return sprintf('(%s %% %s)', this.escape(p0), this.escape(p1));
     }
@@ -581,7 +581,7 @@ class SqlFormatter {
      */
     $div(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '0';
         return sprintf('(%s / %s)', this.escape(p0), this.escape(p1));
     }
@@ -592,7 +592,7 @@ class SqlFormatter {
      */
     $bit(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (isNil(p0) || isNil(p1))
             return '0';
         return sprintf('(%s & %s)', this.escape(p0), this.escape(p1));
     }
@@ -603,7 +603,7 @@ class SqlFormatter {
      */
     formatCount(query) {
         //validate select expression
-        if (_.isNil(query.$select)) {
+        if (isNil(query.$select)) {
             throw new Error('Invalid query expression. Expected a valid select expression.');
         }
         //get count alias
@@ -621,7 +621,7 @@ class SqlFormatter {
     formatFixedSelect(obj) {
         let self = this;
         let fields = obj.fields();
-        return 'SELECT ' + _.map(fields, function (x) { return self.format(x, '%f'); }).join(', ');
+        return 'SELECT ' + map(fields, function (x) { return self.format(x, '%f'); }).join(', ');
     }
     /**
      *
@@ -630,12 +630,12 @@ class SqlFormatter {
      */
     formatSelect(obj) {
         let $this = this, sql = '', escapedEntity;
-        if (_.isNil(obj.$select))
+        if (isNil(obj.$select))
             throw new Error('Select expression cannot be empty at this context.');
         //get entity name
         let entity = Object.key(obj.$select);
         let joins = [];
-        if (!_.isNil(obj.$expand)) {
+        if (!isNil(obj.$expand)) {
             if (Array.isArray(obj.$expand))
                 joins = obj.$expand;
 
@@ -668,7 +668,7 @@ class SqlFormatter {
             sql = sql.concat('SELECT * FROM (', $this.formatFixedSelect(obj), ') ', escapedEntity);
         }
         else {
-            sql = sql.concat(obj.$distinct ? 'SELECT DISTINCT ' : 'SELECT ', _.map(fields, function (x) {
+            sql = sql.concat(obj.$distinct ? 'SELECT DISTINCT ' : 'SELECT ', map(fields, function (x) {
                 return $this.format(x, '%f');
             }).join(', '), ' FROM ', escapedEntity);
         }
@@ -677,7 +677,7 @@ class SqlFormatter {
         //add join if any
         if (obj.$expand !== null) {
             //enumerate joins
-            _.forEach(joins, function (x) {
+            forEach(joins, function (x) {
                 let table;
                 // get join direction or inner
                 let joinType = ((x.$entity && x.$entity.$join) || 'inner').toUpperCase();
@@ -735,8 +735,8 @@ class SqlFormatter {
             });
         }
         //add WHERE statement if any
-        if (_.isObject(obj.$where)) {
-            if (_.isObject(obj.$prepared)) {
+        if (isObject(obj.$where)) {
+            if (isObject(obj.$prepared)) {
                 let where1 = { $and: [obj.$where, obj.$prepared] };
                 sql = sql.concat(' WHERE ', this.formatWhere(where1));
             }
@@ -746,14 +746,14 @@ class SqlFormatter {
 
         }
         else {
-            if (_.isObject(obj.$prepared))
+            if (isObject(obj.$prepared))
                 sql = sql.concat(' WHERE ', this.formatWhere(obj.$prepared));
         }
 
-        if (_.isObject(obj.$group))
+        if (isObject(obj.$group))
             sql = sql.concat(this.formatGroupBy(obj.$group));
 
-        if (_.isObject(obj.$order))
+        if (isObject(obj.$order))
             sql = sql.concat(this.formatOrder(obj.$order));
 
         // finally, return statement
@@ -780,12 +780,12 @@ class SqlFormatter {
     }
     formatField(obj) {
         let self = this;
-        if (_.isNil(obj))
+        if (isNil(obj))
             return '';
         if (typeof obj === 'string')
             return obj;
         if (Array.isArray(obj)) {
-            return _.map(obj, function (x) {
+            return map(obj, function (x) {
                 return x.valueOf();
             }).join(', ');
         }
@@ -802,7 +802,7 @@ class SqlFormatter {
             else {
                 fields = obj[tableName];
             }
-            return _.map(fields, function (x) {
+            return map(fields, function (x) {
                 /**
                  * @type {*}
                  */
@@ -824,12 +824,12 @@ class SqlFormatter {
         let self = this;
         if (!Array.isArray(obj))
             return '';
-        let sql = _.map(obj, function (x) {
+        let sql = map(obj, function (x) {
             let f = x.$desc ? x.$desc : x.$asc;
-            if (_.isNil(f))
+            if (isNil(f))
                 throw new Error('An order by object must have either ascending or descending property.');
             if (Array.isArray(f)) {
-                return _.map(f, function (a) {
+                return map(f, function (a) {
                     return self.format(a, '%ff').concat(x.$desc ? ' DESC' : ' ASC');
                 }).join(', ');
             }
@@ -849,7 +849,7 @@ class SqlFormatter {
         if (!Array.isArray(obj))
             return '';
         let arr = [];
-        _.forEach(obj, function (x) {
+        forEach(obj, function (x) {
             arr.push(self.format(x, '%ff'));
         });
         let sql = arr.join(', ');
@@ -864,7 +864,7 @@ class SqlFormatter {
      */
     formatInsert(obj) {
         let self = this, sql = '';
-        if (_.isNil(obj.$insert))
+        if (isNil(obj.$insert))
             throw new Error('Insert expression cannot be empty at this context.');
         //get entity name
         let entity = Object.key(obj.$insert);
@@ -874,8 +874,8 @@ class SqlFormatter {
         for (let prop in obj1)
             if (Object.prototype.hasOwnProperty.call(obj1, prop))
                 props.push(prop);
-        sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(', _.map(props, function (x) { return self.escapeName(x); }).join(', '), ') VALUES (',
-            _.map(props, function (x) {
+        sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(', map(props, function (x) { return self.escapeName(x); }).join(', '), ') VALUES (',
+            map(props, function (x) {
                 let value = obj1[x];
                 return self.escape(value !== null ? value : null);
             }).join(', '), ')');
@@ -888,7 +888,7 @@ class SqlFormatter {
      */
     formatUpdate(obj) {
         let self = this, sql = '';
-        if (!_.isObject(obj.$update))
+        if (!isObject(obj.$update))
             throw new Error('Update expression cannot be empty at this context.');
         //get entity name
         let entity = Object.key(obj.$update);
@@ -900,11 +900,11 @@ class SqlFormatter {
                 props.push(prop);
         //add basic INSERT statement
         sql = sql.concat('UPDATE ', self.escapeName(entity), ' SET ',
-            _.map(props, function (x) {
+            map(props, function (x) {
                 let value = obj1[x];
                 return self.escapeName(x).concat('=', self.escape(value !== null ? value : null));
             }).join(', '));
-        if (_.isObject(obj.$where))
+        if (isObject(obj.$where))
             sql = sql.concat(' WHERE ', this.formatWhere(obj.$where));
         return sql;
     }
@@ -942,13 +942,13 @@ class SqlFormatter {
      */
     formatFieldEx(obj, format) {
 
-        if (_.isNil(obj))
+        if (isNil(obj))
             return null;
         if (instanceOf(obj, QueryField) === false)
             throw new Error('Invalid argument. An instance of QueryField class is expected.');
         //get property
         let prop = Object.key(obj);
-        if (_.isNil(prop))
+        if (isNil(prop))
             return null;
         let useAlias = (format === '%f');
         if (prop === '$name') {
@@ -959,7 +959,7 @@ class SqlFormatter {
         }
         else {
             let expr = obj[prop];
-            if (_.isNil(expr))
+            if (isNil(expr))
                 throw new Error('Field definition cannot be empty while formatting.');
             if (typeof expr === 'string') {
                 return useAlias ? this.escapeName(expr).concat(' AS ', this.escapeName(prop)) : expr;
@@ -1011,7 +1011,7 @@ class SqlFormatter {
      * @returns {string|*}
      */
     format(obj, s) {
-        if (_.isNil(obj))
+        if (isNil(obj))
             return null;
         //if a format is defined
         if (s !== undefined) {
@@ -1043,8 +1043,8 @@ class SqlFormatter {
             query = Object.assign(new QueryExpression(), obj);
         }
         //format query
-        if (_.isObject(query.$select)) {
-            if (_.isString(query.$count)) {
+        if (isObject(query.$select)) {
+            if (isString(query.$count)) {
                 return this.formatCount(query);
             }
             if (!query.hasPaging())
@@ -1053,9 +1053,9 @@ class SqlFormatter {
             else
                 return this.formatLimitSelect(query);
         }
-        else if (_.isObject(query.$insert))
+        else if (isObject(query.$insert))
             return this.formatInsert(query);
-        else if (_.isObject(query.$update))
+        else if (isObject(query.$update))
             return this.formatUpdate(query);
         else if (query.$delete !== null)
             return this.formatDelete(query);
@@ -1173,6 +1173,6 @@ class SqlFormatter {
     }
 }
 
-module.exports = {
+export {
     SqlFormatter
 }

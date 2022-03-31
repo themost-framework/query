@@ -1,5 +1,5 @@
 
-const { SqlFormatter } = require('../../formatter');
+import { SqlFormatter } from '../../src/index';
 
 const REGEXP_SINGLE_QUOTE = /\\'/g;
 const SINGLE_QUOTE_ESCAPE = '\'\'';
@@ -257,6 +257,6 @@ class MemoryFormatter extends SqlFormatter {
     }
 }
 
-module.exports = {
+export {
     MemoryFormatter
 };

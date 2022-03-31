@@ -1,5 +1,5 @@
-const { QueryEntity, QueryExpression } = require('../query');
-const { MemoryAdapter } = require('./test/TestMemoryAdapter');
+import { QueryEntity, QueryExpression } from '../src/index';
+import { MemoryAdapter } from './test/TestMemoryAdapter';
 
 describe('SqlFormatter', () => {
 

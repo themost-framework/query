@@ -419,7 +419,7 @@ class OrderByAnyExpression {
     }
 }
 
-module.exports = {
+export {
     Operators,
     ArithmeticExpression,
     MemberExpression,

@@ -1,9 +1,9 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
-const {sprintf} = require('sprintf-js');
-const _ = require('lodash');
-const {ClosureParser} = require('./closures');
+import { sprintf } from 'sprintf-js';
+import { keys as _keys, isArray, isNil, cloneDeep, forEach, assign, isObject, map } from 'lodash';
+import { ClosureParser } from './closures/ClosureParser';
 const aggregate = Symbol();
-require('./polyfills');
+import './polyfills';
 
 class QueryParameter {
     constructor() {
@@ -20,9 +20,9 @@ class QueryFieldAggregator {
      * @param {*} comparison
      */
     wrapWith(comparison) {
-        let name = _.keys(this)[0];
+        let name = _keys(this)[0];
         if (name) {
-            if (_.isArray(this[name])) {
+            if (isArray(this[name])) {
                 //search for query parameter
                 for (let i = 0; i < this[name].length; i++) {
                     if (this[name][i] instanceof QueryParameter) {
@@ -63,7 +63,7 @@ class QueryExpression {
      */
     prop(s) {
         if (typeof s === 'undefined') { return this.privates.property; }
-        if (_.isNil(s)) { delete this.privates.property; }
+        if (isNil(s)) { delete this.privates.property; }
         this.privates.property = s;
     }
     /**
@@ -77,7 +77,7 @@ class QueryExpression {
      * @returns {QueryExpression}
      */
     clone() {
-        return _.cloneDeep(this);
+        return cloneDeep(this);
     }
     /**
      * Sets the alias of a QueryExpression instance. This alias is going to be used in sub-query operations.
@@ -93,12 +93,12 @@ class QueryExpression {
      */
     fields() {
 
-        if (_.isNil(this.$select))
+        if (isNil(this.$select))
             return [];
         let entity = Object.key(this.$select);
         let joins = [];
-        if (!_.isNil(this.$expand)) {
-            if (_.isArray(this.$expand))
+        if (!isNil(this.$expand)) {
+            if (isArray(this.$expand))
                 joins = this.$expand;
 
             else
@@ -108,7 +108,7 @@ class QueryExpression {
         let fields = [];
         //get fields
         let re = QueryField.FieldNameExpression, arr = this.$select[entity] || [];
-        _.forEach(arr, function (x) {
+        forEach(arr, function (x) {
             if (typeof x === 'string') {
                 re.lastIndex = 0;
                 if (!re.test(x))
@@ -119,22 +119,22 @@ class QueryExpression {
                 }
             }
             else {
-                fields.push(_.assign(new QueryField(), x));
+                fields.push(assign(new QueryField(), x));
             }
         });
         //enumerate join fields
-        _.forEach(joins, function (x) {
+        forEach(joins, function (x) {
             if (x.$entity instanceof QueryExpression) {
                 //todo::add fields if any
             }
             else {
                 let table = Object.key(x.$entity), tableFields = x.$entity[table] || [];
-                _.forEach(tableFields, function (y) {
+                forEach(tableFields, function (y) {
                     if (typeof x === 'string') {
                         fields.push(new QueryField(y));
                     }
                     else {
-                        fields.push(_.assign(new QueryField(), y));
+                        fields.push(assign(new QueryField(), y));
                     }
                 });
             }
@@ -147,7 +147,7 @@ class QueryExpression {
      * @returns {boolean}
      */
     hasFilter() {
-        return _.isObject(this.$where);
+        return isObject(this.$where);
     }
     /**
      * @param {boolean=} useOr
@@ -177,27 +177,27 @@ class QueryExpression {
      */
     hasFields() {
         let self = this;
-        if (!_.isObject(self.$select))
+        if (!isObject(self.$select))
             return false;
         let entity = Object.key(self.$select);
         let joins = [];
-        if (!_.isNil(self.$expand)) {
-            if (_.isArray(self.$expand))
+        if (!isNil(self.$expand)) {
+            if (isArray(self.$expand))
                 joins = self.$expand;
 
             else
                 joins.push(self.$expand);
         }
         //search for fields
-        if (_.isArray(self.$select[entity])) {
+        if (isArray(self.$select[entity])) {
             if (self.$select[entity].length > 0)
                 return true;
         }
         let result = false;
         //enumerate join fields
-        _.forEach(joins, function (x) {
+        forEach(joins, function (x) {
             let table = Object.key(x.$entity);
-            if (_.isArray(x.$entity[table])) {
+            if (isArray(x.$entity[table])) {
                 if (x.$entity[table].length > 0)
                     result = true;
             }
@@ -209,7 +209,7 @@ class QueryExpression {
      * @returns {boolean}
      */
     hasPaging() {
-        return !_.isNil(this.$take);
+        return !isNil(this.$take);
     }
     /**
      * @returns {QueryExpression}
@@ -243,7 +243,7 @@ class QueryExpression {
             this.$where = closureParser.parseFilter(expr, params);
             return this;
         }
-        if (_.isNil(expr))
+        if (isNil(expr))
             throw new Error('Left operand cannot be empty. Expected string or object.');
         delete this.$where;
         if (typeof expr === 'string') {
@@ -264,7 +264,7 @@ class QueryExpression {
      * @returns {QueryExpression}
      */
     injectWhere(where) {
-        if (_.isNil(where))
+        if (isNil(where))
             return this;
         this.$where = where;
     }
@@ -274,7 +274,7 @@ class QueryExpression {
      * @returns {QueryExpression}
      */
     delete(entity) {
-        if (_.isNil(entity))
+        if (isNil(entity))
             return this;
         this.$delete = entity.valueOf();
         //delete other properties (if any)
@@ -289,9 +289,9 @@ class QueryExpression {
      * @returns {QueryExpression}
      */
     insert(obj) {
-        if (_.isNil(obj))
+        if (isNil(obj))
             return this;
-        if (_.isArray(obj) || _.isObject(obj)) {
+        if (isArray(obj) || isObject(obj)) {
             this.$insert = { table1: obj };
             //delete other properties (if any)
             delete this.$delete;
@@ -304,17 +304,17 @@ class QueryExpression {
         }
     }
     into(entity) {
-        if (_.isNil(entity))
+        if (isNil(entity))
             return this;
-        if (_.isNil(this.$insert))
+        if (isNil(this.$insert))
             return this;
         let prop = Object.key(this.$insert);
-        if (_.isNil(prop))
+        if (isNil(prop))
             return this;
         if (prop === entity)
             return this;
         let value = this.$insert[prop];
-        if (_.isNil(value))
+        if (isNil(value))
             return this;
         this.$insert[entity] = value;
         delete this.$insert[prop];
@@ -326,7 +326,7 @@ class QueryExpression {
      * @returns {QueryExpression}
      */
     update(entity) {
-        if (_.isNil(entity))
+        if (isNil(entity))
             return this;
         if (typeof entity !== 'string')
             throw new Error('Invalid argument type. Update entity argument must be a string.');
@@ -344,13 +344,13 @@ class QueryExpression {
      * @returns {QueryExpression}
      */
     set(obj) {
-        if (_.isNil(obj))
+        if (isNil(obj))
             return this;
-        if (_.isArray(obj) || !_.isObject(obj))
+        if (isArray(obj) || !isObject(obj))
             throw new Error('Invalid argument type. Update expression argument must be an object.');
         //get entity name (by property)
         let prop = Object.key(this.$update);
-        if (_.isNil(prop))
+        if (isNil(prop))
             throw new Error('Invalid operation. Update entity cannot be empty at this context.');
         //set object to update
         this.$update[prop] = obj;
@@ -461,7 +461,7 @@ class QueryExpression {
      */
     from(entity) {
 
-        if (_.isNil(entity))
+        if (isNil(entity))
             return this;
         let name;
         if (entity instanceof QueryEntity) {
@@ -515,9 +515,9 @@ class QueryExpression {
      */
     join(entity, props, alias) {
 
-        if (_.isNil(entity))
+        if (isNil(entity))
             return this;
-        if (_.isNil(this.$select))
+        if (isNil(this.$select))
             throw new Error('Query entity cannot be empty when adding a join entity.');
         let obj = {};
         if (entity instanceof QueryEntity) {
@@ -629,11 +629,11 @@ class QueryExpression {
         else {
             this.privates.expand.$with = obj;
         }
-        if (_.isNil(this.$expand)) {
+        if (isNil(this.$expand)) {
             this.$expand = this.privates.expand;
         }
         else {
-            if (_.isArray(this.$expand)) {
+            if (isArray(this.$expand)) {
                 this.$expand.push(this.privates.expand);
             }
             else {
@@ -677,9 +677,9 @@ class QueryExpression {
             return this;
         }
 
-        if (_.isNil(field))
+        if (isNil(field))
             return this;
-        if (_.isNil(this.$order))
+        if (isNil(this.$order))
             this.$order = [];
         this.$order.push({ $asc: field });
         return this;
@@ -713,9 +713,9 @@ class QueryExpression {
             return this;
         }
 
-        if (_.isNil(field))
+        if (isNil(field))
             return this;
-        if (_.isNil(this.$order))
+        if (isNil(this.$order))
             this.$order = [];
         this.$order.push({ $desc: field });
         return this;
@@ -751,9 +751,9 @@ class QueryExpression {
             return this;
         }
 
-        if (_.isNil(field))
+        if (isNil(field))
             return this;
-        if (_.isNil(this.$order))
+        if (isNil(this.$order))
             return this;
         this.$order.push({ $asc: field });
         return this;
@@ -789,9 +789,9 @@ class QueryExpression {
             return this;
         }
 
-        if (_.isNil(field))
+        if (isNil(field))
             return this;
-        if (_.isNil(this.$order))
+        if (isNil(this.$order))
             //throw exception (?)
             return this;
         this.$order.push({ $desc: field });
@@ -863,7 +863,7 @@ class QueryExpression {
             let op = this.privates.expression;
             if (op) {
                 //get current operator
-                let keys = _.keys(this.$where);
+                let keys = _keys(this.$where);
                 if (keys[0] === op) {
                     this.$where[op].push(expr);
                 }
@@ -882,7 +882,7 @@ class QueryExpression {
      * @returns {QueryExpression}
      */
     or(field) {
-        if (_.isNil(field))
+        if (isNil(field))
             throw new Error('Left operand cannot be empty. Expected string or object.');
         if (typeof field === 'string') {
             this.prop(field);
@@ -901,7 +901,7 @@ class QueryExpression {
      * @returns {QueryExpression}
      */
     and(field) {
-        if (_.isNil(field))
+        if (isNil(field))
             throw new Error('Left operand cannot be empty. Expected string or object.');
         if (typeof field === 'string') {
             this.prop(field);
@@ -1422,7 +1422,7 @@ class QueryExpression {
         return res;
     }
     static escape(val) {
-        if (_.isNil(val)) {
+        if (isNil(val)) {
             return 'null';
         }
 
@@ -1445,7 +1445,7 @@ class QueryExpression {
 
         if (typeof val === 'object' && Object.prototype.toString.call(val) === '[object Array]') {
             let values = [];
-            _.forEach(val, function (x) {
+            forEach(val, function (x) {
                 QueryExpression.escape(x);
             });
             return values.join(',');
@@ -1540,8 +1540,8 @@ class QueryField {
              */
             this.$name = obj;
         }
-        else if (_.isObject(obj)) {
-            _.assign(this, obj);
+        else if (isObject(obj)) {
+            assign(this, obj);
         }
     }
     /**
@@ -1570,7 +1570,7 @@ class QueryField {
         if (typeof entity !== 'string')
             throw new Error('Invalid argument. Expected string');
         //get property
-        if (!_.isNil(this.$name)) {
+        if (!isNil(this.$name)) {
             if (typeof this.$name === 'string') {
                 //check if an entity is already defined
                 name = this.$name;
@@ -1589,13 +1589,13 @@ class QueryField {
         else {
             //get default property
             let alias = Object.key(this);
-            if (_.isNil(alias))
+            if (isNil(alias))
                 throw new Error('Field definition cannot be empty at this context');
             //get field expression
             let expr = this[alias];
             //get field name
             let aggregate = Object.key(expr);
-            if (_.isNil(aggregate))
+            if (isNil(aggregate))
                 throw new Error('Field expression cannot be empty at this context');
             name = expr[aggregate];
             if (QueryField.FieldNameExpression.test(name))
@@ -1711,7 +1711,7 @@ class QueryField {
         if (typeof alias === 'undefined') {
             if (typeof this.$name !== 'undefined')
                 return null;
-            let keys = _.keys(this);
+            let keys = _keys(this);
             if (keys.length === 0)
                 return null;
 
@@ -1722,7 +1722,7 @@ class QueryField {
             throw new Error('Invalid argument. Expected string');
         //get first property
         let prop = Object.key(this);
-        if (_.isNil(prop))
+        if (isNil(prop))
             throw new Error('Invalid object state. Field is not selected.');
         let value = this[prop];
         if (prop !== alias) {
@@ -1834,7 +1834,7 @@ class QueryField {
     static floor(name) {
         let f = {};
         f[name] = { $floor: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1843,7 +1843,7 @@ class QueryField {
     static ceil(name) {
         let f = {};
         f[name] = { $ceiling: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param {string} name
@@ -1853,7 +1853,7 @@ class QueryField {
     static modulo(name, divider) {
         let f = {};
         f[name] = { $mod: [new QueryField(name), divider] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param {string} name
@@ -1863,7 +1863,7 @@ class QueryField {
     static add(name, x) {
         let f = {};
         f[name] = { $add: [new QueryField(name), x] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param {string} name
@@ -1873,7 +1873,7 @@ class QueryField {
     static subtract(name, x) {
         let f = {};
         f[name] = { $subtract: [new QueryField(name), x] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param {string} name
@@ -1883,7 +1883,7 @@ class QueryField {
     static divide(name, divider) {
         let f = {};
         f[name] = { $divide: [new QueryField(name), divider] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param {string} name
@@ -1893,7 +1893,7 @@ class QueryField {
     static multiply(name, multiplier) {
         let f = {};
         f[name] = { $multiply: [new QueryField(name), multiplier] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param {string} name
@@ -1903,7 +1903,7 @@ class QueryField {
     static round(name, n) {
         let f = {};
         f[name] = { $round: [new QueryField(name), typeof n !== 'number' ? n : 2] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1912,7 +1912,7 @@ class QueryField {
     static strLength(name) {
         let f = {};
         f[name] = { $length: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1921,7 +1921,7 @@ class QueryField {
     static trim(name) {
         let f = {};
         f[name] = { $trim: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1930,7 +1930,7 @@ class QueryField {
     static year(name) {
         let f = {};
         f[name] = { $year: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1939,7 +1939,7 @@ class QueryField {
     static day(name) {
         let f = {};
         f[name] = { $day: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1948,7 +1948,7 @@ class QueryField {
     static date(name) {
         let f = {};
         f[name] = { $date: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1957,7 +1957,7 @@ class QueryField {
     static hour(name) {
         let f = {};
         f[name] = { $hour: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1966,7 +1966,7 @@ class QueryField {
     static minute(name) {
         let f = {};
         f[name] = { $minute: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1975,7 +1975,7 @@ class QueryField {
     static second(name) {
         let f = {};
         f[name] = { $second: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
     /**
      * @param name {string}
@@ -1984,7 +1984,7 @@ class QueryField {
     static month(name) {
         let f = {};
         f[name] = { $month: [new QueryField(name)] };
-        return _.assign(new QueryField(), f);
+        return assign(new QueryField(), f);
     }
 }
 
@@ -2007,7 +2007,7 @@ class QueryFieldComparer {
         }
         //get aggregate function
         let aggr = Object.key(this), name;
-        if (_.isArray(this[aggr])) {
+        if (isArray(this[aggr])) {
             //get first element (the field name)
             name = QueryField.prototype.nameOf.call(this[aggr][0]);
         }
@@ -2045,10 +2045,10 @@ class OpenDataQuery {
             let expr = null;
 
             if (self.privates.op === 'in') {
-                if (_.isArray(self.privates.right)) {
+                if (isArray(self.privates.right)) {
                     //expand values
                     exprs = [];
-                    _.forEach(self.privates.right, function (x) {
+                    forEach(self.privates.right, function (x) {
                         exprs.push(self.privates.left + ' eq ' + QueryExpression.escape(x));
                     });
                     if (exprs.length > 0)
@@ -2056,10 +2056,10 @@ class OpenDataQuery {
                 }
             }
             else if (self.privates.op === 'nin') {
-                if (_.isArray(self.privates.right)) {
+                if (isArray(self.privates.right)) {
                     //expand values
                     exprs = [];
-                    _.forEach(self.privates.right, function (x) {
+                    forEach(self.privates.right, function (x) {
                         exprs.push(self.privates.left + ' ne ' + QueryExpression.escape(x));
                     });
                     if (exprs.length > 0)
@@ -2070,7 +2070,7 @@ class OpenDataQuery {
             else
                 expr = self.privates.left + ' ' + self.privates.op + ' ' + QueryExpression.escape(self.privates.right);
             if (expr) {
-                if (_.isNil(self.$filter))
+                if (isNil(self.$filter))
                     self.$filter = expr;
                 else {
                     self.privates.lop = self.privates.lop || 'and';
@@ -2093,8 +2093,8 @@ class OpenDataQuery {
      */
     select(attr) {
         let args = (arguments.length > 1) ? Array.prototype.slice.call(arguments) : attr;
-        this.$select = _.map(args, function (arg) {
-            if (_.isArray(arg)) {
+        this.$select = map(args, function (arg) {
+            if (isArray(arg)) {
                 return arg.join(',');
             }
             return arg;
@@ -2123,7 +2123,7 @@ class OpenDataQuery {
      * @returns OpenDataQuery
      */
     orderBy(name) {
-        if (!_.isNil(name)) {
+        if (!isNil(name)) {
             this.$orderby = name.toString();
         }
         return this;
@@ -2134,7 +2134,7 @@ class OpenDataQuery {
      * @returns OpenDataQuery
      */
     orderByDescending(name) {
-        if (!_.isNil(name)) {
+        if (!isNil(name)) {
             this.$orderby = name.toString() + ' desc';
         }
         return this;
@@ -2144,7 +2144,7 @@ class OpenDataQuery {
      * @returns OpenDataQuery
      */
     thenBy(name) {
-        if (!_.isNil(name)) {
+        if (!isNil(name)) {
             this.$orderby += (this.$orderby ? ',' + name.toString() : name.toString());
         }
         return this;
@@ -2154,7 +2154,7 @@ class OpenDataQuery {
      * @returns OpenDataQuery
      */
     thenByDescending(name) {
-        if (!_.isNil(name)) {
+        if (!isNil(name)) {
             this.$orderby += (this.$orderby ? ',' + name.toString() : name.toString()) + ' desc';
         }
         return this;
@@ -2437,7 +2437,7 @@ class QueryValuedRef {
     }
 }
 
-module.exports = {
+export {
     QueryFieldRef,
     QueryValuedRef,
     QueryExpression,

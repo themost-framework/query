@@ -1,15 +1,11 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2021, THEMOST LP All rights reserved
 
-const {sprintf} = require('sprintf-js');
-const {instanceOf} = require('./instance-of');
-const {
-    LogicalExpression, ArithmeticExpression,
-    ComparisonExpression, MethodCallExpression,
-    MemberExpression
-} = require('./expressions');
-const { SelectAnyExpression } = require('./expressions');
-const { OrderByAnyExpression } = require('./expressions');
-const {trim} = require('lodash');
+import { sprintf } from 'sprintf-js';
+import { instanceOf } from './instance-of';
+import { LogicalExpression, ArithmeticExpression, ComparisonExpression, MethodCallExpression, MemberExpression } from './expressions';
+import { SelectAnyExpression } from './expressions';
+import { OrderByAnyExpression } from './expressions';
+import { trim } from 'lodash';
 
 class OpenDataParser {
     constructor() {
@@ -1449,7 +1445,7 @@ SyntaxToken.Equal = new SyntaxToken('=');
 
 SyntaxToken.Semicolon = new SyntaxToken(';');
 
-module.exports = {
+export {
     Token,
     LiteralToken,
     IdentifierToken,

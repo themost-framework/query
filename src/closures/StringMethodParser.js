@@ -1,7 +1,7 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 
-const {SimpleMethodCallExpression} = require('../expressions');
-const {PrototypeMethodParser} = require('./PrototypeMethodParser');
+import { SimpleMethodCallExpression } from '../expressions';
+import { PrototypeMethodParser } from './PrototypeMethodParser';
 
 class StringMethodParser extends PrototypeMethodParser {
     constructor() {
@@ -42,6 +42,6 @@ class StringMethodParser extends PrototypeMethodParser {
     }
 }
 
-module.exports = {
+export {
     StringMethodParser
 };

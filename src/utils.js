@@ -1,5 +1,5 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
-const {QueryExpression} = require('./query');
+import { QueryExpression } from './query';
 
 /**
  * @param {string} tz
@@ -244,7 +244,7 @@ class SqlUtils {
 
 
 
-module.exports = {
+export {
     QueryUtils,
     SqlUtils
 };

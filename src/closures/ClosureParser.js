@@ -1,24 +1,16 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
-let expressions = require('../expressions');
-let LiteralExpression = expressions.LiteralExpression;
-let ObjectExpression = expressions.ObjectExpression;
-let Operators = expressions.Operators;
-let SequenceExpression = expressions.SequenceExpression;
-let MemberExpression = expressions.MemberExpression;
-let ArithmeticExpression = expressions.ArithmeticExpression;
-let LogicalExpression = expressions.LogicalExpression;
-let AggregateComparisonExpression = expressions.AggregateComparisonExpression;
-let MethodCallExpression = expressions.MethodCallExpression;
-let ComparisonExpression = expressions.ComparisonExpression;
-let isComparisonOperator = ComparisonExpression.isComparisonOperator;
-let isArithmeticOperator = ArithmeticExpression.isArithmeticOperator;
-let instanceOf = require('../instance-of').instanceOf;
+import { LiteralExpression, ObjectExpression, Operators, SequenceExpression, 
+    MemberExpression, ArithmeticExpression, LogicalExpression,
+    AggregateComparisonExpression, MethodCallExpression, ComparisonExpression } from '../expressions';
+const isComparisonOperator = ComparisonExpression.isComparisonOperator;
+const isArithmeticOperator = ArithmeticExpression.isArithmeticOperator;
+import { instanceOf } from '../instance-of';
 
-let parse = require('esprima').parse;
-let DateMethodParser = require('./DateMethodParser').DateMethodParser;
-let StringMethodParser = require('./StringMethodParser').StringMethodParser;
-let MathMethodParser = require('./MathMethodParser').MathMethodParser;
-let FallbackMethodParser = require('./FallbackMethodParser').FallbackMethodParser;
+import { parse } from 'esprima';
+import { DateMethodParser } from './DateMethodParser';
+import { StringMethodParser } from './StringMethodParser';
+import { MathMethodParser } from './MathMethodParser';
+import { FallbackMethodParser } from './FallbackMethodParser';
 
 
 let ExpressionTypes = {
@@ -698,7 +690,7 @@ function parentMemberExpressionToString(expr) {
     }
 }
 
-module.exports = {
+export {
     count,
     round,
     min,

@@ -1,14 +1,14 @@
 // MOST Web Framework 2.0 Codename Blueshift Copyright (c) 2017-2020, THEMOST LP All rights reserved
 
-const {SimpleMethodCallExpression} = require('../expressions');
-const {MethodCallExpression} = require('../expressions');
+import { SimpleMethodCallExpression } from '../expressions';
+import { MethodCallExpression } from '../expressions';
 
 class FallbackMethodParser {
     constructor() {
         //
     }
     test(name) {
-        let matches = /^(\w+)$/g.exec(name);
+        let matches = /(\w+)$/g.exec(name);
         if (matches == null) {
             return;
         }
@@ -64,6 +64,6 @@ class FallbackMethodParser {
     }
 }
 
-module.exports = {
+export {
     FallbackMethodParser
 };
