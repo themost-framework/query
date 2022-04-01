@@ -37,84 +37,85 @@ export declare class QueryExpression {
     $where?: any;
     $fixed?: any;
 
-    clone():QueryExpression;
-    as(alias: string): QueryExpression;
+    clone(): this;
+    as(alias: string): this;
     fields(): Array<any>;
     hasFilter(): boolean;
-    prepare(userOr?: boolean): QueryExpression;
+    prepare(userOr?: boolean): this;
     hasFields(): boolean;
     hasPaging(): boolean;
-    distinct(value: any): QueryExpression;
-    where(field: any): QueryExpression;
+    distinct(value: any): this;
+    where(field: any): this;
+    where<T>(expr: (value: T, ...param: any) => any, params?: any): this;
     injectWhere(where: any);
-    delete(entity: string): QueryExpression;
-    insert(obj: any): QueryExpression;
-    into(entity: string): QueryExpression;
-    update(entity: string): QueryExpression;
-    set(obj: any): QueryExpression;
-    select(...field: Array<any>): QueryExpression;
-    select<T>(expr: (value: T, ...param: any) => any, params?: any): QueryExpression;
-    select<T,J>(expr: (value1: T, value2: J, ...param: any) => any, params?: any): QueryExpression;
-    count(alias: string): QueryExpression;
-    from(alias: string): QueryExpression;
-    join(entity: any, props?: any, alias?: any): QueryExpression;
-    join(entity: QueryEntity): QueryExpression;
-    leftJoin(entity: any, props?: any, alias?: any): QueryExpression;
-    leftJoin(entity: QueryEntity): QueryExpression;
-    rightJoin(entity: any, props?: any, alias?: any): QueryExpression;
-    rightJoin(entity: QueryEntity): QueryExpression;
-    with(obj: any): QueryExpression;
-    with<T,J>(expr: (value: T, otherValue: J, ...param: any) => any, params?: any): QueryExpression;
-    orderBy(field: string): QueryExpression;
-    orderBy<T>(expr: (value: T) => any): QueryExpression;
-    orderByDescending(field: string): QueryExpression;
-    orderByDescending<T>(expr: (value: T) => any): QueryExpression;
-    thenBy(field: string): QueryExpression;
-    thenBy<T>(expr: (value: T) => any): QueryExpression;
-    thenByDescending(name: string): QueryExpression;
-    thenByDescending<T>(expr: (value: T) => any): QueryExpression;
-    groupBy(...field: Array<any>): QueryExpression;
-    groupBy<T>(expr: (value: T) => any): QueryExpression;
-    or(field: any): QueryExpression;
-    and(field: any): QueryExpression;
-    equal(value: any): QueryExpression;
-    notEqual(value: any): QueryExpression;
-    in(values: Array<any>): QueryExpression;
-    notIn(values: Array<any>): QueryExpression;
-    mod(value: any, result: number): QueryExpression;
-    bit(value: any, result: number): QueryExpression;
-    greaterThan(value: any): QueryExpression;
-    startsWith(value: any): QueryExpression;
-    endsWith(value: any): QueryExpression;
-    contains(value: any): QueryExpression;
-    notContains(value: any): QueryExpression;
-    lowerThan(value: any): QueryExpression;
-    lowerOrEqual(value: any): QueryExpression;
-    greaterOrEqual(value: any): QueryExpression;
-    between(value1: any, value2: any): QueryExpression;
-    skip(n: number): QueryExpression;
-    take(n: number): QueryExpression;
-    add(x: number): QueryExpression;
-    subtract(x: number): QueryExpression;
-    multiply(x: number): QueryExpression;
-    divide(x: number): QueryExpression;
-    round(n: number): QueryExpression;
-    substr(start: number,length?: number): QueryExpression;
-    indexOf(s: string): QueryExpression;
-    concat(s: string): QueryExpression;
-    trim(): QueryExpression;
-    length(): QueryExpression;
-    getDate(): QueryExpression;
-    getYear(): QueryExpression;
-    getMonth(): QueryExpression;
-    getDay(): QueryExpression;
-    getMinutes(): QueryExpression;
-    getHours(): QueryExpression;
-    getSeconds(): QueryExpression;
-    floor(): QueryExpression;
-    ceil(): QueryExpression;
-    toLocaleLowerCase(): QueryExpression;
-    toLocaleUpperCase(): QueryExpression;
+    delete(entity: string): this;
+    insert(obj: any): this;
+    into(entity: string): this;
+    update(entity: string): this;
+    set(obj: any): this;
+    select(...field: Array<any>): this;
+    select<T>(expr: (value: T, ...param: any) => any, params?: any): this;
+    select<T,J>(expr: (value1: T, value2: J, ...param: any) => any, params?: any): this;
+    count(alias: string): this;
+    from(alias: string): this;
+    join(entity: any, props?: any, alias?: any): this;
+    join(entity: QueryEntity): this;
+    leftJoin(entity: any, props?: any, alias?: any): this;
+    leftJoin(entity: QueryEntity): this;
+    rightJoin(entity: any, props?: any, alias?: any): this;
+    rightJoin(entity: QueryEntity): this;
+    with(obj: any): this;
+    with<T,J>(expr: (value: T, otherValue: J, ...param: any) => any, params?: any): this;
+    orderBy(field: string): this;
+    orderBy<T>(expr: (value: T) => any): this;
+    orderByDescending(field: string): this;
+    orderByDescending<T>(expr: (value: T) => any): this;
+    thenBy(field: string): this;
+    thenBy<T>(expr: (value: T) => any): this;
+    thenByDescending(name: string): this;
+    thenByDescending<T>(expr: (value: T) => any): this;
+    groupBy(...field: Array<any>): this;
+    groupBy<T>(expr: (value: T) => any): this;
+    or(field: any): this;
+    and(field: any): this;
+    equal(value: any): this;
+    notEqual(value: any): this;
+    in(values: Array<any>): this;
+    notIn(values: Array<any>): this;
+    mod(value: any, result: number): this;
+    bit(value: any, result: number): this;
+    greaterThan(value: any): this;
+    startsWith(value: any): this;
+    endsWith(value: any): this;
+    contains(value: any): this;
+    notContains(value: any): this;
+    lowerThan(value: any): this;
+    lowerOrEqual(value: any): this;
+    greaterOrEqual(value: any): this;
+    between(value1: any, value2: any): this;
+    skip(n: number): this;
+    take(n: number): this;
+    add(x: number): this;
+    subtract(x: number): this;
+    multiply(x: number): this;
+    divide(x: number): this;
+    round(n: number): this;
+    substr(start: number,length?: number): this;
+    indexOf(s: string): this;
+    concat(s: string): this;
+    trim(): this;
+    length(): this;
+    getDate(): this;
+    getYear(): this;
+    getMonth(): this;
+    getDay(): this;
+    getMinutes(): this;
+    getHours(): this;
+    getSeconds(): this;
+    floor(): this;
+    ceil(): this;
+    toLocaleLowerCase(): this;
+    toLocaleUpperCase(): this;
 
 }
 
@@ -171,83 +172,6 @@ export declare class QueryEntity {
     inner(): QueryEntity;
     left(): QueryEntity;
     right(): QueryEntity;
-}
-
-export declare class OpenDataQuery {
-    select(...attr: string[]): OpenDataQuery;
-
-    take(val: number): OpenDataQuery;
-
-    skip(val: number): OpenDataQuery;
-
-    orderBy(name: string): OpenDataQuery;
-
-    orderByDescending(name: string): OpenDataQuery;
-
-    thenBy(name: string): OpenDataQuery;
-
-    thenByDescending(name: string): OpenDataQuery;
-
-    where(name: string): OpenDataQuery;
-
-    and(name: string): OpenDataQuery;
-
-    or(name: string): OpenDataQuery;
-
-    indexOf(name: string): OpenDataQuery;
-
-    equal(value: any): OpenDataQuery;
-
-    endsWith(name: string, s: string): OpenDataQuery;
-
-    startsWith(name: string, s: string): OpenDataQuery;
-
-    substringOf(name: string, s: string): OpenDataQuery;
-
-    substring(name: string, pos: number, length: number): OpenDataQuery;
-
-    length(name: OpenDataQuery): OpenDataQuery;
-
-    toLower(name: string): OpenDataQuery;
-
-    trim(name: string): OpenDataQuery;
-
-    concat(s0: string, s1: string, s2?: string, s3?: string, s4?: string): QueryExpression;
-
-    field(name: string): any;
-
-    day(name: string): OpenDataQuery;
-
-    hour(name: string): OpenDataQuery;
-
-    month(name: string): OpenDataQuery;
-
-    minute(name: string): OpenDataQuery;
-
-    second(name: string): OpenDataQuery;
-
-    year(name: string): OpenDataQuery;
-
-    round(name: string): OpenDataQuery;
-
-    floor(name: string): OpenDataQuery;
-
-    ceiling(name: string): OpenDataQuery;
-
-    notEqual(name: string): OpenDataQuery;
-
-    greaterThan(name: string): OpenDataQuery;
-
-    greaterOrEqual(name: string): OpenDataQuery;
-
-    lowerThan(name: string): OpenDataQuery;
-
-    lowerOrEqual(name: string): OpenDataQuery;
-
-    in(values: Array<any>): OpenDataQuery;
-
-    notIn(values: Array<any>): OpenDataQuery;
-
 }
 
 export declare class QueryFieldRef {

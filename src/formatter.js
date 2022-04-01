@@ -178,11 +178,20 @@ class SqlFormatter {
         // add an exception for comparisons and hold backward compatibility
         if (Object.prototype.hasOwnProperty.call(QueryExpression.ComparisonOperators, property)) {
             if (Array.isArray(propertyValue)) {
-                let formatComparison = this[property];
+                const formatComparison = this[property];
                 if (typeof formatComparison !== 'function') {
                     throw new Error('Comparison formatter cannot be found');
                 }
                 return formatComparison.apply(this, propertyValue);
+            }
+        }
+        if (Object.prototype.hasOwnProperty.call(QueryExpression.LogicalOperators, property)) {
+            if (Array.isArray(propertyValue)) {
+                const formatLogicalExpr = this[property];
+                if (typeof formatLogicalExpr !== 'function') {
+                    throw new Error('Comparison formatter cannot be found');
+                }
+                return formatLogicalExpr.apply(this, propertyValue);
             }
         }
         let separator;

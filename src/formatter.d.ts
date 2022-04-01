@@ -59,7 +59,7 @@ export declare class SqlFormatter {
 
     formatCount(query: QueryExpression|Object): string;
     formatFixedSelect(query: QueryExpression|Object): string;
-    formatSelect(query: QueryExpression|Object): string;
+    formatSelect(query: QueryExpression|Object): any;
     formatLimitSelect(query: QueryExpression|Object): string;
     formatField(obj: any): string;
     formatOrder(obj: any): string;
