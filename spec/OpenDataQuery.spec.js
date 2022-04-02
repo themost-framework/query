@@ -1,5 +1,5 @@
 import { QueryExpression, round, QueryEntity } from '../src/index';
-import { OpenDataQueryFormatter } from '../src/OpenDataQueryFormatter';
+import { OpenDataQueryFormatter } from './OpenDataQueryFormatter';
 describe('OpenDataQuery', () => {
 
     it('should format $select', () => {

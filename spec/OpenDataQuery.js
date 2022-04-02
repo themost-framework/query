@@ -1,6 +1,6 @@
 import { sprintf } from 'sprintf-js';
 import { isArray, isNil, forEach, map } from 'lodash';
-import { ClosureParser } from './closures/ClosureParser';
+import { ClosureParser } from '../src/closures/ClosureParser';
 
 function zeroPad(num, length) {
     num = num || 0;
