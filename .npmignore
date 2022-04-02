@@ -17,3 +17,10 @@ spec
 .theia
 .idea
 .devcontainer
+
+# github
+.github
+
+# babel
+babel.config.js
+rollup.config.js
