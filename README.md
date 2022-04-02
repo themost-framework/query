@@ -7,8 +7,10 @@
 [![npm](https://img.shields.io/npm/dw/@themost/query)](https://www.npmjs.com/package/@themost%2Fquery)
 ![Snyk Vulnerabilities for npm package](https://img.shields.io/snyk/vulnerabilities/npm/@themost/query)
 
+![MOST Web Framework Logo](https://github.com/themost-framework/common/raw/master/docs/img/themost_framework_v3_128.png)
+
 # @themost/query
-MOST Web Framework 2.0 **Codename Blueshift** Query Module
+[MOST Web Framework](https://github.com/themost-framework/themost) query module
 
 
 License: [BSD-3-Clause](https://github.com/themost-framework/themost-query/blob/master/LICENSE)
