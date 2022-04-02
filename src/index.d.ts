@@ -3,8 +3,6 @@ export * from "./formatter";
 export * from "./odata";
 export * from "./expressions";
 export * from "./query";
-export * from './OpenDataQuery';
-export * from './OpenDataQueryFormatter';
 export * from "./utils";
 export * from './closures/ClosureParser';
 export * from './closures/PrototypeMethodParser';

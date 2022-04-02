@@ -188,10 +188,9 @@ class SqlFormatter {
         if (Object.prototype.hasOwnProperty.call(QueryExpression.LogicalOperators, property)) {
             if (Array.isArray(propertyValue)) {
                 const formatLogicalExpr = this[property];
-                if (typeof formatLogicalExpr !== 'function') {
-                    throw new Error('Comparison formatter cannot be found');
+                if (typeof formatLogicalExpr === 'function') {
+                    return formatLogicalExpr.apply(this, propertyValue);
                 }
-                return formatLogicalExpr.apply(this, propertyValue);
             }
         }
         let separator;

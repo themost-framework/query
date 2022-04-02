@@ -49,6 +49,10 @@ class OpenDataQueryFormatter extends SqlFormatter {
             return sprintf('substringof(%s,%s)', this.escape(p0), pos.valueOf() + 1);
     }
 
+    $substr(p0, pos, length) {
+        return this.$substring(p0, pos, length);
+    }
+
     $tolower(p0) {
         return sprintf('tolower(%s)', this.escape(p0));
     }
@@ -59,6 +63,10 @@ class OpenDataQueryFormatter extends SqlFormatter {
 
     $day(p0) {
         return sprintf('day(%s)', this.escape(p0));
+    }
+
+    $dayOfMonth(p0) {
+        return this.$day(p0);
     }
 
     $month(p0) {
@@ -139,8 +147,16 @@ class OpenDataQueryFormatter extends SqlFormatter {
         return sprintf('(%s mul %s)', this.escape(p0), this.escape(p1));
     }
 
+    $multiply(p0, p1) {
+        return this.$mul(p0, p1);
+    }
+
     $div(p0, p1) {
         return sprintf('(%s div %s)', this.escape(p0), this.escape(p1));
+    }
+
+    $divide(p0, p1) {
+        return this.$div(p0, p1);
     }
 
     $mod(p0, p1) {
@@ -204,6 +220,10 @@ class OpenDataQueryFormatter extends SqlFormatter {
         return result;
     }
 
+    formatLimitSelect(expr) {
+        return this.formatSelect(expr);
+    }
+
     formatSelect(expr) {
         //get entity fields
         const collection = expr.$collection;
@@ -251,13 +271,46 @@ class OpenDataQueryFormatter extends SqlFormatter {
                 }).join(',');
             }
         }
+        let result = {};
+        if ($select) {
+            Object.assign(result, {
+                $select
+            });
+        }
         // format where
         const $filter = this.formatWhere(expr.$where);
+        if ($filter) {
+            Object.assign(result, {
+                $filter
+            });
+        }
+        // format order by
+        const $orderby = this.formatOrder(expr.$order);
+        if ($orderby) {
+            Object.assign(result, {
+                $orderby
+            });
+        }
+        // format group by
+        const $groupby = this.formatGroupBy(expr.$group);
+        if ($groupby) {
+            Object.assign(result, {
+                $groupby
+            });
+        }
+        if (typeof expr.$skip === 'number') {
+            Object.assign(result, {
+                $skip: expr.$skip
+            });
+        }
+        if (typeof expr.$take === 'number') {
+            Object.assign(result, {
+                $top: expr.$take
+            });
+        }
         delete this.$collection;
-        return {
-            $select,
-            $filter
-        };
+        return result;
+        
     }
 
     formatWhere(expr) {
@@ -266,6 +319,30 @@ class OpenDataQueryFormatter extends SqlFormatter {
         }
         const result = super.formatWhere(expr);
         return result;
+    }
+
+    formatOrder(expr) {
+        if (expr == null) {
+            return;
+        }
+        if (Array.isArray(expr)) {
+            return expr.map((item) => {
+                if (Object.prototype.hasOwnProperty.call(item, '$asc')) {
+                    return this.format(item.$asc, '%ff');
+                } else if (Object.prototype.hasOwnProperty.call(item, '$desc')) {
+                    return this.format(item.$desc, '%ff') + ' desc';
+                }
+                // otherwise, throw error
+                throw new Error('Invalid order direction');
+            }).join(',');
+        }
+    }
+
+    formatGroupBy(expr) {
+        if (expr == null) {
+            return;
+        }
+        return super.formatGroupBy(expr);
     }
 
 }

@@ -1,5 +1,6 @@
-import { QueryExpression, OpenDataQueryFormatter, round, QueryEntity } from '../src/index';
-fdescribe('OpenDataQuery', () => {
+import { QueryExpression, round, QueryEntity } from '../src/index';
+import { OpenDataQueryFormatter } from '../src/OpenDataQueryFormatter';
+describe('OpenDataQuery', () => {
 
     it('should format $select', () => {
         let query = new QueryExpression()
@@ -261,6 +262,29 @@ fdescribe('OpenDataQuery', () => {
             .take(10);
         let result = new OpenDataQueryFormatter().formatSelect(query);
         expect(result.$filter).toEqual('(month(birthDate) eq 8 and year(birthDate) eq 2002)');
+    });
+
+    it('should format $orderby', async () => {
+        const People = new QueryEntity('People');
+        let query = new QueryExpression()
+            .select((x) => {
+                x.id,
+                x.givenName,
+                x.familyName,
+                x.birthDate
+            })
+            .from(People)
+            .where((x) => {
+                return x.birthDate.getMonth() === 8 && x.birthDate.getFullYear() === 2002;
+            })
+            .orderBy((x) => x.birthDate)
+            .thenByDescending((x) => {
+                x.familyName
+            })
+            .take(10);
+        let result = new OpenDataQueryFormatter().formatSelect(query);
+        expect(result.$filter).toEqual('(month(birthDate) eq 8 and year(birthDate) eq 2002)');
+        expect(result.$orderby).toEqual('birthDate,familyName desc');
     });
 
 });
