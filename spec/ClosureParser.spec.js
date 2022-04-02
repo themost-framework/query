@@ -1,8 +1,8 @@
-const {QueryExpression, QueryEntity} = require("../query");
+import { QueryExpression, QueryEntity } from '../src/index';
 
 // eslint-disable-next-line no-unused-vars
-const { round, min, max, count } = require('../closures');
-const { MemoryAdapter } = require('./test/TestMemoryAdapter');
+import { round, min, max, count } from '../src/index';
+import { MemoryAdapter } from './test/TestMemoryAdapter';
 
 describe('ClosureParser', () => {
     /**
@@ -33,7 +33,7 @@ describe('ClosureParser', () => {
         });
         expect(a.$where).toEqual({
                 $eq: [
-                    { $name: "PersonData.id" },
+                    { $name: 'PersonData.id' },
                     355
                 ]
             });

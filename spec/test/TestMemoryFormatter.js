@@ -1,5 +1,5 @@
 
-const { SqlFormatter } = require('../../formatter');
+import { SqlFormatter } from '../../src/index';
 
 const REGEXP_SINGLE_QUOTE = /\\'/g;
 const SINGLE_QUOTE_ESCAPE = '\'\'';
@@ -94,7 +94,7 @@ class MemoryFormatter extends SqlFormatter {
         //format timezone
         const offset = val.getTimezoneOffset(),
             timezone = (offset <= 0 ? '+' : '-') + zeroPad(-Math.floor(offset / 60), 2) + ':' + zeroPad(offset % 60, 2);
-        return "'" + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + "." + millisecond + timezone + "'";
+        return '\'' + year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second + '.' + millisecond + timezone + '\'';
     }
 
     /**
@@ -148,6 +148,7 @@ class MemoryFormatter extends SqlFormatter {
         } else {
             s1 += '%';
         }
+        // eslint-disable-next-line no-useless-escape
         return `LIKE(\'${s1}\',${this.escape(p0)}) >= 1`;
     }
 
@@ -159,6 +160,7 @@ class MemoryFormatter extends SqlFormatter {
     $concat() {
         const args = Array.from(arguments);
         return '(' + args.map( arg => {
+            // eslint-disable-next-line no-useless-escape
             return `IFNULL(${this.escape(arg)},\'\')`;
         }).join(' || ') + ')';
     }
@@ -257,6 +259,6 @@ class MemoryFormatter extends SqlFormatter {
     }
 }
 
-module.exports = {
+export {
     MemoryFormatter
 };

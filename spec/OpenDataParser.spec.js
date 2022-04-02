@@ -1,8 +1,8 @@
-const { OpenDataParser, SqlFormatter } = require('../index');
-const {trim} = require('lodash');
-const { QueryExpression, QueryEntity } = require('../query');
-const { QueryField } = require('../query');
-const { AnyExpressionFormatter } = require('../expressions');
+import { OpenDataParser, SqlFormatter } from '../src/index';
+import { trim } from 'lodash';
+import { QueryExpression, QueryEntity } from '../src/index';
+import { QueryField } from '../src/index';
+import { AnyExpressionFormatter } from '../src/index';
 describe('OpenDataParser', () => {
 
     it('should parser filter', async() => {

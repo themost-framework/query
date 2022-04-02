@@ -1,5 +1,5 @@
-const { SqlFormatter } = require('../formatter');
-const { MemoryAdapter } = require('./test/TestMemoryAdapter');
+import { SqlFormatter } from '../src/index';
+import { MemoryAdapter } from './test/TestMemoryAdapter';
 
 describe('SqlFormatter', () => {
 

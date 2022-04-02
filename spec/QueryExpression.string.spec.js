@@ -1,7 +1,7 @@
-const { QueryEntity, QueryExpression } = require('../query');
+import { QueryEntity, QueryExpression } from '../src/index';
 // eslint-disable-next-line no-unused-vars
-const { length, round, max, min, count, avg } = require('../closures');
-const { MemoryAdapter } = require('./test/TestMemoryAdapter');
+import { length, round, max, min, count, avg } from '../src/index';
+import { MemoryAdapter } from './test/TestMemoryAdapter';
 
 describe('QueryExpression.where', () => {
 
