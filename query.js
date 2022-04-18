@@ -59,7 +59,12 @@ QueryFieldAggregator.prototype.wrapWith = function(comparison) {
     throw new Error('Invalid aggregate expression. Aggregator is missing.');
 };
 
-
+function validateAliasExpr(alias) {
+    var regex =new RegExp(/('(''|[^'])*')|(;)|(')|(\b(ALTER|CREATE|DISTINCT|SET|DELETE|DROP|TRUNCATE|DECLARE|WHERE|JOIN|FROM|NOT|EXISTS|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\b)/gi);
+    if (regex.test(alias)) {
+        throw  new Error('Invalid argument. Expected a valid attribute alias.');
+    }
+}
 
 /**
  * @class
@@ -1656,13 +1661,16 @@ QueryField.prototype.as = function(alias) {
         if (typeof this.$name !== 'undefined')
             return null;
         var keys = _.keys(this);
-        if (keys.length===0)
+        if (keys.length===0)    
             return null;
         else
             return keys[0];
     }
     if (typeof alias !== 'string')
         throw  new Error('Invalid argument. Expected string');
+    // validate alias
+    validateAliasExpr(alias);
+
     //get first property
     var prop = Object.key(this);
     if (_.isNil(prop))
