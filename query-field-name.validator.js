@@ -1,4 +1,7 @@
 
+
+var DEFAULT_PATTERN = /^(a-zA-Z0-9_]+)$/g;
+
 var LATIN_CHARSET_PATTERN = /^([\\u0030-\\u0039\\u0041-\\u005A\\u0061-\\u005A\\u005F]+)$/g;
 
 var LATIN_EXTENDED_CHARSET_PATTERN = /^([\\u0030-\\u0039\\u0041-\\u005A\\u0061-\\u007A\\u00A0-\\u024F\\u005F]+)$/g;
@@ -46,7 +49,7 @@ QueryFieldNameValidator.use = function(validator) {
 }
 
 QueryFieldNameValidator.Patterns = {
-    Default: LATIN_EXTENDED_CHARSET_PATTERN,
+    Default: DEFAULT_PATTERN,
     Latin: LATIN_CHARSET_PATTERN,
     LatinExdended: LATIN_EXTENDED_CHARSET_PATTERN,
     Greek: GREEK_CHARSET_PATTERN,
