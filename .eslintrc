@@ -19,5 +19,8 @@
         2,
         "never"
       ]
-    }
-  }
+    },
+  "ignorePatterns": [
+    "*.d.ts"
+  ]
+}

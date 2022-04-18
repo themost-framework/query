@@ -1,2 +1,12 @@
+# node
 node_modules
 .DS_Store
+
+# test
+spec
+
+# eslint
+.eslintrc
+
+# babel
+babel.config.js

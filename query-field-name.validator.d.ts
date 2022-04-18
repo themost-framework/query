@@ -16,5 +16,5 @@ export declare class QueryFieldNameValidator {
 
     patternMessage: string;
 
-    test(name: string): boolean;
+    test(name: string, throwError?: boolean): boolean;
 }
