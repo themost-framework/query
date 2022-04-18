@@ -1,6 +1,6 @@
 
 
-var DEFAULT_PATTERN = /^(a-zA-Z0-9_]+)$/g;
+var DEFAULT_PATTERN = /^([a-zA-Z0-9_]+)$/g;
 
 var LATIN_CHARSET_PATTERN = /^([\\u0030-\\u0039\\u0041-\\u005A\\u0061-\\u005A\\u005F]+)$/g;
 
