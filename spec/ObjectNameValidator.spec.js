@@ -1,9 +1,9 @@
-import {QueryFieldNameValidator} from '../query-field-name.validator';
+import {ObjectNameValidator} from '../object-name.validator';
 import {SqlFormatter, QueryExpression, QueryField} from '../index';
 
-describe('QueryFieldNameValidator', () => {
+describe('ObjectNameValidator', () => {
    it('should validate name', () => {
-       const validator = new QueryFieldNameValidator();
+       const validator = new ObjectNameValidator();
        expect(validator.test('field 1', false)).toBeFalse();
        expect(validator.test('space2/**/comment', false)).toBeFalse();
        expect(validator.test('char%20encode', false)).toBeFalse();

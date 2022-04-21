@@ -1,4 +1,4 @@
-export declare class QueryFieldNameValidator {
+export declare class ObjectNameValidator {
 
     static Patterns: {
         Default: RegExp,
@@ -8,9 +8,9 @@ export declare class QueryFieldNameValidator {
         Cyrillic: RegExp
     };
 
-    static readonly validator: QueryFieldNameValidator;
+    static readonly validator: ObjectNameValidator;
 
-    static use(validator: QueryFieldNameValidator): void;
+    static use(validator: ObjectNameValidator): void;
 
     pattern: RegExp;
 
