@@ -1,16 +1,6 @@
 /*eslint-env es6 */
 // eslint-disable-next-line no-unused-vars
 
-const DEFAULT_PATTERN = '([a-zA-Z0-9_]+)';
-
-const LATIN_CHARSET_PATTERN = '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u005F]+)';
-
-const LATIN_EXTENDED_CHARSET_PATTERN = '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u00A0-\u024F\u005F]+)';
-
-const GREEK_CHARSET_PATTERN = '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u0386-\u03CE\u005F]+)';
-
-const CYRILLIC_CHARSET_PATTERN = '([\u0030-\u0039\u0041-\u007A\u0061-\u007A\u0400-\u04FF\u005F]+)';
-
 class InvalidObjectNameError extends Error {
     /**
      * @param {string=} msg 
@@ -25,12 +15,15 @@ class InvalidObjectNameError extends Error {
  * @class
  */
 class ObjectNameValidator {
-    constructor() {
+    /**
+     * @param {string=} pattern 
+     */
+    constructor(pattern) {
         /**
          * Gets or sets object name pattern
          * @type {RegExp}
          */
-        this.pattern = new RegExp(DEFAULT_PATTERN, 'g');
+        this.pattern = new RegExp(pattern || ObjectNameValidator.Patterns.Default, 'g');
         /**
          * Gets or sets qualified object name pattern
          * @type {RegExp}
@@ -90,11 +83,12 @@ class ObjectNameValidator {
 
 
 ObjectNameValidator.Patterns = {
-    Default: DEFAULT_PATTERN,
-    Latin: LATIN_CHARSET_PATTERN,
-    LatinExtended: LATIN_EXTENDED_CHARSET_PATTERN,
-    Greek: GREEK_CHARSET_PATTERN,
-    Cyrillic: CYRILLIC_CHARSET_PATTERN
+    Default: '([a-zA-Z0-9_]+)',
+    Latin: '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u005F]+)',
+    LatinExtended: '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u00A0-\u024F\u005F]+)',
+    Greek: '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u0386-\u03CE\u005F]+)',
+    Cyrillic: '([\u0030-\u0039\u0041-\u007A\u0061-\u007A\u0400-\u04FF\u005F]+)',
+    Hebrew: '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u05D0-\u05F2\u005F]+)'
 }
 // use default object name validator
 ObjectNameValidator.use(new ObjectNameValidator());

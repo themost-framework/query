@@ -5,12 +5,15 @@ export declare class ObjectNameValidator {
         Latin: string,
         LatinExtended: string,
         Greek: string,
-        Cyrillic: string
+        Cyrillic: string,
+        Hebrew: string
     };
 
     static readonly validator: ObjectNameValidator;
 
     static use(validator: ObjectNameValidator): void;
+
+    constructor(pattern?: string);
 
     pattern: RegExp;
     
