@@ -55,3 +55,4 @@ module.exports.QueryUtils = _utils.QueryUtils;
 module.exports.SqlUtils = _utils.SqlUtils;
 
 module.exports.ObjectNameValidator = _validator.ObjectNameValidator;
+module.exports.InvalidObjectNameError = _validator.InvalidObjectNameError;

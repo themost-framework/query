@@ -38,4 +38,14 @@ describe('ObjectNameValidator', () => {
         expect(result).toBe('SELECT COUNT(`PersonData`.`id`) AS `total` FROM `PersonData`');
     });
 
+    it('should combine regex', () => {
+        const regex1 = new RegExp('([a-zA-Z0-9_]+)');
+        const regex2 = new RegExp(`^${regex1.source}((\.)${regex1.source})?$`);
+        expect(regex2.test('Table1.field1')).toBeTrue();
+        expect(regex2.test('schema1.Table1.field1')).toBeFalse();
+        expect(regex2.test('Table1.fie%20ld1')).toBeFalse();
+        expect(regex2.test('Tab--le1')).toBeFalse();
+        expect(regex2.test('schema1.Tab%20le1.field1')).toBeFalse();
+    });
+
 });

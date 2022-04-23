@@ -1,11 +1,11 @@
 export declare class ObjectNameValidator {
 
     static Patterns: {
-        Default: RegExp,
-        Latin: RegExp,
-        LatinExtended: RegExp,
-        Greek: RegExp,
-        Cyrillic: RegExp
+        Default: string,
+        Latin: string,
+        LatinExtended: string,
+        Greek: string,
+        Cyrillic: string
     };
 
     static readonly validator: ObjectNameValidator;
@@ -13,8 +13,13 @@ export declare class ObjectNameValidator {
     static use(validator: ObjectNameValidator): void;
 
     pattern: RegExp;
-
-    patternMessage: string;
+    
+    qualifiedPattern: RegExp;
 
     test(name: string, throwError?: boolean): boolean;
+}
+
+export declare class InvalidObjectNameError extends Error {
+    code: string;
+    constructor(msg?: string);
 }
