@@ -40,12 +40,24 @@ describe('ObjectNameValidator', () => {
 
     it('should combine regex', () => {
         const regex1 = new RegExp('([a-zA-Z0-9_]+)');
-        const regex2 = new RegExp(`^${regex1.source}((\.)${regex1.source})?$`);
+        const regex2 = new RegExp(`^${regex1.source}((\\.)${regex1.source})*$`);
+        expect(regex2.test('field1')).toBeTrue();
         expect(regex2.test('Table1.field1')).toBeTrue();
-        expect(regex2.test('schema1.Table1.field1')).toBeFalse();
+        expect(regex2.test('schema1.Table1.field1')).toBeTrue();
         expect(regex2.test('Table1.fie%20ld1')).toBeFalse();
         expect(regex2.test('Tab--le1')).toBeFalse();
         expect(regex2.test('schema1.Tab%20le1.field1')).toBeFalse();
+    });
+
+    it('should escape object name', () => {
+        const validator = new ObjectNameValidator();
+        expect(validator.escape('Table1.field1', '`$1`')).toBe('`Table1`.`field1`');
+    });
+
+    it('should escape object name with schema', () => {
+        const validator = new ObjectNameValidator();
+        expect(validator.escape('schema1.Table1.field1', '`$1`')).toBe('`schema1`.`Table1`.`field1`');
+        expect(validator.escape('dbo.Table1', '`$1`')).toBe('`dbo`.`Table1`');
     });
 
 });

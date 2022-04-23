@@ -30,12 +30,12 @@ class ObjectNameValidator {
          * Gets or sets object name pattern
          * @type {RegExp}
          */
-        this.pattern = new RegExp(DEFAULT_PATTERN);
+        this.pattern = new RegExp(DEFAULT_PATTERN, 'g');
         /**
          * Gets or sets qualified object name pattern
          * @type {RegExp}
          */
-        this.qualifiedPattern = new RegExp(`^${this.pattern.source}((\\.)${this.pattern.source})?$`);
+        this.qualifiedPattern = new RegExp(`^${this.pattern.source}((\\.)${this.pattern.source})*$`, 'g');
     }
     /**
      * @param {string} name - A string which defines a query field name or an alias
@@ -43,7 +43,8 @@ class ObjectNameValidator {
      * @returns boolean
      */
     test(name, throwError) {
-        const valid = this.qualifiedPattern.test(name);
+        const qualifiedPattern = new RegExp(this.qualifiedPattern.source, 'g');
+        const valid = qualifiedPattern.test(name);
         if (valid === false) {
             const shouldThrow = typeof throwError === 'undefined' ? true : !!throwError;
             if (shouldThrow) {
@@ -59,13 +60,13 @@ class ObjectNameValidator {
      */
     escape(name, format) {
         // validate qualified object name
-        const valid = this.qualifiedPattern.test(name);
-        if (valid) {
+        const qualifiedPattern = new RegExp(this.qualifiedPattern.source, 'g');
+        const valid = qualifiedPattern.test(name);
+        if (valid === false) {
             throw new InvalidObjectNameError();
         }
-        // set global to true
-        this.pattern.global = true;
-        return name.replace(this.pattern, format || '$1');
+        const pattern = new RegExp(this.pattern.source, 'g');
+        return name.replace(pattern, format || '$1');
     }
     /**
      * Defines the current query field validator

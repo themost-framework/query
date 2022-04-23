@@ -17,6 +17,8 @@ export declare class ObjectNameValidator {
     qualifiedPattern: RegExp;
 
     test(name: string, throwError?: boolean): boolean;
+
+    escape(name: string, format?: string): string;
 }
 
 export declare class InvalidObjectNameError extends Error {
