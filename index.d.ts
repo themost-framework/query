@@ -12,4 +12,4 @@ export * from "./odata";
 export * from "./expressions";
 export * from "./query";
 export * from "./utils";
-export * from "./query-field-name.validator";
+export * from "./object-name.validator";

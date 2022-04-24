@@ -53,11 +53,7 @@ class ObjectNameValidator {
      */
     escape(name, format) {
         // validate qualified object name
-        const qualifiedPattern = new RegExp(this.qualifiedPattern.source, 'g');
-        const valid = qualifiedPattern.test(name);
-        if (valid === false) {
-            throw new InvalidObjectNameError();
-        }
+        this.test(name);
         const pattern = new RegExp(this.pattern.source, 'g');
         return name.replace(pattern, format || '$1');
     }

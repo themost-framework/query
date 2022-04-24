@@ -16,6 +16,7 @@ var query = require('./query');
 var QueryExpression = query.QueryExpression;
 var QueryField = query.QueryField;
 var instanceOf = require('./instance-of').instanceOf;
+var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator
 
 if (typeof Object.key !== 'function') {
     /**
@@ -1013,8 +1014,9 @@ SqlFormatter.prototype.formatDelete = function(obj)
 };
 
 SqlFormatter.prototype.escapeName = function(name) {
-    if (typeof name === 'string')
-        return name.replace(/(\w+)/ig, this.settings.nameFormat);
+    if (typeof name === 'string') {
+        return new ObjectNameValidator().escape(name, this.settings.nameFormat);
+    }
     return name;
 };
 
