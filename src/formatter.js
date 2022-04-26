@@ -1141,19 +1141,19 @@ class SqlFormatter {
         throw new Error('Invalid in expression. Right operand must be an array');
     }
     $avg(arg) {
-        return sprintf('AVG(%s)', this.escape(arg));
+        return sprintf('AVG(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
     }
     $min(arg) {
-        return sprintf('MIN(%s)', this.escape(arg));
+        return sprintf('MIN(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
     }
     $max(arg) {
-        return sprintf('MAX(%s)', this.escape(arg));
+        return sprintf('MAX(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
     }
     $sum(arg) {
-        return sprintf('SUM(%s)', this.escape(arg));
+        return sprintf('SUM(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
     }
     $count(arg) {
-        return sprintf('COUNT(%s)', this.escape(arg));
+        return sprintf('COUNT(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
     }
     $toLower(p0) {
         return this.$tolower(p0);

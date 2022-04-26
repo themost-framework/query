@@ -3,6 +3,7 @@ import { keys as _keys, isArray, isNil, cloneDeep, forEach, assign, isObject } f
 import { ClosureParser } from './closures/ClosureParser';
 const aggregate = Symbol();
 import './polyfills';
+import {ObjectNameValidator} from './object-name.validator';
 
 class QueryParameter {
     constructor() {
@@ -1719,6 +1720,7 @@ class QueryField {
         }
         if (typeof alias !== 'string')
             throw new Error('Invalid argument. Expected string');
+        ObjectNameValidator.validator.test(alias, false);
         //get first property
         let prop = Object.key(this);
         if (isNil(prop))
