@@ -1,0 +1,33 @@
+{
+  "parser": "@babel/eslint-parser",
+  "env": {
+  "browser": true,
+  "node": true
+},
+  "extends": [
+      "eslint:recommended"
+  ],
+  "parserOptions": {
+      // Only ESLint 6.2.0 and later support ES2020.
+      "ecmaVersion": 2020,
+      "sourceType": "module"
+  },
+  "globals": {
+      "describe": false,
+      "it": false,
+      "fdescribe": false,
+      "fit": false,
+      "beforeEach": false,
+      "afterEach": false,
+      "expect": false,
+      "beforeAll": false,
+      "afterAll": false
+  },
+  "rules": {
+      "no-var": "warn",
+      "quotes": [
+          "warn",
+          "single"
+      ]
+  }
+}

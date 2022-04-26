@@ -13,6 +13,7 @@ var _ = require('lodash');
 var Symbol = require('symbol');
 var aggregate = Symbol();
 var instanceOf = require('./instance-of').instanceOf;
+var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator
 // eslint-disable-next-line no-unused-vars
 //noinspection JSUnusedLocalSymbols
 require('./natives');
@@ -1669,7 +1670,7 @@ QueryField.prototype.as = function(alias) {
     if (typeof alias !== 'string')
         throw  new Error('Invalid argument. Expected string');
     // validate alias
-    validateAliasExpr(alias);
+    ObjectNameValidator.validator.test(alias, false);
 
     //get first property
     var prop = Object.key(this);
