@@ -4,10 +4,10 @@ import {SqlFormatter, QueryExpression, QueryField} from '../index';
 describe('ObjectNameValidator', () => {
    it('should validate name', () => {
        const validator = new ObjectNameValidator();
-       expect(validator.test('field 1', false)).toBeFalse();
-       expect(validator.test('space2/**/comment', false)).toBeFalse();
-       expect(validator.test('char%20encode', false)).toBeFalse();
-       expect(validator.test('field1', false)).toBeTrue();
+       expect(validator.test('field 1', true, false)).toBeFalse();
+       expect(validator.test('space2/**/comment', true, false)).toBeFalse();
+       expect(validator.test('char%20encode', true, false)).toBeFalse();
+       expect(validator.test('field1', true, false)).toBeTrue();
    });
 
     it('should escape name', () => {
@@ -39,7 +39,7 @@ describe('ObjectNameValidator', () => {
     });
 
     it('should combine regex', () => {
-        const regex1 = new RegExp('([a-zA-Z0-9_]+)');
+        const regex1 = new RegExp('(\\w+)');
         const regex2 = new RegExp(`^${regex1.source}((\\.)${regex1.source})*$`);
         expect(regex2.test('field1')).toBeTrue();
         expect(regex2.test('Table1.field1')).toBeTrue();
@@ -52,6 +52,13 @@ describe('ObjectNameValidator', () => {
     it('should escape object name', () => {
         const validator = new ObjectNameValidator();
         expect(validator.escape('Table1.field1', '`$1`')).toBe('`Table1`.`field1`');
+    });
+
+    it('should escape column alias', () => {
+        expect(ObjectNameValidator.validator.test('Table1.field1', false, false)).toBeFalse();
+        expect(ObjectNameValidator.validator.test('Table1.field2', false, false)).toBeFalse();
+        expect(ObjectNameValidator.validator.test('field2', false)).toBeTrue();
+        expect(ObjectNameValidator.validator.test('field3', false)).toBeTrue();
     });
 
     it('should escape object name with schema', () => {

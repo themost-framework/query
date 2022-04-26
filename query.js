@@ -1670,7 +1670,7 @@ QueryField.prototype.as = function(alias) {
     if (typeof alias !== 'string')
         throw  new Error('Invalid argument. Expected string');
     // validate alias
-    ObjectNameValidator.validator.test(alias);
+    ObjectNameValidator.validator.test(alias, false);
 
     //get first property
     var prop = Object.key(this);

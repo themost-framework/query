@@ -23,21 +23,28 @@ class ObjectNameValidator {
          * Gets or sets object name pattern
          * @type {RegExp}
          */
-        this.pattern = new RegExp(pattern || ObjectNameValidator.Patterns.Default, 'g');
+        this.pattern = new RegExp(pattern || ObjectNameValidator.Patterns.Default);
         /**
          * Gets or sets qualified object name pattern
          * @type {RegExp}
          */
-        this.qualifiedPattern = new RegExp(`^${this.pattern.source}((\\.)${this.pattern.source})*$`, 'g');
+        this.qualifiedPattern = new RegExp(`^${this.pattern.source}((\\.)${this.pattern.source})*$`);
     }
     /**
      * @param {string} name - A string which defines a query field name or an alias
-     * @param {boolean=} throwError - Indicates whether validator will throw error on failure or not
+     * @param {boolean=} qualified - Indicates whether validator will check a qualified object name e.g. schema1.Table1.field1 The default value is true
+     * @param {boolean=} throwError - Indicates whether validator will throw error on failure or not. The default value is true.
      * @returns boolean
      */
-    test(name, throwError) {
-        const qualifiedPattern = new RegExp(this.qualifiedPattern.source, 'g');
-        const valid = qualifiedPattern.test(name);
+    test(name, qualified, throwError) {
+        const qualifiedName = typeof qualified === 'undefined' ? true : !!qualified;
+        let pattern;
+        if (qualifiedName) {
+            pattern = new RegExp(this.qualifiedPattern.source);
+        } else {
+            pattern = new RegExp('^' + this.pattern.source + '$');
+        }
+        const valid = pattern.test(name);
         if (valid === false) {
             const shouldThrow = typeof throwError === 'undefined' ? true : !!throwError;
             if (shouldThrow) {
@@ -49,7 +56,7 @@ class ObjectNameValidator {
     /**
      * Escapes the given base on the format provided
      * @param {string} name - The object name
-     * @param {string=} format - The format that is going to used for escaping name e.g. [$1] or `$1`
+     * @param {string=} format - The format that is going to be used for escaping name e.g. [$1] or `$1`
      */
     escape(name, format) {
         // validate qualified object name

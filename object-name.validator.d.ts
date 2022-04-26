@@ -19,7 +19,7 @@ export declare class ObjectNameValidator {
     
     qualifiedPattern: RegExp;
 
-    test(name: string, throwError?: boolean): boolean;
+    test(name: string, qualified?: boolean, throwError?: boolean): boolean;
 
     escape(name: string, format?: string): string;
 }
