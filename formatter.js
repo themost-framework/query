@@ -1014,10 +1014,15 @@ SqlFormatter.prototype.formatDelete = function(obj)
 };
 
 SqlFormatter.prototype.escapeName = function(name) {
-    if (typeof name === 'string') {
-        return new ObjectNameValidator().escape(name, this.settings.nameFormat);
+    // escape a named object e.g. { $name: 'lastName' }
+    if (typeof name === 'object' && Object.prototype.hasOwnProperty.call(name, '$name')) {
+        return this.escapeName(name.$name); 
     }
-    return name;
+    // throw error for unexpected type
+    if (typeof name !== 'string') {
+        throw new Error('Invalid name expression. Expected string.');
+    }
+    return ObjectNameValidator.validator.escape(name, this.settings.nameFormat);
 };
 
 function isQueryField_(obj) {
