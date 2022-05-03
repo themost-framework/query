@@ -5,6 +5,7 @@ import { isNil, isString, isFunction, map, forEach, isObject } from 'lodash';
 import { QueryExpression, QueryField } from './query';
 import { instanceOf } from './instance-of';
 import './polyfills';
+import { ObjectNameValidator } from './object-name.validator';
 
 const ALIAS_KEYWORD = ' AS ';
 const DEFAULT_COUNT_ALIAS = '__count__';
@@ -936,12 +937,15 @@ class SqlFormatter {
         return sql;
     }
     escapeName(name) {
-        if (typeof name === 'string')
-            return name.replace(/(\w+)/g, this.settings.nameFormat);
+        // escape a named object e.g. { $name: 'lastName' }
         if (typeof name === 'object' && Object.prototype.hasOwnProperty.call(name, '$name')) {
-            return this.escapeName(name.$name);
+            return this.escapeName(name.$name); 
         }
-        return name;
+        // throw error for unexpected type
+        if (typeof name !== 'string') {
+            throw new Error('Invalid name expression. Expected string.');
+        }
+        return ObjectNameValidator.validator.escape(name, this.settings.nameFormat);
     }
     /**
      * @param obj {QueryField}
