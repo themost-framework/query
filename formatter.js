@@ -1022,7 +1022,7 @@ SqlFormatter.prototype.escapeName = function(name) {
     if (typeof name !== 'string') {
         throw new Error('Invalid name expression. Expected string.');
     }
-    return new ObjectNameValidator().escape(name, this.settings.nameFormat);
+    return ObjectNameValidator.validator.escape(name, this.settings.nameFormat);
 };
 
 function isQueryField_(obj) {
