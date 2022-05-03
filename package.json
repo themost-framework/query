@@ -1,6 +1,6 @@
 {
   "name": "@themost/query",
-  "version": "3.0.1-next.4",
+  "version": "3.0.1-next.5",
   "description": "MOST Web Framework Codename ZeroGravity - Query Module",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
