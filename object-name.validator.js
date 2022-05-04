@@ -28,7 +28,7 @@ class ObjectNameValidator {
          * Gets or sets qualified object name pattern
          * @type {RegExp}
          */
-        this.qualifiedPattern = new RegExp(`^${this.pattern.source}((\\.)${this.pattern.source})*$`);
+        this.qualifiedPattern = new RegExp(`^\\*$|^${this.pattern.source}((\\.)${this.pattern.source})*(\\.\\*)?$`);
     }
     /**
      * @param {string} name - A string which defines a query field name or an alias
