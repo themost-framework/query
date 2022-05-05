@@ -28,7 +28,7 @@ class ObjectNameValidator {
          * Gets or sets qualified object name pattern
          * @type {RegExp}
          */
-        this.qualifiedPattern = new RegExp(`^${this.pattern.source}((\\.)${this.pattern.source})*$`);
+        this.qualifiedPattern = new RegExp(`^\\*$|^${this.pattern.source}((\\.)${this.pattern.source})*(\\.\\*)?$`);
     }
     /**
      * @param {string} name - A string which defines a query field name or an alias
@@ -40,9 +40,9 @@ class ObjectNameValidator {
         const qualifiedName = typeof qualified === 'undefined' ? true : !!qualified;
         let pattern;
         if (qualifiedName) {
-            pattern = new RegExp(this.qualifiedPattern.source);
+            pattern = new RegExp(this.qualifiedPattern.source, 'g');
         } else {
-            pattern = new RegExp('^' + this.pattern.source + '$');
+            pattern = new RegExp('^' + this.pattern.source + '$', 'g');
         }
         const valid = pattern.test(name);
         if (valid === false) {

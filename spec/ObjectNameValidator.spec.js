@@ -56,6 +56,7 @@ describe('ObjectNameValidator', () => {
 
     it('should escape column alias', () => {
         expect(ObjectNameValidator.validator.test('Table1.field1', false, false)).toBeFalse();
+        expect(ObjectNameValidator.validator.test('Table1.*', true, false)).toBeTrue();
         expect(ObjectNameValidator.validator.test('Table1.field2', false, false)).toBeFalse();
         expect(ObjectNameValidator.validator.test('field2', false)).toBeTrue();
         expect(ObjectNameValidator.validator.test('field3', false)).toBeTrue();
@@ -65,6 +66,14 @@ describe('ObjectNameValidator', () => {
         const validator = new ObjectNameValidator();
         expect(validator.escape('schema1.Table1.field1', '`$1`')).toBe('`schema1`.`Table1`.`field1`');
         expect(validator.escape('dbo.Table1', '`$1`')).toBe('`dbo`.`Table1`');
+    });
+    it('should escape wilcard expression', () => {
+        const validator = new ObjectNameValidator();
+        expect(validator.escape('*', '`$1`')).toBe('*');
+        expect(() => { validator.escape('Table1.**', '`$1`') }).toThrowError();
+        expect(validator.escape('Table1.*', '`$1`')).toBe('`Table1`.*');
+        expect(() => { validator.escape('dob.*Table1', '`$1`') }).toThrowError();
+        expect(validator.escape('dbo.Table1.*', '`$1`')).toBe('`dbo`.`Table1`.*');
     });
 
 });
