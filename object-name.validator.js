@@ -40,9 +40,9 @@ class ObjectNameValidator {
         const qualifiedName = typeof qualified === 'undefined' ? true : !!qualified;
         let pattern;
         if (qualifiedName) {
-            pattern = new RegExp(this.qualifiedPattern.source);
+            pattern = new RegExp(this.qualifiedPattern.source, 'g');
         } else {
-            pattern = new RegExp('^' + this.pattern.source + '$');
+            pattern = new RegExp('^' + this.pattern.source + '$', 'g');
         }
         const valid = pattern.test(name);
         if (valid === false) {
