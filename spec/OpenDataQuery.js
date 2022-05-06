@@ -1,6 +1,6 @@
 import { sprintf } from 'sprintf-js';
 import { isArray, isNil, forEach, map } from 'lodash';
-import { ClosureParser } from '../src/closures/ClosureParser';
+import { ClosureParser } from '../src';
 
 function zeroPad(num, length) {
     num = num || 0;
@@ -36,30 +36,30 @@ class OpenDataQuery {
     append() {
 
         let self = this;
-        let exprs;
+        let expressions;
         if (self.privates.left) {
             let expr = null;
 
             if (self.privates.op === 'in') {
                 if (isArray(self.privates.right)) {
                     //expand values
-                    exprs = [];
-                    forEach(self.privates.right, function (x) {
-                        exprs.push(self.privates.left + ' eq ' + this.escape(x));
+                    expressions = [];
+                    forEach(self.privates.right, (x) => {
+                        expressions.push(self.privates.left + ' eq ' + this.escape(x));
                     });
-                    if (exprs.length > 0)
-                        expr = '(' + exprs.join(' or ') + ')';
+                    if (expressions.length > 0)
+                        expr = '(' + expressions.join(' or ') + ')';
                 }
             }
             else if (self.privates.op === 'nin') {
                 if (isArray(self.privates.right)) {
                     //expand values
-                    exprs = [];
-                    forEach(self.privates.right, function (x) {
-                        exprs.push(self.privates.left + ' ne ' + this.escape(x));
+                    expressions = [];
+                    forEach(self.privates.right, (x) => {
+                        expressions.push(self.privates.left + ' ne ' + this.escape(x));
                     });
-                    if (exprs.length > 0)
-                        expr = '(' + exprs.join(' and ') + ')';
+                    if (expressions.length > 0)
+                        expr = '(' + expressions.join(' and ') + ')';
                 }
             }
 

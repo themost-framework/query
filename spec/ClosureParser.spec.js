@@ -4,6 +4,16 @@ import { QueryExpression, QueryEntity } from '../src/index';
 import { round, min, max, count } from '../src/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 
+/**
+ * @interface Order
+ * @property id
+ * @property orderDate
+ * @property orderedItem
+ * @property orderStatus
+ * @property merchant
+ * @property customer
+ */
+
 describe('ClosureParser', () => {
     /**
      * @type {MemoryAdapter}
@@ -17,9 +27,11 @@ describe('ClosureParser', () => {
      });
      afterAll((done) => {
          if (db) {
-             db.close();
-             return done();
+             return db.close(() => {
+                 return done();
+             });
          }
+         return done();
      })
     it('should use object property to an equal expression', async () => {
         const People = new QueryEntity('PersonData');
@@ -152,6 +164,7 @@ describe('ClosureParser', () => {
     it('should use Date.prototype.getFullYear()', async () => {
         const Orders = new QueryEntity('OrderData');
         let a = new QueryExpression().select( x => {
+            x.id,
             x.orderedItem,
             x.orderDate
         })
@@ -168,6 +181,7 @@ describe('ClosureParser', () => {
     it('should use Date.prototype.getYear()', async () => {
         const Orders = new QueryEntity('OrderData');
         let a = new QueryExpression().select( x => {
+            x.id,
             x.orderedItem,
             x.orderDate
         })
@@ -481,7 +495,7 @@ describe('ClosureParser', () => {
         });
     });
 
-    it('should use substract', async () => {
+    it('should use subtract', async () => {
         const Products = new QueryEntity('ProductData');
         let a = new QueryExpression().select( x => {
             x.name,
@@ -561,6 +575,7 @@ describe('ClosureParser', () => {
     it('should use bitand', async () => {
         const Orders = new QueryEntity('OrderData');
         let a = new QueryExpression().select( x => {
+            x.id,
             x.orderedItem,
             x.orderDate
         }).from(Orders).where( x => {
@@ -634,7 +649,8 @@ describe('ClosureParser', () => {
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
 
-        a = new QueryExpression().select( x => {
+        a = new QueryExpression().select( (x) => {
+            x.id,
             x.price
         }).from(Products).where( x => {
             return x.category === 'Laptops';
@@ -667,6 +683,7 @@ describe('ClosureParser', () => {
         expect(result.length).toBeTruthy();
 
         a = new QueryExpression().select( x => {
+            x.id,
             x.price
         }).from(Products).where( x => {
             return x.category === 'Laptops';
@@ -729,6 +746,7 @@ describe('ClosureParser', () => {
     it('should use then by', async () => {
         const People = new QueryEntity('PersonData');
         let a = new QueryExpression().select( x => {
+            x.id,
             x.familyName,
             x.givenName
         }).from(People).orderBy((x) => {
