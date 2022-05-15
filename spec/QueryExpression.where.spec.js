@@ -1,7 +1,21 @@
 import { QueryEntity, QueryExpression } from '../src/index';
 // eslint-disable-next-line no-unused-vars
-import { length, round, max, min, count, avg } from '../src/index';
+import { round, max, min, count, avg } from '../src/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
+
+/**
+ * @interface Thing
+ * @property id
+ * @property name
+ * @property additionalType
+ * @property sameAs
+ * @property url
+ * @property image
+ * @property dateModified
+ * @property dateCreated
+ * @property createdBy
+ * @property modifiedBy
+ */
 
 describe('QueryExpression.where', () => {
 
@@ -17,9 +31,11 @@ describe('QueryExpression.where', () => {
     });
     afterAll((done) => {
         if (db) {
-            db.close();
-            return done();
+            return db.close(() => {
+                return done();
+            });
         }
+        return done();
     });
     it('should use equal ', async () => {
         const People = new QueryEntity('PersonData');
@@ -53,7 +69,7 @@ describe('QueryExpression.where', () => {
             })
             .from(Products)
             .where((x) => {
-                return x.category != 'Laptops';
+                return x.category !== 'Laptops';
             })
             .take(10);
         let results = await db.executeAsync(query);
@@ -322,6 +338,7 @@ describe('QueryExpression.where', () => {
 
         query = new QueryExpression()
             .select((x) => {
+                x.id,
                 x.price
             })
             .from(Products)
@@ -354,6 +371,7 @@ describe('QueryExpression.where', () => {
 
         query = new QueryExpression()
             .select((x) => {
+                x.id,
                 x.price
             })
             .from(Products)
