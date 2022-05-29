@@ -122,7 +122,7 @@ export declare class QueryExpression {
 
 export declare class QueryField {
     static FieldNameExpression: RegExp;
-    constructor(name?: string);
+    constructor(name?: string | any);
     $name: string;
 
     static select(field: any): QueryField;

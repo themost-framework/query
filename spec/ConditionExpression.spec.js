@@ -55,22 +55,25 @@ fdescribe('ConditionExpression', () => {
         expect(str).toEqual('(CASE category IS NULL WHEN 1 THEN \'Unknown\' ELSE \'Categorized\' END) AS categoryDescription');
     });
 
-    it('should use condition on query expression', async () => {
+    it('should use condition in select query', async () => {
 
         const query = new QueryExpression().select(
             'id',
             'name',
-            new QueryField({
+            {
                 priceDescription: {
                     $cond: [
                         {
-                            gt: [ { $name: 'price' }, 1000 ]
+                            $gt: [
+                                { $name: 'price' },
+                                1000
+                            ]
                         },
                         'Expensive',
                         'Normal'
                     ]
                 }
-            })
+            }
         ).from('ProductData').take(10)
             .where('category').equal('Laptops')
             .orderBy('price');
@@ -85,6 +88,119 @@ fdescribe('ConditionExpression', () => {
             const priceDescription = Object.getOwnPropertyDescriptor(result, 'priceDescription');
             expect(priceDescription).toBeTruthy();
             expect(values.indexOf(priceDescription.value)).toBeGreaterThanOrEqual(0);
+        }
+    });
+
+    it('should format switch expression', async () => {
+        const formatter = new SqlFormatter();
+        let str = formatter.$switch({
+            branches: [
+                {
+                    case: {
+                        $gt: [
+                            { $name: 'weight' },
+                            100
+                        ]
+                    },
+                    then: 'Heavy'
+                },
+                {
+                    case: {
+                        $lt: [
+                            { $name: 'weight' },
+                            20
+                        ]
+                    },
+                    then: 'Light'
+                }
+            ],
+            default: 'Normal'
+        });
+        expect(str).toEqual('(CASE WHEN weight > 100 THEN \'Heavy\' WHEN weight < 20 THEN \'Light\' ELSE \'Normal\' END)');
+    });
+
+    it('should use switch expression as field', async () => {
+        const formatter = new SqlFormatter();
+        const queryField = Object.assign(new QueryField(), {
+            priceDescription: {
+                $switch: {
+                    branches: [
+                        {
+                            case: {
+                                $gt: [
+                                    { $name: 'price' },
+                                    1000
+                                ]
+                            },
+                            then: 'Expensive'
+                        },
+                        {
+                            case: {
+                                $lt: [
+                                    { $name: 'price' },
+                                    500
+                                ]
+                            },
+                            then: 'Cheap'
+                        }
+                        ],
+                    default: 'Normal'
+                }
+            }
+        });
+        const str = formatter.formatFieldEx(queryField, '%f');
+        expect(str).toEqual('(CASE WHEN price > 1000 THEN \'Expensive\' WHEN price < 500 THEN \'Cheap\' ELSE \'Normal\' END) AS priceDescription');
+    });
+
+    it('should use switch expression in select query', async () => {
+        const formatter = new SqlFormatter();
+
+        const priceDescription = Object.assign(new QueryField(), {
+            priceDescription: {
+                $switch: {
+                    branches: [
+                        {
+                            case: {
+                                $gt: [
+                                    { $name: 'price' },
+                                    1000
+                                ]
+                            },
+                            then: 'Expensive'
+                        },
+                        {
+                            case: {
+                                $lt: [
+                                    { $name: 'price' },
+                                    500
+                                ]
+                            },
+                            then: 'Cheap'
+                        }
+                    ],
+                    default: 'Normal'
+                }
+            }
+        });
+
+        const query = new QueryExpression().select(
+            'id',
+            'name',
+            'price',
+            priceDescription
+        ).from('ProductData').where('category').equal('Laptops');
+        const results = await db.executeAsync(query);
+        expect(results).toBeInstanceOf(Array);
+        expect(results.length).toBeTruthy();
+        const values = [
+            'Expensive',
+            'Normal',
+            'Cheap'
+        ];
+        for (const result of results) {
+            const priceDescriptionValue = Object.getOwnPropertyDescriptor(result, 'priceDescription');
+            expect(priceDescriptionValue).toBeTruthy();
+            expect(values.indexOf(priceDescriptionValue.value)).toBeGreaterThanOrEqual(0);
         }
     });
 });
