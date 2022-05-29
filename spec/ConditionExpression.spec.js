@@ -1,7 +1,7 @@
 import {SqlFormatter, QueryExpression, QueryField} from '../src/index';
 import {MemoryAdapter} from './test/TestMemoryAdapter';
 
-fdescribe('ConditionExpression', () => {
+describe('ConditionExpression', () => {
 
     /**
      * @type {MemoryAdapter}
@@ -153,8 +153,6 @@ fdescribe('ConditionExpression', () => {
     });
 
     it('should use switch expression in select query', async () => {
-        const formatter = new SqlFormatter();
-
         const priceDescription = Object.assign(new QueryField(), {
             priceDescription: {
                 $switch: {
