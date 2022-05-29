@@ -127,6 +127,8 @@ class SqlFormatter {
                 return SqlUtils.escape(value);
             if (Object.prototype.hasOwnProperty.call(value, '$name'))
                 return this.escapeName(value.$name);
+            else if (Object.prototype.hasOwnProperty.call(value, '$value'))
+                return this.escape(value.$value);
             else {
                 //check if value is a known expression e.g. { $length:"name" }
                 let keys = Object.keys(value), key0 = keys[0];
@@ -1182,6 +1184,18 @@ class SqlFormatter {
     }
     $divide(p0, p1) {
         return this.$div(p0, p1);
+    }
+
+    $cond(ifExpr, thenExpr, elseExpr) {
+        let ifExpression;
+        if (instanceOf(ifExpr, QueryExpression)) {
+            ifExpression = this.formatWhere(ifExpr.$where);
+        } else if (this.isComparison(ifExpr)) {
+            ifExpression = this.formatWhere(ifExpr);
+        } else {
+            ifExpression = this.escape(ifExpr);
+        }
+        return sprintf('(CASE %s WHEN 1 THEN %s ELSE %s END)', ifExpression, this.escape(thenExpr), this.escape(elseExpr));
     }
 }
 

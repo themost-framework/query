@@ -1,5 +1,5 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
-import {QueryExpression} from "./query";
+import {QueryExpression, QueryField, QueryValueRef} from "./query";
 
 export declare interface FormatterSettings {
     nameFormat: string;
@@ -54,6 +54,9 @@ export declare class SqlFormatter {
     $max(p0:any): string | any;
     $avg(p0:any): string | any;
     $sum(p0:any): string | any;
+    $cond(ifExpr: any,
+          thenExpr: QueryField | QueryValueRef | any,
+          elseExpr: QueryField | QueryValueRef | any): string | any;
 
     formatWhere(where: any): any;
     formatCount(query: QueryExpression | any): any;
