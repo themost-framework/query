@@ -320,7 +320,7 @@ class SimpleMethodCallExpression extends MethodCallExpression {
             throw new Error('Unsupported method expression. Method arguments cannot be empty.');
         if (this.args.length === 1) {
             method[name] = {};
-            let arg = null;
+            let arg;
             if (typeof this.args[0].exprOf === 'function') {
                 arg = this.args[0].exprOf();
             } else {
@@ -418,6 +418,28 @@ class OrderByAnyExpression {
     }
 }
 
+class SwitchExpression extends MethodCallExpression {
+    constructor(branches, defaultValue) {
+        super('switch', [
+            {
+                branches: branches,
+                default: defaultValue
+            }
+        ]);
+    }
+    exprOf() {
+        const res = {};
+        let name = '$'.concat(this.name);
+        Object.defineProperty(res, name, {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: this.args[0]
+        });
+        return res;
+    }
+}
+
 export {
     Operators,
     ArithmeticExpression,
@@ -432,6 +454,7 @@ export {
     AggregateComparisonExpression,
     SelectAnyExpression,
     OrderByAnyExpression,
-    AnyExpressionFormatter
+    AnyExpressionFormatter,
+    SwitchExpression
 }
 

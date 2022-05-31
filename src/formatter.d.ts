@@ -58,7 +58,7 @@ export declare class SqlFormatter {
           thenExpr: QueryField | QueryValueRef | any,
           elseExpr: QueryField | QueryValueRef | any): string | any;
     $switch(expr: {
-        branches: {case: any, then: any}[], default?: any
+        branches: {case: any, then: any}[], defaultValue?: any
     }): string | any;
     formatWhere(where: any): any;
     formatCount(query: QueryExpression | any): any;

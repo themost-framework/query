@@ -93,6 +93,10 @@ export declare class OrderByAnyExpression implements SelectExpressionBase {
     exprOf(): any;
 }
 
+export declare class SwitchExpression extends MethodCallExpression {
+    constructor(branches: {case: any, then: any}[], defaultValue?: any);
+}
+
 export declare class AnyExpressionFormatter {
     format(expr: ExpressionBase): any;
     formatMany(expr: Array<ExpressionBase>): any;

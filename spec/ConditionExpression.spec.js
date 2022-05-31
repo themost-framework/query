@@ -1,4 +1,4 @@
-import {SqlFormatter, QueryExpression, QueryField} from '../src/index';
+import {SqlFormatter, QueryExpression, QueryField, OpenDataParser} from '../src/index';
 import {MemoryAdapter} from './test/TestMemoryAdapter';
 
 describe('ConditionExpression', () => {
@@ -200,5 +200,10 @@ describe('ConditionExpression', () => {
             expect(priceDescriptionValue).toBeTruthy();
             expect(values.indexOf(priceDescriptionValue.value)).toBeGreaterThanOrEqual(0);
         }
+    });
+    it('should parse switch expression', async () => {
+        const parser = new OpenDataParser();
+        const result = await parser.parseAsync('case(price gt 1000:1,price lt 0:-1,true:0)');
+        expect(result).toBeTruthy();
     });
 });
