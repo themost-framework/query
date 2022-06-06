@@ -1,5 +1,6 @@
-import {SqlFormatter, QueryExpression, QueryField, OpenDataParser} from '../src/index';
+import {SqlFormatter, QueryExpression, QueryField, OpenDataParser, QueryEntity} from '../src/index';
 import {MemoryAdapter} from './test/TestMemoryAdapter';
+import {MemoryFormatter} from "./test/TestMemoryFormatter";
 
 describe('ConditionExpression', () => {
 
@@ -206,4 +207,35 @@ describe('ConditionExpression', () => {
         const result = await parser.parseAsync('case(price gt 1000:1,price lt 0:-1,true:0)');
         expect(result).toBeTruthy();
     });
+
+    it('should use condition closure', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            // noinspection RedundantConditionalExpressionJS
+            return {
+                expensive: x.price > 500 ? true : false
+            }
+        }).from(Products).take(10);
+        const formatter = new MemoryFormatter();
+        const sql = formatter.format(a);
+        expect(sql).toBeTruthy();
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+    });
+
+    it('should use condition with sub-conditions closure', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            // noinspection RedundantConditionalExpressionJS
+            return {
+                priceCategory: x.price > 500 ? (x.price < 1000 ? 1 : 2) : 0
+            }
+        }).from(Products).take(10);
+        const formatter = new MemoryFormatter();
+        const sql = formatter.format(a);
+        expect(sql).toBeTruthy();
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+    });
+
 });
