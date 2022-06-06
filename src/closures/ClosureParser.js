@@ -28,7 +28,8 @@ let ExpressionTypes = {
     ReturnStatement:'ReturnStatement',
     CallExpression:'CallExpression',
     ObjectExpression:'ObjectExpression',
-    SequenceExpression:'SequenceExpression'
+    SequenceExpression:'SequenceExpression',
+    ConditionalExpression: 'ConditionalExpression'
 };
 
 // noinspection JSCommentMatchesSignature
@@ -308,7 +309,10 @@ class ClosureParser {
         else if (expr.type === ExpressionTypes.BlockStatement) {
             return this.parseBlock(expr);
         }
-        throw new Error('The given expression type (' + expr.type + 'is invalid or it has not implemented yet.');
+        else if (expr.type === ExpressionTypes.ConditionalExpression) {
+            return this.parseCondition(expr);
+        }
+        throw new Error('The given expression type (' + expr.type + ') is invalid or it has not implemented yet.');
     }
     /**
      * Parses an object expression e.g. { "createdAt": x.dateCreated }
@@ -449,6 +453,18 @@ class ClosureParser {
             }
         }
 
+    }
+
+    /**
+     * Parses an object expression e.g. { "createdAt": x.dateCreated }
+     * @param {{type: string,test: any, consequent: any,alternate: any}} objectExpression
+     */
+    parseCondition(objectExpression) {
+        return new MethodCallExpression('cond', [
+            this.parseCommon(objectExpression.test),
+            this.parseCommon(objectExpression.consequent),
+            this.parseCommon(objectExpression.alternate)
+        ]);
     }
     parseMember(expr) {
         let self = this;

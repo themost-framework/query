@@ -115,7 +115,7 @@ class SqlFormatter {
      * Escapes an object or a value and returns the equivalent sql value.
      * @param {*} value - A value that is going to be escaped for SQL statements
      * @param {boolean=} unquoted - An optional value that indicates whether the resulted string will be quoted or not.
-     * @returns {string} - The equivalent SQL string value
+     * @returns {*} - The equivalent SQL string value
      */
     escape(value, unquoted) {
         if (isNil(value))
@@ -127,6 +127,8 @@ class SqlFormatter {
                 return SqlUtils.escape(value);
             if (Object.prototype.hasOwnProperty.call(value, '$name'))
                 return this.escapeName(value.$name);
+            else if (Object.prototype.hasOwnProperty.call(value, '$value'))
+                return this.escape(value.$value);
             else {
                 //check if value is a known expression e.g. { $length:"name" }
                 let keys = Object.keys(value), key0 = keys[0];
@@ -1182,6 +1184,55 @@ class SqlFormatter {
     }
     $divide(p0, p1) {
         return this.$div(p0, p1);
+    }
+
+    $cond(ifExpr, thenExpr, elseExpr) {
+        // validate ifExpr which should an instance of QueryExpression or a comparison expression
+        let ifExpression;
+        if (instanceOf(ifExpr, QueryExpression)) {
+            ifExpression = this.formatWhere(ifExpr.$where);
+        } else if (this.isComparison(ifExpr)) {
+            ifExpression = this.formatWhere(ifExpr);
+        } else {
+            throw new Error('Condition parameter should be an instance of query or comparison expression');
+        }
+        return sprintf('(CASE %s WHEN 1 THEN %s ELSE %s END)', ifExpression, this.escape(thenExpr), this.escape(elseExpr));
+    }
+
+    /**
+     * Formats a switch expression
+     * e.g. CASE WHEN weight>100 THEN 'Heavy' WHEN weight<20 THEN 'Light' ELSE 'Normal' END
+     * @param {{branches: Array<{ case: *, then: * }>, default: *}} expr
+     * @returns {string}
+     */
+    $switch(expr) {
+        const branches = expr.branches;
+        const defaultValue = expr.default;
+        if (Array.isArray(branches) === false) {
+            throw new Error('Switch branches must be an array');
+        }
+        if (branches.length === 0) {
+            throw new Error('Switch branches cannot be empty');
+        }
+        let str = '(CASE';
+        str += ' ';
+        str += branches.map((branch) => {
+            let caseExpression;
+            if (instanceOf(branch.case, QueryExpression)) {
+                caseExpression = this.formatWhere(branch.case.$where);
+            } else if (this.isComparison(branch.case)) {
+                caseExpression = this.formatWhere(branch.case);
+            } else {
+                throw new Error('Case expression should be an instance of query or comparison expression');
+            }
+            return sprintf('WHEN %s THEN %s', caseExpression, this.escape(branch.then));
+        }).join(' ');
+        if (typeof defaultValue !== 'undefined') {
+            str += ' ELSE ';
+            str += this.escape(defaultValue);
+        }
+        str += ' END)';
+        return str;
     }
 }
 

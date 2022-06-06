@@ -2,7 +2,14 @@
 
 import { sprintf } from 'sprintf-js';
 import { instanceOf } from './instance-of';
-import { LogicalExpression, ArithmeticExpression, ComparisonExpression, MethodCallExpression, MemberExpression } from './expressions';
+import {
+    LogicalExpression,
+    ArithmeticExpression,
+    ComparisonExpression,
+    MethodCallExpression,
+    MemberExpression,
+    SwitchExpression
+} from './expressions';
 import { SelectAnyExpression } from './expressions';
 import { OrderByAnyExpression } from './expressions';
 import { trim } from 'lodash';
@@ -332,7 +339,7 @@ class OpenDataParser {
                 if (option === '$top' || option === '$skip' || option === '$levels') {
                     value = parseInt(trim(source), 10);
                 } else if (option === '$count') {
-                    value = (trim(source) === 'true' ? true : false);
+                    value = (trim(source) === 'true');
                 } else {
                     value = trim(source);
                 }
@@ -621,12 +628,16 @@ class OpenDataParser {
         callback = callback || function () { };
         if (this.tokens.length === 0)
             callback.call(this);
-
         else {
             //get method name
             let method = self.currentToken.identifier;
             self.moveNext();
             self.expect(SyntaxToken.ParenOpen);
+            if (method === 'case') {
+                return self.parseSwitchMethodBranches([], undefined, function(err, result) {
+                   return callback(err, new SwitchExpression(result.branches, result.defaultValue));
+                });
+            }
             let args = [];
             // eslint-disable-next-line no-unused-vars
             self.parseMethodCallArguments(args, function (err, result) {
@@ -651,6 +662,64 @@ class OpenDataParser {
             });
         }
     }
+
+    /**
+     * @private
+     * @param branches
+     * @param defaultValue
+     * @param callback
+     * @returns {any}
+     */
+    parseSwitchMethodBranches(branches, defaultValue, callback) {
+        const self = this;
+        /**
+         * @type {Token|SyntaxToken|LiteralToken|*}
+         */
+        let currentToken = self.currentToken;
+        if (currentToken.type === Token.TokenType.Literal &&
+            currentToken.value === true) {
+            self.moveNext();
+            self.expect(SyntaxToken.Colon);
+            return self.parseCommon(function (err, result) {
+                defaultValue = result;
+                self.expect(SyntaxToken.ParenClose);
+                return callback(err, {
+                    branches,
+                    defaultValue
+                });
+            });
+        }
+        self.parseCommon(function (err, caseExpr) {
+            if (err) {
+                return callback(err);
+            }
+            else {
+                self.expect(SyntaxToken.Colon);
+                self.parseCommon(function (err, thenExpr) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    branches.push({
+                        case: caseExpr,
+                        then: thenExpr
+                    });
+                    currentToken = self.currentToken;
+                    if (currentToken.type === Token.TokenType.Syntax &&
+                        currentToken.syntax === SyntaxToken.ParenClose) {
+                        self.moveNext();
+                        return callback({
+                            branches
+                        });
+                    }
+                    self.expect(SyntaxToken.Comma);
+                    return self.parseSwitchMethodBranches(branches, defaultValue, function(err, result) {
+                       return callback(err, result);
+                    });
+                });
+            }
+        });
+    }
+
     parseMethodCallArguments(args, callback) {
         const self = this;
         //ensure callback
@@ -801,6 +870,8 @@ class OpenDataParser {
             case '=':
             case ';':
                 return this.parseSyntax();
+            case ':':
+                return this.parseSyntax();
             default:
                 if (OpenDataParser.isDigit(c)) {
                     return this.parseNumeric();
@@ -829,6 +900,7 @@ class OpenDataParser {
             case ',': token = SyntaxToken.Comma; break;
             case '=': token = SyntaxToken.Equal; break;
             case ';': token = SyntaxToken.Semicolon; break;
+            case ':': token = SyntaxToken.Colon; break;
             default: throw new Error('Unknown token');
         }
         this.offset = this.current + 1;
@@ -1444,6 +1516,10 @@ SyntaxToken.Negative = new SyntaxToken('-');
 SyntaxToken.Equal = new SyntaxToken('=');
 
 SyntaxToken.Semicolon = new SyntaxToken(';');
+
+SyntaxToken.Semicolon = new SyntaxToken(';');
+
+SyntaxToken.Colon = new SyntaxToken(':');
 
 export {
     Token,

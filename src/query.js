@@ -2028,7 +2028,7 @@ class QueryFieldRef {
     }
 }
 
-class QueryValuedRef {
+class QueryValueRef {
     constructor(value) {
         this.$value = value;
     }
@@ -2036,7 +2036,7 @@ class QueryValuedRef {
 
 export {
     QueryFieldRef,
-    QueryValuedRef,
+    QueryValueRef,
     QueryExpression,
     QueryField,
     QueryEntity
