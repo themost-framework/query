@@ -217,7 +217,7 @@ class ClosureParser {
     }
 
     /**
-     * @param {function({target:*, member:string})} eventCallback
+     * @param {function({target:*, member:string, fullyQualifiedMember: string})} eventCallback
      */
     resolvingJoinMember(eventCallback) {
         this._hooks.resolveJoinMember.tap({
@@ -545,7 +545,11 @@ class ClosureParser {
                 }
                 // find identifier name
                 let object1 = expr;
+                let fullyQualifiedMember =  '';
                 while (object1.object != null) {
+                    if (object1.object && object1.object.property) {
+                        fullyQualifiedMember += object1.object.property.name + '.';
+                    }
                     object1 = object1.object;
                 }
                 namedParam = self.namedParams.find(function (item) {
@@ -554,6 +558,12 @@ class ClosureParser {
                 if (object1.name === namedParam.name) {
                     //get closure parameter expression e.g. x.customer.name
                     let property = expr.property.name;
+                    fullyQualifiedMember += property;
+                    this._hooks.resolveJoinMember.call({
+                        target: this,
+                        member: property,
+                        fullyQualifiedMember: fullyQualifiedMember
+                    });
                     return new MemberExpression(expr.object.property.name + '.' + property);
                 }
                 else {

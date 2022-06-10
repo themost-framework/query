@@ -28,7 +28,7 @@ export declare class ClosureParser {
     parseMethod(expr: any): any;
     parseIdentifier(expr: any): any;
     parseLiteral(expr: any): any;
-    resolvingMember: (event: { target: ClosureParser, member: string }) => void;
+    resolvingMember: (event: { target: ClosureParser, member: string, fullyQualifiedMember?: string }) => void;
     resolvingJoinMember: (event: { target: ClosureParser, member: string }) => void;
     resolvingMethod: (event: { target: ClosureParser, method: string }) => void;
 }

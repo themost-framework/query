@@ -431,7 +431,8 @@ class QueryExpression {
         closureParser.resolvingJoinMember((event) => {
             const newEvent = {
                 target: this,
-                member: event.member
+                member: event.member,
+                fullyQualifiedMember: event.fullyQualifiedMember
             };
             this._hooks.resolveJoinMember.call(newEvent);
             event.member = newEvent.member

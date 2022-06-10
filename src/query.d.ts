@@ -119,7 +119,7 @@ export declare class QueryExpression {
     toLocaleUpperCase(): this;
 
     resolvingMember: (event: { target: QueryExpression, member: string }) => void;
-    resolvingJoinMember: (event: { target: QueryExpression, member: string }) => void;
+    resolvingJoinMember: (event: { target: QueryExpression, member: string, fullyQualifiedMember?: string }) => void;
     resolvingMethod: (event: { target: QueryExpression, method: string }) => void;
 
 }
