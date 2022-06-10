@@ -57,11 +57,68 @@ class QueryExpression {
             value: {}
         });
 
-        this.resolvingMember = new SyncHook([
-            'member'
-        ]);
+        Object.defineProperty(this, '_hooks', {
+            configurable: true,
+            enumerable: false,
+            writable: false,
+            value: {
+                resolveMember: new SyncHook([
+                    'event'
+                ]),
+                resolveJoinMember: new SyncHook([
+                    'event'
+                ]),
+                resolveMethod: new SyncHook([
+                    'event'
+                ])
+            }
+        });
+
+        this.resolvingMember((event) => {
+            if (this.$collection) {
+                event.member = this.$collection.concat('.', event.member);
+            }
+        });
+
+        this.resolvingJoinMember((event) => {
+            if (this.$joinCollection) {
+                event.member = this.$joinCollection.concat('.', event.member);
+            }
+        });
 
     }
+
+    /**
+     * Registers a hook for resolving member name
+     * @param {function({target:*, member:string})} eventCallback
+     */
+    resolvingMember(eventCallback) {
+        this._hooks.resolveMember.tap({
+            name: 'ResolvingMember'
+        }, eventCallback)
+    }
+
+    /**
+     * Registers a hook for resolving member name used in a join expression
+     * @param {function({target:*, member:string})} eventCallback
+     */
+    resolvingJoinMember(eventCallback) {
+        this._hooks.resolveJoinMember.tap({
+            name: 'ResolvingJoinMember'
+        }, eventCallback);
+    }
+
+    /**
+     * Registers a hook for resolving method name
+     * @param {function({target:*, method:string})} eventCallback
+     */
+    resolvingMethod(eventCallback) {
+        this._hooks.resolveMethod.tap({
+            name: 'ResolvingMethod',
+            context: true
+        }, eventCallback);
+    }
+
     /**
      * @private
      * @param {string|*=} s
@@ -230,28 +287,6 @@ class QueryExpression {
     }
 
     /**
-     * @param {*} member
-     * @returns {*}
-     */
-    resolveMember(member) {
-        if (this.$collection) {
-            return this.$collection.concat('.', member);
-        }
-        return member;
-    }
-
-    /**
-     * @param {*} member
-     * @returns {*}
-     */
-    resolveJoinMember(member) {
-        if (this.$joinCollection) {
-            return this.$joinCollection.concat('.', member);
-        }
-        return member;
-    }
-
-    /**
      * @param {*} expr
      * @param {*=} params
      * @returns {QueryExpression}
@@ -289,7 +324,7 @@ class QueryExpression {
         this.$where = where;
     }
     /**
-     * Initializes a delete query and sets the entity name that is going to be used in this query.
+     * Initializes a "delete" query and sets the entity name that is going to be used in this query.
      * @param entity {string}
      * @returns {QueryExpression}
      */
@@ -378,20 +413,36 @@ class QueryExpression {
     }
 
     /**
+     * Gets an instance of ClosureParser and register hooks
      * @private
      * @returns {ClosureParser}
      */
     getClosureParser() {
         const closureParser = new ClosureParser();
+        // register sync hooks
         closureParser.resolvingMember((event) => {
-            if (this.$collection) {
-                event.member = this.$collection.concat('.', event.member);
-            }
+            const newEvent = {
+                target: this,
+                member: event.member
+            };
+            this._hooks.resolveMember.call(newEvent);
+            event.member = newEvent.member
         });
         closureParser.resolvingJoinMember((event) => {
-            if (this.$joinCollection) {
-                event.member = this.$joinCollection.concat('.', event.member);
-            }
+            const newEvent = {
+                target: this,
+                member: event.member
+            };
+            this._hooks.resolveJoinMember.call(newEvent);
+            event.member = newEvent.member
+        });
+        closureParser.resolvingMethod((event) => {
+            const newEvent = {
+                target: this,
+                method: event.method
+            };
+            this._hooks.resolveMethod.call(newEvent);
+            event.method = newEvent.method
         });
         return closureParser;
     }
@@ -956,7 +1007,7 @@ class QueryExpression {
         return this;
     }
     /**
-     * Prepares a not in statement expression
+     * Prepares a "not in" statement expression
      * @example
      * q.where('id').notIn([10, 11, 12]) //id in (10,11,12) expression
      * @param {Array} values - An array of values that represents the right part of the prepared expression
