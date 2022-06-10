@@ -11,7 +11,7 @@ import { DateMethodParser } from './DateMethodParser';
 import { StringMethodParser } from './StringMethodParser';
 import { MathMethodParser } from './MathMethodParser';
 import { FallbackMethodParser } from './FallbackMethodParser';
-
+import {SyncHook} from 'tapable';
 
 let ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -194,7 +194,47 @@ class ClosureParser {
             new FallbackMethodParser()
         ];
         this.params = null;
+        this._hooks = {
+            resolveMember: new SyncHook([
+                'event'
+            ]),
+            resolveJoinMember: new SyncHook([
+                'event'
+            ]),
+            resolveMethod: new SyncHook([
+                'event'
+            ])
+        }
     }
+
+    /**
+     * @param {function({target:*, member:string})} eventCallback
+     */
+    resolvingMember(eventCallback) {
+        this._hooks.resolveMember.tap({
+            name: 'ResolvingMember'
+        }, eventCallback)
+    }
+
+    /**
+     * @param {function({target:*, member:string})} eventCallback
+     */
+    resolvingJoinMember(eventCallback) {
+        this._hooks.resolveJoinMember.tap({
+            name: 'ResolvingJoinMember'
+        }, eventCallback);
+    }
+
+    /**
+     * @param {function({target:*, method:string})} eventCallback
+     */
+    resolvingMethod(eventCallback) {
+        this._hooks.resolveMethod.tap({
+            name: 'ResolvingMethod',
+            context: true
+        }, eventCallback);
+    }
+
     /**
      * Parses a javascript expression and returns the equivalent select expression.
      * @param {Function} func The closure expression to parse
@@ -479,16 +519,22 @@ class ClosureParser {
                 return (item.name === expr.object.name);
             });
             if (namedParam != null) {
-                let member;
+                /**
+                 * @type {*}
+                 */
+                const event = {
+                    target: this,
+                    member: expr.property.name
+                }
                 // if named parameter is the first parameter
                 if (namedParam0 == namedParam) {
                     // resolve member
-                    member = self.resolveMember(expr.property.name);
+                    self._hooks.resolveMember.call(event);
                 } else {
                     // otherwise resolve member of joined collection
-                    member = self.resolveJoinMember(expr.property.name);
+                    self._hooks.resolveJoinMember.call(event);
                 }
-                return new MemberExpression(member);
+                return new MemberExpression(event.member);
             }
             else {
                 let value;

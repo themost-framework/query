@@ -4,6 +4,7 @@ import { ClosureParser } from './closures/ClosureParser';
 const aggregate = Symbol();
 import './polyfills';
 import {ObjectNameValidator} from './object-name.validator';
+import {SyncHook} from 'tapable';
 
 class QueryParameter {
     constructor() {
@@ -55,6 +56,11 @@ class QueryExpression {
             writable: false,
             value: {}
         });
+
+        this.resolvingMember = new SyncHook([
+            'member'
+        ]);
+
     }
     /**
      * @private
@@ -222,6 +228,29 @@ class QueryExpression {
             this.$distinct = value || false;
         return this;
     }
+
+    /**
+     * @param {*} member
+     * @returns {*}
+     */
+    resolveMember(member) {
+        if (this.$collection) {
+            return this.$collection.concat('.', member);
+        }
+        return member;
+    }
+
+    /**
+     * @param {*} member
+     * @returns {*}
+     */
+    resolveJoinMember(member) {
+        if (this.$joinCollection) {
+            return this.$joinCollection.concat('.', member);
+        }
+        return member;
+    }
+
     /**
      * @param {*} expr
      * @param {*=} params
@@ -230,16 +259,7 @@ class QueryExpression {
     where(expr, params) {
         if (typeof expr === 'function') {
             // parse closure
-            let self = this;
-            let closureParser = new ClosureParser();
-            Object.assign(closureParser, {
-                resolveMember: function (member) {
-                    if (self.$collection) {
-                        return self.$collection.concat('.', member);
-                    }
-                    return member;
-                }
-            });
+            const closureParser = this.getClosureParser();
             this.$where = closureParser.parseFilter(expr, params);
             return this;
         }
@@ -356,6 +376,26 @@ class QueryExpression {
         this.$update[prop] = obj;
         return this;
     }
+
+    /**
+     * @private
+     * @returns {ClosureParser}
+     */
+    getClosureParser() {
+        const closureParser = new ClosureParser();
+        closureParser.resolvingMember((event) => {
+            if (this.$collection) {
+                event.member = this.$collection.concat('.', event.member);
+            }
+        });
+        closureParser.resolvingJoinMember((event) => {
+            if (this.$joinCollection) {
+                event.member = this.$joinCollection.concat('.', event.member);
+            }
+        });
+        return closureParser;
+    }
+
     /**
      * Prepares a SELECT statement by defining a field or an array of fields
      * we want to select data from
@@ -384,16 +424,7 @@ class QueryExpression {
                 });
                 return this;
             }
-            let closureParser = new ClosureParser();
-            let self = this;
-            Object.assign(closureParser, {
-                resolveMember: function (member) {
-                    if (self.$collection) {
-                        return self.$collection.concat('.', member);
-                    }
-                    return member;
-                }
-            });
+            const closureParser = this.getClosureParser();
             fields = closureParser.parseSelect.apply(closureParser, selectArgs);
             if (this.privates.entity) {
                 this.$select = {};
@@ -595,22 +626,7 @@ class QueryExpression {
         }
         if (typeof obj === 'function') {
             // parse closure and return
-            let self = this;
-            let closureParser = new ClosureParser();
-            Object.assign(closureParser, {
-                resolveMember: function (member) {
-                    if (self.$collection) {
-                        return self.$collection.concat('.', member);
-                    }
-                    return member;
-                },
-                resolveJoinMember: function (member) {
-                    if (self.$joinCollection) {
-                        return self.$joinCollection.concat('.', member);
-                    }
-                    return member;
-                }
-            });
+            const closureParser = this.getClosureParser();
             let args = Array.from(arguments);
             return this.with(closureParser.parseFilter.apply(closureParser, args));
         }
@@ -657,20 +673,11 @@ class QueryExpression {
     orderBy(field) {
 
         if (typeof field === 'function') {
-            let closureParser = new ClosureParser();
-            let self = this;
-            Object.assign(closureParser, {
-                resolveMember: function (member) {
-                    if (self.$collection) {
-                        return self.$collection.concat('.', member);
-                    }
-                    return member;
-                }
-            });
+            const closureParser = this.getClosureParser();
             // get closure
             let selectArgs = Array.from(arguments);
             let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
-            self.$order = fields.map(function (item) {
+            this.$order = fields.map(function (item) {
                 return { $asc: item };
             });
             // and return
@@ -693,20 +700,11 @@ class QueryExpression {
     orderByDescending(field) {
 
         if (typeof field === 'function') {
-            let closureParser = new ClosureParser();
-            let self = this;
-            Object.assign(closureParser, {
-                resolveMember: function (member) {
-                    if (self.$collection) {
-                        return self.$collection.concat('.', member);
-                    }
-                    return member;
-                }
-            });
+            const closureParser = this.getClosureParser();
             // get closure
             let selectArgs = Array.from(arguments);
             let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
-            self.$order = fields.map(function (item) {
+            this.$order = fields.map(function (item) {
                 return { $desc: item };
             });
             // and return
@@ -728,25 +726,16 @@ class QueryExpression {
     thenBy(field) {
 
         if (typeof field === 'function') {
-            let closureParser = new ClosureParser();
-            let self = this;
-            Object.assign(closureParser, {
-                resolveMember: function (member) {
-                    if (self.$collection) {
-                        return self.$collection.concat('.', member);
-                    }
-                    return member;
-                }
-            });
+            const closureParser = this.getClosureParser();
             // get closure and params
             let selectArgs = Array.from(arguments);
             let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
             // and return
-            if (Array.isArray(self.$order) === false) {
+            if (Array.isArray(this.$order) === false) {
                 throw new Error('QueryExpression.thenBy() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
             }
-            fields.forEach(function (item) {
-                self.$order.push({ $asc: item });
+            fields.forEach((item) => {
+                this.$order.push({ $asc: item });
             });
             return this;
         }
@@ -766,25 +755,16 @@ class QueryExpression {
     thenByDescending(field) {
 
         if (typeof field === 'function') {
-            let closureParser = new ClosureParser();
-            let self = this;
-            Object.assign(closureParser, {
-                resolveMember: function (member) {
-                    if (self.$collection) {
-                        return self.$collection.concat('.', member);
-                    }
-                    return member;
-                }
-            });
+            const closureParser = this.getClosureParser();
             // get closure and params
             let selectArgs = Array.from(arguments);
             let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
             // and return
-            if (Array.isArray(self.$order) === false) {
+            if (Array.isArray(this.$order) === false) {
                 throw new Error('QueryExpression.thenByDescending() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
             }
-            fields.forEach(function (item) {
-                self.$order.push({ $desc: item });
+            fields.forEach((item) => {
+                this.$order.push({ $desc: item });
             });
             return this;
         }
@@ -808,16 +788,7 @@ class QueryExpression {
 
         let fields;
         if (typeof field === 'function') {
-            let closureParser = new ClosureParser();
-            let self = this;
-            Object.assign(closureParser, {
-                resolveMember: function (member) {
-                    if (self.$collection) {
-                        return self.$collection.concat('.', member);
-                    }
-                    return member;
-                }
-            });
+            const closureParser = this.getClosureParser();
             // get closure and params
             let selectArgs = Array.from(arguments);
             fields = closureParser.parseSelect.apply(closureParser, selectArgs);

@@ -1,4 +1,6 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
+import {SyncHook} from 'tapable';
+
 export type SelectClosure = (x: any) => any;
 export type FilterClosure = (x: any) => any;
 
@@ -26,7 +28,7 @@ export declare class ClosureParser {
     parseMethod(expr: any): any;
     parseIdentifier(expr: any): any;
     parseLiteral(expr: any): any;
-    resolveMember(member: any): any;
-    resolveJoinMember(member: any): any;
-    resolveMethod(method: any): any;
+    resolvingMember: (event: { target: ClosureParser, member: string }) => void;
+    resolvingJoinMember: (event: { target: ClosureParser, member: string }) => void;
+    resolvingMethod: (event: { target: ClosureParser, method: string }) => void;
 }
