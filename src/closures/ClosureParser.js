@@ -11,7 +11,7 @@ import { DateMethodParser } from './DateMethodParser';
 import { StringMethodParser } from './StringMethodParser';
 import { MathMethodParser } from './MathMethodParser';
 import { FallbackMethodParser } from './FallbackMethodParser';
-
+import {SyncHook} from 'tapable';
 
 let ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -194,7 +194,47 @@ class ClosureParser {
             new FallbackMethodParser()
         ];
         this.params = null;
+        this._hooks = {
+            resolveMember: new SyncHook([
+                'event'
+            ]),
+            resolveJoinMember: new SyncHook([
+                'event'
+            ]),
+            resolveMethod: new SyncHook([
+                'event'
+            ])
+        }
     }
+
+    /**
+     * @param {function({target:*, member:string})} eventCallback
+     */
+    resolvingMember(eventCallback) {
+        this._hooks.resolveMember.tap({
+            name: 'ResolvingMember'
+        }, eventCallback)
+    }
+
+    /**
+     * @param {function({target:*, member:string, fullyQualifiedMember: string})} eventCallback
+     */
+    resolvingJoinMember(eventCallback) {
+        this._hooks.resolveJoinMember.tap({
+            name: 'ResolvingJoinMember'
+        }, eventCallback);
+    }
+
+    /**
+     * @param {function({target:*, method:string})} eventCallback
+     */
+    resolvingMethod(eventCallback) {
+        this._hooks.resolveMethod.tap({
+            name: 'ResolvingMethod',
+            context: true
+        }, eventCallback);
+    }
+
     /**
      * Parses a javascript expression and returns the equivalent select expression.
      * @param {Function} func The closure expression to parse
@@ -479,16 +519,22 @@ class ClosureParser {
                 return (item.name === expr.object.name);
             });
             if (namedParam != null) {
-                let member;
+                /**
+                 * @type {*}
+                 */
+                const event = {
+                    target: this,
+                    member: expr.property.name
+                }
                 // if named parameter is the first parameter
                 if (namedParam0 == namedParam) {
                     // resolve member
-                    member = self.resolveMember(expr.property.name);
+                    self._hooks.resolveMember.call(event);
                 } else {
                     // otherwise resolve member of joined collection
-                    member = self.resolveJoinMember(expr.property.name);
+                    self._hooks.resolveJoinMember.call(event);
                 }
-                return new MemberExpression(member);
+                return new MemberExpression(event.member);
             }
             else {
                 let value;
@@ -499,7 +545,11 @@ class ClosureParser {
                 }
                 // find identifier name
                 let object1 = expr;
+                let fullyQualifiedMember =  '';
                 while (object1.object != null) {
+                    if (object1.object && object1.object.property) {
+                        fullyQualifiedMember += object1.object.property.name + '.';
+                    }
                     object1 = object1.object;
                 }
                 namedParam = self.namedParams.find(function (item) {
@@ -508,6 +558,12 @@ class ClosureParser {
                 if (object1.name === namedParam.name) {
                     //get closure parameter expression e.g. x.customer.name
                     let property = expr.property.name;
+                    fullyQualifiedMember += property;
+                    this._hooks.resolveJoinMember.call({
+                        target: this,
+                        member: property,
+                        fullyQualifiedMember: fullyQualifiedMember
+                    });
                     return new MemberExpression(expr.object.property.name + '.' + property);
                 }
                 else {

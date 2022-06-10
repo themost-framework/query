@@ -1,4 +1,4 @@
-// MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
+
 export declare class QueryExpression {
 
     static ComparisonOperators: {
@@ -117,6 +117,10 @@ export declare class QueryExpression {
     ceil(): this;
     toLocaleLowerCase(): this;
     toLocaleUpperCase(): this;
+
+    resolvingMember: (event: { target: QueryExpression, member: string }) => void;
+    resolvingJoinMember: (event: { target: QueryExpression, member: string, fullyQualifiedMember?: string }) => void;
+    resolvingMethod: (event: { target: QueryExpression, method: string }) => void;
 
 }
 
