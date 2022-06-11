@@ -261,7 +261,14 @@ class ClosureParser {
             });
         }
         if (res && res instanceof MemberExpression) {
-            return [res.exprOf()];
+            return [
+                res.exprOf()
+            ];
+        }
+        if (res && res instanceof MethodCallExpression) {
+            return [
+                res.exprOf()
+            ];
         }
         if (res && res instanceof ObjectExpression) {
             return Object.keys(res).map(function (key) {
