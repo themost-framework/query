@@ -1,4 +1,15 @@
 
+export declare type MemberResolverCallback = (event: {
+    target: QueryExpression,
+    member: string,
+    fullyQualifiedMember: string
+}) => void;
+
+export declare type MethodResolverCallback = (event: {
+    target: QueryExpression,
+    method: string
+}) => void;
+
 export declare class QueryExpression {
 
     static ComparisonOperators: {
@@ -118,9 +129,9 @@ export declare class QueryExpression {
     toLocaleLowerCase(): this;
     toLocaleUpperCase(): this;
 
-    resolvingMember: (event: { target: QueryExpression, member: string }) => void;
-    resolvingJoinMember: (event: { target: QueryExpression, member: string, fullyQualifiedMember?: string }) => void;
-    resolvingMethod: (event: { target: QueryExpression, method: string }) => void;
+    resolvingMember(resolver: MemberResolverCallback): void;
+    resolvingJoinMember: (resolver: MemberResolverCallback) => void;
+    resolvingMethod(resolver: MethodResolverCallback): void;
 
 }
 

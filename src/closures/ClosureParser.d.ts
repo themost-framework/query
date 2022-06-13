@@ -12,9 +12,17 @@ export declare function mean(...args: any): any;
 export declare function avg(...args: any): any;
 export declare function length(value: any): any;
 
-/**
- * @class
- */
+export declare type ClosureMemberResolverCallback = (event: {
+    target: ClosureParser,
+    member: string,
+    fullyQualifiedMember: string
+}) => void;
+
+export declare type ClosureMethodResolverCallback = (event: {
+    target: ClosureParser,
+    method: string
+}) => void;
+
 export declare class ClosureParser {
     static binaryToExpressionOperator(binaryOperator: string): string;
     parseSelect(func: SelectClosure, params?: any): any;
@@ -27,7 +35,7 @@ export declare class ClosureParser {
     parseMethod(expr: any): any;
     parseIdentifier(expr: any): any;
     parseLiteral(expr: any): any;
-    resolvingMember: (event: { target: ClosureParser, member: string, fullyQualifiedMember?: string }) => void;
-    resolvingJoinMember: (event: { target: ClosureParser, member: string }) => void;
-    resolvingMethod: (event: { target: ClosureParser, method: string }) => void;
+    resolvingMember(resolver: ClosureMemberResolverCallback) : void;
+    resolvingJoinMember (resolver: ClosureMemberResolverCallback): void;
+    resolvingMethod(resolver: ClosureMethodResolverCallback): void;
 }

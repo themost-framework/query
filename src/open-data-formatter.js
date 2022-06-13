@@ -3,6 +3,11 @@ import {sprintf} from 'sprintf-js';
 
 class OpenDataFormatter extends SqlFormatter {
 
+    constructor() {
+        super();
+        this.settings.nameFormat = '$1';
+    }
+
     $eq(left, right) {
         if (right == null) {
             return sprintf('%s eq null', this.escape(left));
@@ -58,11 +63,11 @@ class OpenDataFormatter extends SqlFormatter {
     }
 
     $and(left, right) {
-        return sprintf('%s and %s', this.escape(left), this.escape(right));
+        return sprintf('(%s) and (%s)', this.escape(left), this.escape(right));
     }
 
     $or(left, right) {
-        return sprintf('%s or %s', this.escape(left), this.escape(right));
+        return sprintf('(%s) or (%s)', this.escape(left), this.escape(right));
     }
 
     $avg(arg) {
@@ -222,6 +227,92 @@ class OpenDataFormatter extends SqlFormatter {
 
     $date(p0) {
         return sprintf('date(%s)', this.escape(p0));
+    }
+
+    escapeName(name) {
+        const result = super.escapeName(name);
+        if (this.$collection == null) {
+            return result;
+        }
+        return result.replace(new RegExp('^' + this.$collection + '\\.', 'g'), '');
+    }
+
+    formatSelect(query) {
+        // get entity name
+        const $collection = Object.key(query.$select);
+        Object.defineProperty(this, '$collection', {
+            enumerable: false,
+            configurable: true,
+            writable: true,
+            value: $collection
+        });
+        /**
+         * @type {Array<*>}
+         */
+        const fields = query.$select[$collection];
+        // get $select query option
+        const $select = fields.map((field) => {
+            return this.format(field,'%f');
+        }).join(',');
+        const $orderby = this.formatOrder(query.$order);
+        const $groupby = this.formatOrder(query.$group);
+        const $filter = this.formatWhere(query.$where);
+        delete this.$collection;
+        return {
+            $select,
+            $filter,
+            $orderby,
+            $groupby
+        };
+    }
+
+    formatWhere(where) {
+        if (where == null) {
+            return;
+        }
+        return super.formatWhere(where);
+    }
+
+    formatOrder(expr) {
+        if (Array.isArray(expr) === false) {
+            return;
+        }
+        if (expr.length === 0) {
+            return;
+        }
+        return expr.map((x) => {
+            let f = x.$desc ? x.$desc : x.$asc;
+            if (f == null)
+                throw new Error('An order by object must have either ascending or descending property.');
+            if (Array.isArray(f)) {
+                return f.map((a) => {
+                    return this.format(a, '%ff').concat(x.$desc ? ' desc' : ' asc');
+                }).join(',');
+            }
+            return this.format(f, '%ff').concat(x.$desc ? ' desc' : ' asc');
+        }).join(',');
+    }
+
+    formatGroupBy(expr) {
+        let self = this;
+        if (Array.isArray(expr) === false)
+            return;
+        if (expr.length === 0) {
+            return;
+        }
+        return expr.map((x) => {
+            return self.format(x, '%ff');
+        }).join(',');
+    }
+
+    formatLimitSelect(query) {
+        const result = this.formatSelect(query);
+        const $top = query.$take;
+        const $skip = query.$skip;
+        return Object.assign(result,{
+            $top,
+            $skip
+        });
     }
 
 }

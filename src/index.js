@@ -4,6 +4,8 @@ export * from './odata';
 export * from './expressions';
 export * from './query';
 export * from './utils';
+export * from './open-data-formatter';
+export * from './open-data-query-expression';
 export * from './closures/ClosureParser';
 export * from './closures/PrototypeMethodParser';
 export * from './closures/MathMethodParser';
