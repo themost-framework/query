@@ -1,5 +1,5 @@
 import { sprintf } from 'sprintf-js';
-import { SqlFormatter } from '../src/formatter';
+import { SqlFormatter } from '../src';
 
 class UnsupportedFormatError extends Error {
     constructor() {

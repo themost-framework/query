@@ -1,5 +1,6 @@
 import {SqlFormatter} from './formatter';
 import {sprintf} from 'sprintf-js';
+import {QueryExpression} from './query';
 
 class OpenDataFormatter extends SqlFormatter {
 
@@ -254,16 +255,36 @@ class OpenDataFormatter extends SqlFormatter {
         const $select = fields.map((field) => {
             return this.format(field,'%f');
         }).join(',');
-        const $orderby = this.formatOrder(query.$order);
-        const $groupby = this.formatOrder(query.$group);
-        const $filter = this.formatWhere(query.$where);
-        delete this.$collection;
-        return {
-            $select,
-            $filter,
-            $orderby,
-            $groupby
+
+        const result = {
+            $select
         };
+        const $filter = this.formatWhere(query.$where);
+        if ($filter != null) {
+            Object.assign(result, {
+                $filter
+            });
+        }
+        const $orderby = this.formatOrder(query.$order);
+        if ($orderby != null) {
+            Object.assign(result, {
+                $orderby
+            });
+        }
+        const $groupby = this.formatGroupBy(query.$group);
+        if ($groupby != null) {
+            Object.assign(result, {
+                $groupby
+            });
+        }
+        const $expand = this.formatExpand(query.$expand);
+        if ($expand != null) {
+            Object.assign(result, {
+                $expand
+            });
+        }
+        delete this.$collection;
+        return result;
     }
 
     formatWhere(where) {
@@ -301,6 +322,30 @@ class OpenDataFormatter extends SqlFormatter {
             return;
         }
         return expr.map((x) => {
+            return self.format(x, '%ff');
+        }).join(',');
+    }
+
+    formatExpand(expr) {
+        let self = this;
+        if (Array.isArray(expr) === false)
+            return;
+        if (expr.length === 0) {
+            return;
+        }
+        return expr.map((x) => {
+            if (x instanceof QueryExpression) {
+                const queryParams = self.format(x);
+                const queryParamsStr = Object.keys(queryParams).filter((key) => {
+                    if (Object.prototype.hasOwnProperty.call(queryParams, key)) {
+                        return queryParams[key] != null;
+                    }
+                    return false;
+                }).map((key) => {
+                   return `${key}=${queryParams[key]}`;
+                }).join(';');
+                return queryParamsStr.length > 0 ? `${x.$collection}(${queryParamsStr})` : x.$collection;
+            }
             return self.format(x, '%ff');
         }).join(',');
     }

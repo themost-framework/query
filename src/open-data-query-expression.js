@@ -12,6 +12,20 @@ class OpenDataQueryExpression extends QueryExpression {
         super();
     }
 
+    /**
+     * @param {...*} expr
+     */
+    expand(expr) {
+        if (typeof expr === 'function') {
+            let selectArgs = Array.from(arguments);
+            const closureParser = this.getClosureParser();
+            this.$expand = closureParser.parseSelect.apply(closureParser, selectArgs);
+            return this;
+        }
+        this.$expand =  Array.from(arguments);
+        return this;
+    }
+
     // eslint-disable-next-line no-unused-vars
     join(entity, props, alias) {
         throw new UnsupportedQueryExpression();

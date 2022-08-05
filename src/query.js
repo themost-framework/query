@@ -414,7 +414,7 @@ class QueryExpression {
 
     /**
      * Gets an instance of ClosureParser and register hooks
-     * @private
+     * @protected
      * @returns {ClosureParser}
      */
     getClosureParser() {
