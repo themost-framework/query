@@ -12,24 +12,24 @@ nav_order: 1
 @themost/query introduces a comprehensive set of tools and classes for querying data against any database engine.
 
 The following instance of QueryExpression
-
+```js
     const {QueryExpression, SqlFormatter} = require("@themost/query")
     const query = new QueryExpression().from('UserData')
         .select('id', 'name', 'dateCreated')
         .where('name').equal('alexis.rees@example.com');
     const sql = new SqlFormatter().format(query);
-
+```
 produces this equivalent SQL statement:
-
+```sql
     SELECT UserData.id, UserData.name, UserData.dateCreated 
         FROM UserData WHERE (name='alexis.rees@example.com')
-
+```
 ## Using dialects
 
 @themost/query comes with different dialects for each one of the well-known database engines
 
 ### Sqlite
-
+```js
         const {QueryExpression} = require("@themost/query")
         const {SqliteFormatter} = require("@themost/sqlite")
         const query = new QueryExpression().from('ProductData')
@@ -37,14 +37,15 @@ produces this equivalent SQL statement:
                 .where('category').equal('Laptops')
                 .orderBy('price').take(10);
         const sql = new SqliteFormatter().format(query);
-
+```
+```sql
         SELECT `ProductData`.`id` AS `id`, 
         `ProductData`.`name` AS `name`, `ProductData`.`price` AS `price` 
         FROM `ProductData` WHERE (`category`='Laptops') 
         ORDER BY `price` ASC LIMIT 10
-
+```
 ### Microsoft SQL Server
-
+```js
         const {QueryExpression} = require("@themost/query")
         const {MySqlFormatter} = require("@themost/mysql")
         const query = new QueryExpression().from('ProductData')
@@ -57,9 +58,9 @@ produces this equivalent SQL statement:
         `ProductData`.`price` AS `price` 
             FROM `ProductData` WHERE (`category`='Laptops') 
             ORDER BY `price` ASC LIMIT 10
-
+```
 ### MySQL and MariaDB
-
+```js
         const {QueryExpression} = require("@themost/query")
         const {MSSqlFormatter} = require("@themost/mssql")
         const query = new QueryExpression().from('ProductData')
@@ -67,15 +68,16 @@ produces this equivalent SQL statement:
                 .where('category').equal('Laptops')
                 .orderBy('price').take(10);
         const sql = new MSSqlFormatter().format(query);    
-
+```
+```sql
         SELECT [id], [name], [price] FROM (SELECT [ProductData].[id], 
         [ProductData].[name], [ProductData].[price], 
         ROW_NUMBER() OVER( ORDER BY [price] ASC) AS [__RowIndex] 
             FROM [ProductData] WHERE ([category]='Laptops')) t0 
             WHERE __RowIndex BETWEEN 1 AND 10
-
+```
 ### PostgreSQL
-
+```js
         const {QueryExpression} = require("@themost/query")
         const {PGSqlFormatter} = require("@themost/pg")
         const query = new QueryExpression().from('ProductData')
@@ -83,13 +85,14 @@ produces this equivalent SQL statement:
                 .where('category').equal('Laptops')
                 .orderBy('price').take(10);
         const sql = new PGSqlFormatter().format(query);   
-
+```
+```sql
         SELECT "ProductData"."id", "ProductData"."name", "ProductData"."price" 
         FROM "ProductData" WHERE ("category"='Laptops') 
         ORDER BY "price" ASC LIMIT 10
-
+```
 ### Oracle
-
+```js
         const {QueryExpression} = require("@themost/query")
         const {OracleFormatter} = require("@themost/oracle")
         const query = new QueryExpression().from('ProductData')
@@ -97,13 +100,14 @@ produces this equivalent SQL statement:
                 .where('category').equal('Laptops')
                 .orderBy('price').take(10);
         const sql = new OracleFormatter().format(query);  
-
+```
+```sql
         SELECT "ProductData"."id", "ProductData"."name", "ProductData"."price" 
         FROM "ProductData" WHERE ("category"='Laptops') 
         ORDER BY "price" ASC LIMIT 10
-
+```
 ### H2
-
+```js
         const {QueryExpression} = require("@themost/query")
         const {OracleFormatter} = require("@themost/h2")
         const query = new QueryExpression().from('ProductData')
@@ -111,7 +115,9 @@ produces this equivalent SQL statement:
                 .where('category').equal('Laptops')
                 .orderBy('price').take(10);
         const sql = new H2Formatter().format(query);  
-
+```
+```sql
         SELECT "ProductData"."id", "ProductData"."name", "ProductData"."price" 
         FROM "ProductData" WHERE ("category"='Laptops') 
         ORDER BY "price" ASC LIMIT 10
+```
