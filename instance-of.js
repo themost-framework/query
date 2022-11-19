@@ -1,13 +1,4 @@
-/**
- * MOST Web Framework
- * A JavaScript Web Framework
- * http://themost.io
- *
- * Copyright (c) 2019, THEMOST LP
- *
- * Released under the BSD3-Clause license
- * Date: 2014-07-16
- */
+// MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 /**
  * @param {*} any
  * @param {Function} ctor

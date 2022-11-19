@@ -1,3 +1,4 @@
+// MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 /*eslint-env es6 */
 // eslint-disable-next-line no-unused-vars
 
