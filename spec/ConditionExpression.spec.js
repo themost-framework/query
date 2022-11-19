@@ -4,7 +4,7 @@ import {MemoryAdapter} from './test/TestMemoryAdapter';
 // eslint-disable-next-line no-unused-vars
 import {MemoryFormatter} from './test/TestMemoryFormatter';
 
-fdescribe('ConditionExpression', () => {
+describe('ConditionExpression', () => {
 
     /**
      * @type {MemoryAdapter}
