@@ -9,9 +9,10 @@
  * Date: 2014-02-15
  */
 var _ = require("lodash");
-var LangUtils = require("@themost/common/utils").LangUtils;
+var LangUtils = require("@themost/common").LangUtils;
 var sprintf = require('sprintf-js').sprintf;
 var expressions = require('./expressions');
+var SwitchExpression = expressions.SwitchExpression;
 /**
  * @class
  * @constructor
@@ -394,6 +395,11 @@ OpenDataParser.prototype.parseMethodCall = function(callback) {
         var method = self.currentToken.identifier;
         self.moveNext();
         self.expect(SyntaxToken.ParenOpen);
+        if (method === 'case') {
+            return self.parseSwitchMethodBranches([], undefined, function(err, result) {
+               return callback(err, new SwitchExpression(result.branches, result.defaultValue));
+            });
+        }
         var args = [];
         self.parseMethodCallArguments(args, function(err) {
             if (err) {
@@ -416,6 +422,56 @@ OpenDataParser.prototype.parseMethodCall = function(callback) {
         });
     }
 };
+
+OpenDataParser.prototype.parseSwitchMethodBranches = function(branches, defaultValue, callback) {
+    var self = this;
+    /**
+     * @type {Token|SyntaxToken|LiteralToken|*}
+     */
+    var currentToken = self.currentToken;
+    if (currentToken.type === Token.TokenType.Literal &&
+        currentToken.value === true) {
+        self.moveNext();
+        self.expect(SyntaxToken.Colon);
+        return self.parseCommon(function (err, result) {
+            defaultValue = result;
+            self.expect(SyntaxToken.ParenClose);
+            return callback(err, {
+                branches: branches,
+                defaultValue: defaultValue
+            });
+        });
+    }
+    self.parseCommon(function (err, caseExpr) {
+        if (err) {
+            return callback(err);
+        }
+        else {
+            self.expect(SyntaxToken.Colon);
+            self.parseCommon(function (err, thenExpr) {
+                if (err) {
+                    return callback(err);
+                }
+                branches.push({
+                    case: caseExpr,
+                    then: thenExpr
+                });
+                currentToken = self.currentToken;
+                if (currentToken.type === Token.TokenType.Syntax &&
+                    currentToken.syntax === SyntaxToken.ParenClose) {
+                    self.moveNext();
+                    return callback({
+                        branches: branches
+                    });
+                }
+                self.expect(SyntaxToken.Comma);
+                return self.parseSwitchMethodBranches(branches, defaultValue, function(err, result) {
+                   return callback(err, result);
+                });
+            });
+        }
+    });
+}
 
 OpenDataParser.prototype.parseMethodCallArguments = function(args, callback) {
     var self = this;
@@ -569,6 +625,9 @@ OpenDataParser.prototype.getNext = function() {
         case ')':
         case ',':
         case '/':
+        case '=':
+        case ';':
+        case ':':
             return this.parseSyntax();
         default:
             if (OpenDataParser.isDigit(c))
@@ -601,6 +660,9 @@ OpenDataParser.prototype.parseSyntax = function()
         case ')': token = SyntaxToken.ParenClose; break;
         case '/': token = SyntaxToken.Slash; break;
         case ',': token = SyntaxToken.Comma; break;
+        case '=': token = SyntaxToken.Equal; break;
+        case ';': token = SyntaxToken.Semicolon; break;
+        case ':': token = SyntaxToken.Colon; break;
         default : throw new Error('Unknown token');
     }
     this.offset = this.current + 1;
@@ -1074,6 +1136,14 @@ Token.prototype.isSlash = function() {
 Token.prototype.isComma = function() {
     return (this.type==='Syntax') && (this.syntax===',');
 };
+//noinspection JSUnusedGlobalSymbols
+Token.prototype.isEqual = function() {
+    return (this.type === 'Syntax') && (this.syntax === '=');
+}
+//noinspection JSUnusedGlobalSymbols
+Token.prototype.isSemicolon = function() {
+    return (this.type === 'Syntax') && (this.syntax === ';');
+}
 /**
  *
  * @returns {boolean}
@@ -1201,6 +1271,9 @@ SyntaxToken.ParenClose = new SyntaxToken(')');
 SyntaxToken.Slash = new SyntaxToken('/');
 SyntaxToken.Comma = new SyntaxToken(',');
 SyntaxToken.Negative = new SyntaxToken('-');
+SyntaxToken.Equal = new SyntaxToken('=');
+SyntaxToken.Semicolon = new SyntaxToken(';');
+SyntaxToken.Colon = new SyntaxToken(':');
 
 if (typeof exports !== 'undefined')
 {

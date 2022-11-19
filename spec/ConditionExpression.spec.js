@@ -204,10 +204,10 @@ fdescribe('ConditionExpression', () => {
             expect(values.indexOf(priceDescriptionValue.value)).toBeGreaterThanOrEqual(0);
         }
     });
-    // it('should parse switch expression', async () => {
-    //     const parser = new OpenDataParser();
-    //     const result = await parser.parseAsync('case(price gt 1000:1,price lt 0:-1,true:0)');
-    //     expect(result).toBeTruthy();
-    // });
+    it('should parse switch expression', async () => {
+        const parser = new OpenDataParser();
+        const result = await parser.parseAsync('case(price gt 1000:1,price lt 0:-1,true:0)');
+        expect(result).toBeTruthy();
+    });
 
 });

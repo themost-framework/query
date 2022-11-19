@@ -8,6 +8,7 @@
  */
 ///
 var _ = require('lodash');
+var LangUtils = require("@themost/common").LangUtils;
 /**
  * @class
  * @param {*=} p0 The left operand
@@ -281,6 +282,29 @@ Operators.NotIn = '$nin';
 Operators.And = '$and';
 Operators.Or = '$or';
 
+function SwitchExpression(branches, defaultValue) {
+    SwitchExpression.super_.call(this, 'switch', [
+        {
+            branches: branches,
+            default: defaultValue
+        }
+    ]);
+}
+LangUtils.inherits(SwitchExpression, MethodCallExpression);
+
+SwitchExpression.prototype.exprOf = function() {
+    var res = {};
+    var name = '$'.concat(this.name);
+    Object.defineProperty(res, name, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: this.args[0]
+    });
+    return res;
+}
+
+
 if (typeof exports !== 'undefined')
 {
     module.exports.Operators =  Operators;
@@ -290,6 +314,7 @@ if (typeof exports !== 'undefined')
     module.exports.ComparisonExpression =  ComparisonExpression;
     module.exports.LiteralExpression =  LiteralExpression;
     module.exports.LogicalExpression =  LogicalExpression;
+    module.exports.SwitchExpression =  SwitchExpression;
     /**
      * @param {*=} left The left operand
      * @param {string=} operator The operator
