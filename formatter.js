@@ -10,7 +10,7 @@
  */
 ///
 var SqlUtils = require('./utils').SqlUtils;
-var sprintf = require('sprintf').sprintf;
+var sprintf = require('sprintf-js').sprintf;
 var _ = require('lodash');
 var query = require('./query');
 var QueryExpression = query.QueryExpression;
@@ -97,7 +97,7 @@ SqlFormatter.prototype.formatComparison = function(comparison)
         }
         var compares = [];
         for(key in comparison) {
-            if (comparison.hasOwnProperty(key))
+            if (Object.prototype.hasOwnProperty.call(comparison, key))
                 compares.push(key);
         }
         if (compares.length===0)
@@ -205,6 +205,15 @@ SqlFormatter.prototype.formatWhere = function(where)
         return '';
     //get property value
     var propertyValue = where[property];
+    if (Object.prototype.hasOwnProperty.call(QueryExpression.ComparisonOperators, property)) {
+        if (Array.isArray(propertyValue)) {
+            var formatComparison = this[property];
+            if (typeof formatComparison !== 'function') {
+                throw new Error('Comparison formatter cannot be found');
+            }
+            return formatComparison.apply(this, propertyValue);
+        }
+    }
     switch (property) {
         case '$not':
             return '(NOT ' + self.formatWhere(propertyValue) + ')';
@@ -637,6 +646,117 @@ SqlFormatter.prototype.$div = function(p0, p1)
 };
 
 SqlFormatter.prototype.$divide = SqlFormatter.prototype.$div;
+
+SqlFormatter.prototype.$cond = function(ifExpr, thenExpr, elseExpr) {
+    // validate ifExpr which should an instance of QueryExpression or a comparison expression
+    var ifExpression;
+    if (instanceOf(ifExpr, QueryExpression)) {
+        ifExpression = this.formatWhere(ifExpr.$where);
+    } else if (this.isComparison(ifExpr)) {
+        ifExpression = this.formatWhere(ifExpr);
+    } else {
+        throw new Error('Condition parameter should be an instance of query or comparison expression');
+    }
+    return sprintf('(CASE %s WHEN 1 THEN %s ELSE %s END)', ifExpression, this.escape(thenExpr), this.escape(elseExpr));
+}
+
+SqlFormatter.prototype.$switch = function(expr) {
+    var branches = expr.branches;
+    var defaultValue = expr.default;
+    if (Array.isArray(branches) === false) {
+        throw new Error('Switch branches must be an array');
+    }
+    if (branches.length === 0) {
+        throw new Error('Switch branches cannot be empty');
+    }
+    var str = '(CASE';
+    str += ' ';
+    var self = this;
+    str += branches.map(function(branch) {
+        var caseExpression;
+        if (instanceOf(branch.case, QueryExpression)) {
+            caseExpression = self.formatWhere(branch.case.$where);
+        } else if (self.isComparison(branch.case)) {
+            caseExpression = self.formatWhere(branch.case);
+        } else {
+            throw new Error('Case expression should be an instance of query or comparison expression');
+        }
+        return sprintf('WHEN %s THEN %s', caseExpression, self.escape(branch.then));
+    }).join(' ');
+    if (typeof defaultValue !== 'undefined') {
+        str += ' ELSE ';
+        str += this.escape(defaultValue);
+    }
+    str += ' END)';
+    return str;
+}
+
+SqlFormatter.prototype.$eq = function(left, right) {
+    if (right == null) {
+        return sprintf('%s IS NULL', this.escape(left));
+    }
+    if (Array.isArray(right)) {
+        return this.$in(left, right);
+    }
+    return sprintf('%s = %s', this.escape(left), this.escape(right));
+}
+SqlFormatter.prototype.$ne = function(left, right) {
+    if (right == null) {
+        return sprintf('(NOT %s IS NULL)', this.escape(left));
+    }
+    if (Array.isArray(right)) {
+        return this.$nin(left, right);
+    }
+    return sprintf('(NOT %s = %s)', this.escape(left), this.escape(right));
+}
+SqlFormatter.prototype.$gt = function(left, right) {
+    return sprintf('%s > %s', this.escape(left), this.escape(right));
+}
+SqlFormatter.prototype.$gte = function(left, right) {
+    return sprintf('%s >= %s', this.escape(left), this.escape(right));
+}
+SqlFormatter.prototype.$lt = function(left, right) {
+    return sprintf('%s < %s', this.escape(left), this.escape(right));
+}
+SqlFormatter.prototype.$lte = function(left, right) {
+    return sprintf('%s <= %s', this.escape(left), this.escape(right));
+}
+SqlFormatter.prototype.$in = function(left, right) {
+    var leftOperand = this.escape(left);
+    if (right == null) {
+        return sprintf('%s IS NULL', leftOperand);
+    }
+    if (Array.isArray(right)) {
+        if (right.length === 0) {
+            return sprintf('%s IS NULL', leftOperand);
+        }
+        var self = this;
+        var values = right.map(function (x) {
+            return self.escape(x);
+        });
+        var rightOperand = values.join(', ');
+        return sprintf('%s IN (%s)', leftOperand, rightOperand);
+    }
+    throw new Error('Invalid in expression. Right operand must be an array');
+}
+SqlFormatter.prototype.$nin = function(left, right) {
+    var leftOperand = this.escape(left);
+    if (right == null) {
+        return sprintf('NOT %s IS NULL', leftOperand);
+    }
+    if (Array.isArray(right)) {
+        if (right.length === 0) {
+            return sprintf('NOT %s IS NULL', leftOperand);
+        }
+        var self = this;
+        var values = right.map(function (x) {
+            return self.escape(x);
+        });
+        var rightOperand = values.join(', ');
+        return sprintf('NOT %s IN (%s)', leftOperand, rightOperand);
+    }
+    throw new Error('Invalid in expression. Right operand must be an array');
+}
 
 /**
  * Implements [a mod b] expression formatter.
@@ -1089,7 +1209,7 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
                 var fn = this[prop];
                 if (typeof fn === 'function') {
                     var args = expr[prop];
-                    s = fn.apply(this,args);
+                    s = Array.isArray(args) ? fn.apply(this, args) : fn.call(this, args);
                 }
                 else
                     throw new Error('The specified function is not yet implemented.');

@@ -110,6 +110,7 @@ export declare class OpenDataParser {
     static isDigit(c: any): boolean;
 
     parse(str: string, callback: (err?: Error, res?: any) => void);
+    parseAsync(str: string): Promise<any>;
     getOperator(token: string): string;
     moveNext();
     expect();

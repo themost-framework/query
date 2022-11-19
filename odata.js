@@ -10,7 +10,7 @@
  */
 var _ = require("lodash");
 var LangUtils = require("@themost/common/utils").LangUtils;
-var sprintf = require('sprintf').sprintf;
+var sprintf = require('sprintf-js').sprintf;
 var expressions = require('./expressions');
 /**
  * @class
@@ -165,6 +165,23 @@ OpenDataParser.prototype.parse = function(str, callback) {
     });
 
 };
+
+/**
+ * 
+ * @param {string} str 
+ * @returns Promise<*>
+ */
+OpenDataParser.prototype.parseAsync = function(str) {
+    var self = this;
+    return new Promise(function(resolve, reject) {
+        return self.parse(str, function(err, result) {
+            if (err) {
+                return reject(err);
+            }
+            return resolve(result);
+        });
+    });
+}
 
 OpenDataParser.prototype.moveNext = function() {
    this.offset++;
@@ -378,7 +395,7 @@ OpenDataParser.prototype.parseMethodCall = function(callback) {
         self.moveNext();
         self.expect(SyntaxToken.ParenOpen);
         var args = [];
-        self.parseMethodCallArguments(args, function(err, result) {
+        self.parseMethodCallArguments(args, function(err) {
             if (err) {
                 callback.call(self, err);
             }
@@ -1005,6 +1022,7 @@ OpenDataParser.isIdentifierChar = function(c)
     return OpenDataParser.isIdentifierStartChar(c) || OpenDataParser.isDigit(c);
 };
 
+// eslint-disable-next-line no-unused-vars
 function TimeSpan(positive, years, months, days, hours, minutes, seconds) {
 
 }
