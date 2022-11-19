@@ -1,0 +1,33 @@
+name: Publish Next
+
+on:
+  release:
+    types: [prereleased]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci
+      - run: npm run build
+      - run: npm unpublish @themost/query@next
+      - run: npm publish --tag next
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
