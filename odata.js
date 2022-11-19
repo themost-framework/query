@@ -1,13 +1,4 @@
-/**
- * MOST Web Framework
- * A JavaScript Web Framework
- * http://themost.io
- *
- * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com, Anthi Oikonomou anthioikonomou@gmail.com
- *
- * Released under the BSD3-Clause license
- * Date: 2014-02-15
- */
+// MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 var _ = require("lodash");
 var LangUtils = require("@themost/common").LangUtils;
 var sprintf = require('sprintf-js').sprintf;
@@ -900,7 +891,7 @@ OpenDataParser.prototype.parseString = function()
 
 OpenDataParser.prototype.skipDigits = function(current)
 {
-    var _source = this.source, _offset = this.offset;
+    var _source = this.source;
     if (!OpenDataParser.isDigit(_source.charAt(current)))
         return null;
     current++;
