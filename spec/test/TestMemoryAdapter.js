@@ -1,7 +1,7 @@
 
 import initSqlJs from 'sql.js';
-import { SqlUtils } from '../../src/index';
-import { QueryExpression, QueryField } from '../../src/index';
+import { SqlUtils } from '../../index';
+import { QueryExpression, QueryField } from '../../index';
 import { MemoryFormatter } from './TestMemoryFormatter';
 import { readFileSync } from 'fs';
 

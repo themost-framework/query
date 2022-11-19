@@ -28,6 +28,7 @@ module.exports.LiteralExpression = _expressions.LiteralExpression;
 module.exports.MemberExpression = _expressions.MemberExpression;
 module.exports.ArithmeticExpression = _expressions.ArithmeticExpression;
 module.exports.ComparisonExpression = _expressions.ComparisonExpression;
+module.exports.SwitchExpression = _expressions.SwitchExpression;
 module.exports.createArithmeticExpression = _expressions.createArithmeticExpression;
 module.exports.createComparisonExpression = _expressions.createComparisonExpression;
 module.exports.createLiteralExpression = _expressions.createLiteralExpression;

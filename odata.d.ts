@@ -6,7 +6,6 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import {defaultCipherList} from "constants";
 import {MemberExpression, MethodCallExpression} from "./expressions";
 
 export declare interface TokenType {
@@ -45,6 +44,8 @@ export declare class Token {
     isSlash(): boolean;
     isComma(): boolean;
     isNegative(): boolean;
+    isEqual(): boolean;
+    isSemicolon(): boolean;
 
 }
 
@@ -97,6 +98,9 @@ export declare class SyntaxToken extends Token {
     static Slash : SyntaxToken; 
     static Comma : SyntaxToken; 
     static Negative : SyntaxToken; 
+    static Equal : SyntaxToken; 
+    static Semicolon : SyntaxToken; 
+    static Colon : SyntaxToken; 
 }
 
 export declare class OpenDataParser {
@@ -110,6 +114,7 @@ export declare class OpenDataParser {
     static isDigit(c: any): boolean;
 
     parse(str: string, callback: (err?: Error, res?: any) => void);
+    parseAsync(str: string): Promise<any>;
     getOperator(token: string): string;
     moveNext();
     expect();

@@ -1,5 +1,5 @@
 
-import { SqlFormatter } from '../../src/index';
+import { SqlFormatter } from '../../index';
 
 const REGEXP_SINGLE_QUOTE = /\\'/g;
 const SINGLE_QUOTE_ESCAPE = '\'\'';

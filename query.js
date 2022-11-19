@@ -7,12 +7,11 @@
  * found in the LICENSE file at https://themost.io/license
  */
 ///
-var sprintf = require('sprintf').sprintf;
+var sprintf = require('sprintf-js').sprintf;
 var Args = require('@themost/common').Args;
 var _ = require('lodash');
 var Symbol = require('symbol');
 var aggregate = Symbol();
-var instanceOf = require('./instance-of').instanceOf;
 var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator
 // eslint-disable-next-line no-unused-vars
 //noinspection JSUnusedLocalSymbols
@@ -60,6 +59,7 @@ QueryFieldAggregator.prototype.wrapWith = function(comparison) {
     throw new Error('Invalid aggregate expression. Aggregator is missing.');
 };
 
+// eslint-disable-next-line no-unused-vars
 function validateAliasExpr(alias) {
     var regex =new RegExp(/('(''|[^'])*')|(;)|(')|(\b(ALTER|CREATE|DISTINCT|SET|DELETE|DROP|TRUNCATE|DECLARE|WHERE|JOIN|FROM|NOT|EXISTS|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\b)/gi);
     if (regex.test(alias)) {

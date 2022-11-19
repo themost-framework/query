@@ -7,8 +7,12 @@
     },
     "globals": {
       "describe": false,
-      "it": false
+      "it": false,
+      "Promise": true
     },
+    "plugins": [
+      "promise"
+    ],
     "extends": "eslint:recommended",
     "rules": {
       "no-console": "warn",
