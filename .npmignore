@@ -3,6 +3,7 @@ node_modules
 .DS_Store
 
 # test
+.nyc_output
 spec
 
 # eslint
@@ -10,3 +11,12 @@ spec
 
 # babel
 babel.config.js
+
+# development
+.idea
+.vscode
+.theia
+.DS_Store
+
+# env
+.env
