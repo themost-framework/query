@@ -8,6 +8,7 @@ spec
 
 # eslint
 .eslintrc
+.eslintignore
 
 # babel
 babel.config.js
@@ -17,6 +18,10 @@ babel.config.js
 .vscode
 .theia
 .DS_Store
+jsconfig.json
+
+# rollup
+rollup.config.js
 
 # env
 .env
