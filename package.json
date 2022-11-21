@@ -4,8 +4,7 @@
   "description": "MOST Web Framework Codename Blueshift - Query Module",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine",
-    "build": "rollup --config rollup.config.js"
+    "test": "jasmine"
   },
   "peerDependencies": {
     "@themost/common": "^2.5.0"
