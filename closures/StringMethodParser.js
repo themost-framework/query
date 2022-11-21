@@ -1,7 +1,7 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 
-import { SimpleMethodCallExpression } from '@themost/query';
-import { PrototypeMethodParser } from './PrototypeMethodParser';
+const { SimpleMethodCallExpression } = require('../expressions');
+const { PrototypeMethodParser } = require('./PrototypeMethodParser');
 
 class StringMethodParser extends PrototypeMethodParser {
     constructor() {
@@ -42,6 +42,6 @@ class StringMethodParser extends PrototypeMethodParser {
     }
 }
 
-export {
+module.exports = {
     StringMethodParser
 };

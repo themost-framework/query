@@ -1,7 +1,6 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 
-import { SimpleMethodCallExpression } from '@themost/query';
-import { MethodCallExpression } from '@themost/query';
+const { SimpleMethodCallExpression, MethodCallExpression } = require('../expressions');
 
 class MathMethodParser {
     constructor() {
@@ -40,6 +39,6 @@ class MathMethodParser {
         return new SimpleMethodCallExpression('avg', args);
     }
 }
-export {
+module.exports = {
     MathMethodParser
 };

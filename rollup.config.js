@@ -6,7 +6,7 @@ const dts = require('rollup-plugin-dts').default;
 
 module.exports = [
     {
-        input: 'closures/src/index.js',
+        input: 'closures/index.js',
         output: {
             dir: 'closures/dist',
             format: 'cjs',
@@ -21,7 +21,7 @@ module.exports = [
         ]
     },
     {
-        input: 'closures/src/index.js',
+        input: 'closures/index.js',
         output: {
             file: 'closures/dist/index.esm.js',
             format: 'esm',
@@ -33,7 +33,7 @@ module.exports = [
         plugins: [babel({ babelHelpers: 'bundled' })]
     },
     {
-        input: 'closures/src/index.d.ts',
+        input: 'closures/index.d.ts',
         output: [
             {
                 file: 'closures/dist/index.d.ts'

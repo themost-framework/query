@@ -1,17 +1,17 @@
-// MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
-import { LiteralExpression, ObjectExpression, Operators, SequenceExpression, 
+// MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
+const { LiteralExpression, ObjectExpression, Operators, SequenceExpression, 
     MemberExpression, ArithmeticExpression, LogicalExpression,
-    AggregateComparisonExpression, MethodCallExpression, ComparisonExpression } from '@themost/query';
+    AggregateComparisonExpression, MethodCallExpression, ComparisonExpression } = require('../expressions');
 const isComparisonOperator = ComparisonExpression.isComparisonOperator;
 const isArithmeticOperator = ArithmeticExpression.isArithmeticOperator;
-import { instanceOf } from '@themost/query';
+const { instanceOf } = require('../instance-of');
 
-import { parse } from 'esprima';
-import { DateMethodParser } from './DateMethodParser';
-import { StringMethodParser } from './StringMethodParser';
-import { MathMethodParser } from './MathMethodParser';
-import { FallbackMethodParser } from './FallbackMethodParser';
-import {SyncHook} from 'tapable';
+const { parse } = require('esprima');
+const { DateMethodParser } = require('./DateMethodParser');
+const { StringMethodParser } = require('./StringMethodParser');
+const { MathMethodParser } = require('./MathMethodParser');
+const { FallbackMethodParser } = require('./FallbackMethodParser');
+const {SyncHook} = require('tapable');
 
 let ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -769,7 +769,7 @@ function parentMemberExpressionToString(expr) {
     }
 }
 
-export {
+module.exports = {
     count,
     round,
     min,

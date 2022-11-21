@@ -13,6 +13,6 @@ class PrototypeMethodParser {
     }
 }
 
-export {
+module.exports = {
     PrototypeMethodParser
 };

@@ -6,7 +6,7 @@
                 "./index"
             ],
             "@themost/query/closures":[
-                "./closures/src/index"
+                "./closures/index"
             ]
         }
     }

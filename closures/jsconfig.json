@@ -1,10 +1,5 @@
 {
     "compilerOptions": {
-        "experimentalDecorators": true,
-        "paths": {
-            "@themost/query":[
-                "../index"
-            ]
-        }
+        "experimentalDecorators": true
     }
 }

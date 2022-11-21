@@ -1,12 +1,12 @@
 {
-    "parser": "@babel/eslint-parser",
     "env": {
-		"browser": true,
+		"browser": false,
 		"node": true,
-        "es6": true
+        "es6": false
 	},
     "extends": [
-        "eslint:recommended"
+        "eslint:recommended",
+        "plugin:node/recommended"
     ],
     "parserOptions": {
         // Only ESLint 6.2.0 and later support ES2020.
