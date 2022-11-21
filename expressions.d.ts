@@ -1,6 +1,6 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 
-export declare interface IExpression {
+export declare interface ExpressionBase {
     exprOf(): any;
 }
 
@@ -23,32 +23,32 @@ export declare class Operators {
     static Or : string;
 }
 
-export declare class ArithmeticExpression implements IExpression {
+export declare class ArithmeticExpression implements ExpressionBase {
     constructor(left: any, operator: string, right:any);
     exprOf(): any;
 }
 
-export declare class MemberExpression implements IExpression {
+export declare class MemberExpression implements ExpressionBase {
     constructor(name: string);
     exprOf(): any;
 }
 
-export declare class LogicalExpression implements IExpression {
+export declare class LogicalExpression implements ExpressionBase {
     constructor(operator: string, args: Array<any>);
     exprOf(): any;
 }
 
-export declare class LiteralExpression implements IExpression {
+export declare class LiteralExpression implements ExpressionBase {
     constructor(value: any);
     exprOf(): any;
 }
 
-export declare class ComparisonExpression implements IExpression {
+export declare class ComparisonExpression implements ExpressionBase {
     constructor(left: any, operator: string, right:any);
     exprOf(): any;
 }
 
-export declare class MethodCallExpression implements IExpression {
+export declare class MethodCallExpression implements ExpressionBase {
     constructor(name: string, args: Array<any>);
     exprOf(): any;
 }
@@ -56,6 +56,39 @@ export declare class MethodCallExpression implements IExpression {
 export declare class SwitchExpression extends MethodCallExpression {
     constructor(name: string, args: Array<any>);
     exprOf(): any;
+}
+
+export declare class SequenceExpression implements ExpressionBase {
+    constructor();
+    exprOf(): any;
+}
+
+export declare class ObjectExpression implements ExpressionBase {
+    constructor();
+    exprOf(): any;
+}
+
+export declare class SimpleMethodCallExpression extends MethodCallExpression {
+    constructor(name: string, args: Array<any>);
+}
+
+export declare class AggregateComparisonExpression extends ComparisonExpression {
+    constructor(left: any, operator: string, right:any);
+}
+
+export declare class SelectAnyExpression implements SelectExpressionBase {
+    constructor(expr: ExpressionBase, alias: string);
+    exprOf(): any;
+}
+
+export declare class OrderByAnyExpression implements SelectExpressionBase {
+    constructor(expr: ExpressionBase, direction?: string | 'asc' | 'desc');
+    exprOf(): any;
+}
+
+export declare class AnyExpressionFormatter {
+    format(expr: ExpressionBase): any;
+    formatMany(expr: Array<ExpressionBase>): any;
 }
 
 export declare function createArithmeticExpression(left: any, operator:string, right: any): ArithmeticExpression;
