@@ -1,9 +1,14 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 var _ = require("lodash");
-var LangUtils = require("@themost/common").LangUtils;
-var sprintf = require('sprintf-js').sprintf;
-var expressions = require('./expressions');
-var SwitchExpression = expressions.SwitchExpression;
+var {trim} = require('lodash');
+var {LangUtils} = require("@themost/common");
+var {sprintf} = require('sprintf-js');
+var {SwitchExpression, SelectAnyExpression, OrderByAnyExpression, SimpleMethodCallExpression, isLogicalOperator,
+    createLogicalExpression, isArithmeticOperator, createArithmeticExpression,
+    isArithmeticExpression, isLogicalExpression, isComparisonOperator,
+    createMemberExpression,
+    createComparisonExpression, isMethodCallExpression, isMemberExpression} = require('./expressions');
+var {whilst} = require('async');
 /**
  * @class
  * @constructor
@@ -202,6 +207,286 @@ OpenDataParser.prototype.atStart = function() {
     return this.offset === 0;
 };
 
+OpenDataParser.prototype.parseSelectSequence = function(str, callback) {
+    return this.parseSelectSequenceAsync(str).then(function(results) {
+        return callback(results);
+    }).catch(function(err) {
+        return callback(err);
+    });
+};
+
+OpenDataParser.prototype.parseSelectSequenceAsync = function(str) {
+    var self = this;
+    return new Promise(function(resolve, reject) {
+        self.source = str;
+        //get tokens
+        self.tokens = self.toList();
+        //reset offset
+        self.offset = 0; self.current = 0;
+        const tokens = self.tokens;
+        if (tokens.length === 0) {
+            return resolve();
+        }
+        var results = [];
+        void whilst(
+            function test() {
+                return self.atEnd() === false;
+            },
+            function iter(callback) {
+                let offset = self.offset;
+                void self.parseCommonItem(function(err, result) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    try {
+                        if (self.currentToken && self.currentToken.type === Token.TokenType.Identifier &&
+                            self.currentToken.identifier.toLowerCase() === 'as') {
+                            // get next token
+                            self.moveNext();
+                            // get alias identifier
+                            if (self.currentToken != null &&
+                                self.currentToken.type === Token.TokenType.Identifier) {
+                                    result = new SelectAnyExpression(result, self.currentToken.identifier);
+                                    self.moveNext();
+                            }
+                        }
+                        Object.assign(result, {
+                            source: self.getSource(offset, self.offset)
+                        });
+                        results.push(result);
+                        if (self.atEnd() === false && self.currentToken.syntax === SyntaxToken.Comma.syntax) {
+                            self.moveNext();
+                        }
+                        return callback();
+                    } catch (error) {
+                        return callback(error);
+                    }
+                });
+            },
+            function (err) {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(results);
+            }
+        );
+    })
+};
+
+OpenDataParser.prototype.parseGroupBySequence = function(str, callback) {
+    return this.parseSelectSequence(str, callback);
+};
+
+OpenDataParser.prototype.parseGroupBySequenceAsync = function(str) {
+    return this.parseSelectSequenceAsync(str);
+};
+
+OpenDataParser.prototype.parseExpandSequence = function(str) {
+    this.source = str;
+    this.tokens = this.toList();
+    this.current = 0;
+    this.offset = 0;
+    var results = [];
+    // if expression has only one token
+    if (this.tokens.length === 1) {
+        // and token is an identifier
+        if (this.currentToken.type === Token.TokenType.Identifier) {
+            // push resul
+            results.push({
+                name: this.currentToken.identifier,
+                source: this.currentToken.identifier
+            });
+            // and return
+            return results;
+        } else {
+            throw new Error('Invalid expand token. Expected identifier');
+        }
+    }
+    while(this.atEnd() === false) {
+        var offset = this.offset;
+        var result = this.parseExpandItem();
+        // set source
+        Object.assign(result, {
+            source: this.getSource(offset, this.offset)
+        });
+        results.push(result);
+        if (this.atEnd() === false && this.currentToken.syntax === SyntaxToken.Comma.syntax) {
+            this.moveNext();
+        }
+    }
+    return results;
+};
+
+OpenDataParser.prototype.getSource = function(start, end) {
+    var source = '';
+    for (var index = start; index < end; index++) {
+        var element = this.tokens[index];
+        source += element.source;
+    }
+    return source;
+};
+
+OpenDataParser.prototype.parseExpandSequenceAsync = function(str) {
+    return Promise.resolve(this.parseExpandSequence(str));
+};
+
+/**
+ * Parses expand options e.g. $select from 
+ * person($select=id,familyName,giveName;$expand=address)
+ */
+ OpenDataParser.prototype.parseExpandItemOption = function() {
+    if (this.currentToken.type === Token.TokenType.Identifier &&
+        this.currentToken.identifier.indexOf('$') === 0) {
+            var option = this.currentToken.identifier;
+            this.moveNext();
+            if (this.currentToken.isEqual() === false) {
+                throw new Error('Invalid expand option expression. An option should be followed by an equal sign.');
+            }
+            this.moveNext();
+            // move until parenClose e.g. ...$select=id,familyName,giveName)
+            // or semicolon ...$select=id,familyName,giveName;
+            var offset = this.offset;
+            var read = true;
+            var parenClose = 0;
+            while(read === true) {
+                if (this.currentToken.isParenOpen()) {
+                    // wait for parenClose
+                    parenClose += 1;
+                } 
+                if (this.currentToken.isParenClose()) {
+                    parenClose -= 1;
+                    if (parenClose < 0) {
+                        break;
+                    }
+                }
+                if (this.currentToken.isSemicolon()) {
+                    break;
+                }
+                this.moveNext();
+            }
+            var result = {};
+            // get string
+            var source = this.getSource(offset, this.offset);
+            var value;
+            if (option === '$top' || option === '$skip' || option === '$levels') {
+                value = parseInt(trim(source), 10);
+            } else if (option === '$count') {
+                value = (trim(source) === 'true');
+            } else {
+                value = trim(source);
+            }
+            Object.defineProperty(result, option, {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value: value
+            });
+            return result;
+        }
+};
+
+OpenDataParser.prototype.parseExpandItem = function() {
+    if (this.currentToken.type === Token.TokenType.Identifier) {
+        var result = {
+            name: this.currentToken.identifier,
+            options: {}
+         };
+        if (this.nextToken == null) {
+            Object.assign(result, {
+                source: this.currentToken.identifier
+            });
+            this.moveNext();
+            delete result.options;
+            return result;
+        }
+        this.moveNext();
+        if (this.currentToken.isParenOpen()) {
+            this.moveNext();
+            // parse expand options
+            while (this.currentToken && this.currentToken.isQueryOption()) {
+                var option = this.parseExpandItemOption();
+                Object.assign(result.options, option);
+                this.moveNext();
+            }
+            // this.moveNext();
+        }
+        return result;
+    }
+    throw new Error('Invalid syntax. Expected identifier but got ' + this.currentToken.type);
+}
+
+OpenDataParser.prototype.parseOrderBySequence = function(str, callback) {
+    callback = callback || function () {
+        //
+    };
+    return this.parseOrderBySequenceAsync(str).then(function(results) {
+        return callback(results);
+    }).catch(function(err) {
+        return callback(err);
+    });
+};
+
+OpenDataParser.prototype.parseOrderBySequenceAsync = function(str) {
+    var self = this;
+    return new Promise(function(resolve, reject) {
+        self.source = str;
+        //get tokens
+        self.tokens = self.toList();
+        //reset offset
+        self.offset = 0; self.current = 0;
+        var tokens = self.tokens;
+        if (tokens.length === 0) {
+            return resolve();
+        }
+        var results = [];
+        void whilst(
+            function test() { 
+                return self.atEnd() === false;
+            },
+            function iter(callback) {
+                var offset = self.offset;
+                void self.parseCommonItem(function(err, result) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    try {
+                        var direction = 'asc';
+                        if (self.currentToken && self.currentToken.type === Token.TokenType.Identifier &&
+                            (self.currentToken.identifier.toLowerCase() === 'asc' || 
+                                self.currentToken.identifier.toLowerCase() === 'desc')) {
+                                result.source = self.getSource(offset, self.offset);
+                                direction = self.currentToken.identifier.toLowerCase();
+                                result = new OrderByAnyExpression(result, direction);
+                                // go to next token
+                                self.moveNext();
+                            } else {
+                                result = new OrderByAnyExpression(result, direction);
+                            }
+                        Object.assign(result, {
+                            source: self.getSource(offset, self.offset)
+                        });
+                        results.push(result);
+                        if (self.atEnd() === false && self.currentToken.syntax === SyntaxToken.Comma.syntax) {
+                            self.moveNext();
+                        }
+                        return callback();
+                    } catch (error) {
+                        return callback(error);
+                    }
+                });
+            },
+            function (err) {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(results);
+            }
+        );
+    });
+};
+
+
+
 /**
  * Parses OData token
  * @param {Function} callback
@@ -240,7 +525,7 @@ OpenDataParser.prototype.parseCommon = function(callback) {
                         else {
                             //create odata expression
                             var expr = self.createExpression(result, op, right);
-                            if (!self.atEnd() && (expressions.isLogicalOperator(self.getOperator(self.currentToken)))) {
+                            if (!self.atEnd() && (isLogicalOperator(self.getOperator(self.currentToken)))) {
                                 var op2 = self.getOperator(self.currentToken);
                                 self.moveNext();
                                 return self.parseCommon(function(err, result) {
@@ -267,13 +552,13 @@ OpenDataParser.prototype.parseCommon = function(callback) {
  */
 OpenDataParser.prototype.createExpression = function(left, operator, right) {
 
-    if (expressions.isLogicalOperator(operator))
+    if (isLogicalOperator(operator))
     {
         var expr = null;
-        if (expressions.isLogicalExpression(left))
+        if (isLogicalExpression(left))
         {
             if (left.operator===operator) {
-                expr = expressions.createLogicalExpression(operator);
+                expr = createLogicalExpression(operator);
                 for (var i = 0; i < left.args.length; i++) {
                     var o = left.args[i];
                     expr.args.push(o);
@@ -281,23 +566,23 @@ OpenDataParser.prototype.createExpression = function(left, operator, right) {
                 expr.args.push(right);
             }
             else {
-                expr = expressions.createLogicalExpression(operator, [left, right]);
+                expr = createLogicalExpression(operator, [left, right]);
             }
         }
         else
         {
-            expr = expressions.createLogicalExpression(operator, [left, right]);
+            expr = createLogicalExpression(operator, [left, right]);
         }
         return expr;
     }
-    else if (expressions.isArithmeticOperator(operator)) {
-        return expressions.createArithmeticExpression(left, operator, right);
+    else if (isArithmeticOperator(operator)) {
+        return createArithmeticExpression(left, operator, right);
     }
-    else if (expressions.isArithmeticExpression(left) || expressions.isMethodCallExpression(left) || expressions.isMemberExpression(left))  {
-            return expressions.createComparisonExpression(left, operator, right);
+    else if (isArithmeticExpression(left) || isMethodCallExpression(left) || isMemberExpression(left))  {
+            return createComparisonExpression(left, operator, right);
     }
-    else if (expressions.isComparisonOperator(operator)) {
-        return expressions.createComparisonExpression(left,operator, right);
+    else if (isComparisonOperator(operator)) {
+        return createComparisonExpression(left,operator, right);
     }
     else {
         throw new Error('Invalid or unsupported expression arguments.');
@@ -314,8 +599,8 @@ OpenDataParser.prototype.parseCommonItem = function(callback) {
     switch (this.currentToken.type) {
         case Token.TokenType.Identifier:
             //if next token is an open parenthesis token and the current token is not an operator. current=indexOf, next=(
-            if ((self.nextToken.syntax===SyntaxToken.ParenOpen.syntax) && (_.isNil(self.getOperator(self.currentToken))))
-            {
+            if (self.nextToken && self.nextToken.syntax === SyntaxToken.ParenOpen.syntax
+                    && self.getOperator(self.currentToken) == null) {
                 //then parse method call
                 self.parseMethodCall(callback);
             }
@@ -403,7 +688,7 @@ OpenDataParser.prototype.parseMethodCall = function(callback) {
                    }
                    else {
                        if (_.isNil(expr))
-                           callback.call(self, null, expressions.createMethodCallExpression(method, args));
+                           callback.call(self, null, new SimpleMethodCallExpression(method, args));
                        else
                            callback.call(self, null, expr);
                    }
@@ -523,7 +808,7 @@ OpenDataParser.prototype.parseMember = function(callback) {
             }
             //search for multiple nested member expression (e.g. a/b/c)
             self.resolveMember(identifier, function(err, member) {
-                callback.call(self, err,expressions.createMemberExpression(member));
+                callback.call(self, err, createMemberExpression(member));
             });
         }
     }
@@ -576,9 +861,12 @@ OpenDataParser.prototype.toList = function() {
     this.current = 0;
     this.offset = 0;
     var result = [];
+    var offset = 0;
     var token = this.getNext();
     while (token)
     {
+        token.source = this.source.substring(offset, this.offset);
+        offset = this.offset;
         result.push(token);
         token = this.getNext();
     }
@@ -1134,6 +1422,9 @@ Token.prototype.isEqual = function() {
 //noinspection JSUnusedGlobalSymbols
 Token.prototype.isSemicolon = function() {
     return (this.type === 'Syntax') && (this.syntax === ';');
+}
+Token.prototype.isQueryOption = function() {
+    return (this.type === 'Identifier') && (this.identifier.indexOf('$') === 0);
 }
 /**
  *

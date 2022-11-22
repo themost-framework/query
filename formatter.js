@@ -473,6 +473,28 @@ SqlFormatter.prototype.$substring = function(p0, pos, length)
 
 SqlFormatter.prototype.$substr = SqlFormatter.prototype.$substring;
 
+SqlFormatter.prototype.$avg = function(arg) {
+    return sprintf('AVG(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+SqlFormatter.prototype.$min = function(arg) {
+    return sprintf('MIN(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+SqlFormatter.prototype.$max = function(arg) {
+    return sprintf('MAX(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+SqlFormatter.prototype.$sum = function(arg) {
+    return sprintf('SUM(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+SqlFormatter.prototype.$count = function(arg) {
+    return sprintf('COUNT(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+
+
 /**
  * Implements lower(str) expression formatter.
  * @param {String} p0
@@ -1167,38 +1189,38 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
     }
     else {
         var expr = obj[prop];
+        var fn;
+        var args;
         if (_.isNil(expr))
             throw new Error('Field definition cannot be empty while formatting.');
         if (typeof expr === 'string') {
             return useAlias ? this.escapeName(expr).concat(' AS ', this.escapeName(prop)) : expr;
+        }
+        if (typeof this[prop] === 'function') {
+            fn = this[prop];
+            args = expr;
+            if (Array.isArray(args)) {
+                return fn.apply(this, args);
+            } else {
+                return fn.call(this, args);
+            }
         }
         //get aggregate expression
         var alias = prop;
         prop = Object.key(expr);
         var name = expr[prop], s;
         switch (prop) {
-            case '$count':
-                s= sprintf('COUNT(%s)',this.escapeName(name));
+            case '$name':
+                s = this.escapeName(name);
                 break;
-            case '$min':
-                s= sprintf('MIN(%s)',this.escapeName(name));
-                break;
-            case '$max':
-                s= sprintf('MAX(%s)',this.escapeName(name));
-                break;
-            case '$avg':
-                s= sprintf('AVG(%s)',this.escapeName(name));
-                break;
-            case '$sum':
-                s= sprintf('SUM(%s)',this.escapeName(name));
-                break;
+            case '$literal':
             case '$value':
-                s= this.escapeConstant(name);
+                s = this.escapeConstant(name);
                 break;
             default :
-                var fn = this[prop];
+                fn = this[prop];
                 if (typeof fn === 'function') {
-                    var args = expr[prop];
+                    args = expr[prop];
                     s = Array.isArray(args) ? fn.apply(this, args) : fn.call(this, args);
                 }
                 else

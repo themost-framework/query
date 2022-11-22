@@ -346,7 +346,13 @@ LangUtils.inherits(SimpleMethodCallExpression, MethodCallExpression);
         } else {
             arg = this.args[0];
         }
-        Object.assign(method[name], arg);
+        if (typeof arg === 'string') {
+            Object.assign(method[name], {
+                $name: arg
+            });    
+        } else {
+            Object.assign(method[name], arg);
+        }
         return method;
     } else {
         method[name] = this.args.map(function (item) {

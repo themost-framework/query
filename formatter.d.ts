@@ -51,6 +51,17 @@ export declare class SqlFormatter {
     $divide(p0:any, p1:any): string;
     $mod(p0:any, p1:any): string;
     $bit(p0:any, p1:any): string;
+    $count(p0:any): string | any;
+    $min(p0:any): string | any;
+    $max(p0:any): string | any;
+    $avg(p0:any): string | any;
+    $sum(p0:any): string | any;
+    $cond(ifExpr: any,
+          thenExpr: QueryField | QueryValueRef | any,
+          elseExpr: QueryField | QueryValueRef | any): string | any;
+    $switch(expr: {
+        branches: {case: any, then: any}[], defaultValue?: any
+    }): string | any;
 
     formatCount(query: QueryExpression|Object): string;
     formatFixedSelect(query: QueryExpression|Object): string;
