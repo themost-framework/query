@@ -411,10 +411,17 @@ QueryExpression.prototype.distinct = function(value)
 
 /**
  * @param {*} field
+ * @param {*=} params
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.where = function(field)
+QueryExpression.prototype.where = function(field, params)
 {
+    if (typeof field === 'function') {
+        // parse closure
+        const closureParser = this.getClosureParser();
+        this.$where = closureParser.parseFilter(field, params);
+        return this;
+    }
     if (_.isNil(field))
         throw new Error('Left operand cannot be empty. Expected string or object.');
     delete this.$where;
@@ -590,6 +597,38 @@ QueryExpression.prototype.set = function(obj)
 /* eslint-disable-next-line no-unused-vars */
 QueryExpression.prototype.select = function(field)
 {
+
+    // handle closure
+    if (typeof field === 'function') {
+        // get closure and params
+        var selectArgs = Array.from(arguments);
+        if (this.$collection == null) {
+            // hold select closure to process them after from() clause
+            Object.defineProperty(this, '_selectClosure', {
+                configurable: true,
+                enumerable: false,
+                value: selectArgs,
+                writable: true
+            });
+            return this;
+        }
+        var closureParser = this.getClosureParser();
+        fields = closureParser.parseSelect.apply(closureParser, selectArgs);
+        if (this.privates.entity) {
+            this.$select = {};
+            Object.defineProperty(this.$select, this.privates.entity, {
+                configurable: true,
+                enumerable: true,
+                value: fields,
+                writable: true
+            });
+        } else {
+            this.privates.fields = fields;
+        }
+        // and return
+        return this;
+    }
+
     // get argument
     var arr = Array.prototype.slice.call(arguments);
     if (arr.length === 0) {
@@ -660,6 +699,19 @@ QueryExpression.prototype.from = function(entity) {
     else {
         name = entity.valueOf();
     }
+    Object.defineProperty(this, '$collection', {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value: name
+    });
+    // if temporary select closure is defined
+    if (this._selectClosure != null) {
+        // parse select closure
+        this.select.apply(this, this._selectClosure);
+        // remove it and continue
+        delete this._selectClosure;
+    }
     if (this.privates.fields) {
         //initialize $select property
         this.$select = {};
@@ -705,20 +757,72 @@ QueryExpression.prototype.join = function(entity, props, alias) {
             obj.$as=alias;
     }
     this.privates.expand =  { $entity: obj };
+    // set current join entity
+    let collectionName = null;
+    if (this.privates.expand.$entity.$as != null) {
+        collectionName = this.privates.expand.$entity.$as;
+    } else if (typeof this.privates.expand.$entity.name === 'function') {
+        collectionName = this.privates.expand.$entity.name();
+    }
+    Object.defineProperty(this, '$joinCollection', {
+        configurable: true,
+        enumerable: false,
+        writable: true,
+        value: collectionName
+    });
     //and return this object
     return this;
 };
+
+/**
+ * Initializes a left join expression with the specified entity
+ * @param {*} entity
+ * @param {Array=} props
+ * @param {String=} alias
+ * @returns {QueryExpression}
+ */
+ QueryExpression.prototype.leftJoin = function() {
+    var args = Array.from(arguments);
+    this.join.apply(this, args);
+    if (this.privates.expand && this.privates.expand.$entity) {
+        this.privates.expand.$entity.$join = 'left';
+    }
+    return this;
+}
+/**
+ * Initializes a right join expression with the specified entity
+ * @param {*} entity
+ * @param {Array=} props
+ * @param {String=} alias
+ * @returns {QueryExpression}
+ */
+ QueryExpression.prototype.rightJoin = function() {
+    var args = Array.from(arguments);
+    this.join.apply(this, args);
+    if (this.privates.expand && this.privates.expand.$entity) {
+        this.privates.expand.$entity.$join = 'right';
+    }
+    return this;
+}
+
 /**
  * Sets the join expression of the last join entity
- * @param obj {Array|*}
+ * @param obj {*}
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.with = function(obj) {
+
 
     if (_.isNil(obj))
         return this;
     if (_.isNil(this.privates.expand))
         throw new Error('Join entity cannot be empty when adding a join expression. Use QueryExpression.join(entity, props) before.');
+    if (typeof obj === 'function') {
+        // parse closure and return
+        const closureParser = this.getClosureParser();
+        let args = Array.from(arguments);
+        return this.with(closureParser.parseFilter.apply(closureParser, args));
+    }
     if (obj instanceof QueryExpression)
     {
         /**
@@ -758,63 +862,115 @@ QueryExpression.prototype.with = function(obj) {
 // noinspection JSUnusedGlobalSymbols
 /**
  * Applies an ascending ordering to a query expression
- * @param name {string|Array}
+ * @param {string|*} field
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.orderBy = function(name) {
+QueryExpression.prototype.orderBy = function(field) {
 
-    if (_.isNil(name))
+    if (typeof field === 'function') {
+        const closureParser = this.getClosureParser();
+        // get closure
+        let selectArgs = Array.from(arguments);
+        let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
+        this.$order = fields.map(function (item) {
+            return { $asc: item };
+        });
+        // and return
+        return this;
+    }
+    if (_.isNil(field))
         return this;
     if (_.isNil(this.$order))
         this.$order = [];
-    this.$order.push({ $asc: name });
+    this.$order.push({ $asc: field });
     return this;
 };
 // noinspection JSUnusedGlobalSymbols
 /**
  * Applies a descending ordering to a query expression
- * @param name
+ * @param {string|*} field
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.orderByDescending = function(name) {
+QueryExpression.prototype.orderByDescending = function(field) {
 
-    if (_.isNil(name))
+    if (typeof field === 'function') {
+        const closureParser = this.getClosureParser();
+        // get closure
+        let selectArgs = Array.from(arguments);
+        let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
+        this.$order = fields.map(function (item) {
+            return { $desc: item };
+        });
+        // and return
+        return this;
+    }
+    if (_.isNil(field))
         return this;
     if (_.isNil(this.$order))
         this.$order = [];
-    this.$order.push({ $desc: name });
+    this.$order.push({ $desc: field });
     return this;
 };
 
 /**
  * Performs a subsequent ordering in a query expression
- * @param name {string|Array}
+ * @param  {string|*} field
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.thenBy = function(name) {
+QueryExpression.prototype.thenBy = function(field) {
 
-    if (_.isNil(name))
+    if (typeof field === 'function') {
+        const closureParser = this.getClosureParser();
+        // get closure and params
+        let selectArgs = Array.from(arguments);
+        let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
+        // and return
+        if (Array.isArray(this.$order) === false) {
+            throw new Error('QueryExpression.thenBy() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
+        }
+        fields.forEach((item) => {
+            this.$order.push({ $asc: item });
+        });
+        return this;
+    }
+
+    if (_.isNil(field))
         return this;
     if (_.isNil(this.$order))
     //throw exception (?)
         return this;
-    this.$order.push({ $asc: name });
+    this.$order.push({ $asc: field });
     return this;
 };
 
 /**
  * Performs a subsequent ordering in a query expression
- * @param name {string|Array}
+ * @param {string|*} field
  * @returns {QueryExpression}
  */
-QueryExpression.prototype.thenByDescending = function(name) {
+QueryExpression.prototype.thenByDescending = function(field) {
 
-    if (_.isNil(name))
+    if (typeof field === 'function') {
+        const closureParser = this.getClosureParser();
+        // get closure and params
+        let selectArgs = Array.from(arguments);
+        let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
+        // and return
+        if (Array.isArray(this.$order) === false) {
+            throw new Error('QueryExpression.thenByDescending() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
+        }
+        fields.forEach((item) => {
+            this.$order.push({ $desc: item });
+        });
+        return this;
+    }
+
+    if (_.isNil(field))
         return this;
     if (_.isNil(this.$order))
     //throw exception (?)
         return this;
-    this.$order.push({ $desc: name });
+    this.$order.push({ $desc: field });
     return this;
 };
 // noinspection JSUnusedGlobalSymbols
@@ -826,13 +982,23 @@ QueryExpression.prototype.thenByDescending = function(name) {
 /* eslint-disable-next-line no-unused-vars */
 QueryExpression.prototype.groupBy = function(field) {
 
+    var fields = [];
+    if (typeof field === 'function') {
+        const closureParser = this.getClosureParser();
+        // get closure and params
+        let selectArgs = Array.from(arguments);
+        fields = closureParser.parseSelect.apply(closureParser, selectArgs);
+        // and return
+        this.$group = fields.map(function (item) {
+            return { $desc: item };
+        });
+        return this;
+    }
     // get argument
     var arr = Array.prototype.slice.call(arguments);
     if (arr.length === 0) {
         return this;
     }
-    // validate arguments
-    var fields = [];
     arr.forEach( function (x) {
         // backward compatibility
         // any argument may be an array of fields
@@ -1484,13 +1650,14 @@ QueryExpression.escape = function(val)
     }
 
     if (typeof val === 'object') {
-        if (val.hasOwnProperty('$name'))
+        if (Object.prototype.hasOwnProperty.call(val, '$name'))
         //return field identifier
             return val['$name'];
         else
             return this.escape(val.valueOf())
     }
 
+    // eslint-disable-next-line no-useless-escape, no-control-regex
     val = val.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
         switch(s) {
             case "\0": return "\\0";

@@ -148,18 +148,25 @@ SqlFormatter.prototype.escape = function(value,unquoted)
         //add an exception for Date object
         if (value instanceof Date)
             return SqlUtils.escape(value);
-        if (value.hasOwnProperty('$name'))
+        if (Object.prototype.hasOwnProperty.call(value, '$name')) {
             return this.escapeName(value.$name);
-        else {
+        } else {
             //check if value is a known expression e.g. { $length:"name" }
             var keys = _.keys(value),
                 key0 = keys[0];
             if (_.isString(key0) && /^\$/.test(key0) && _.isFunction(this[key0])) {
                 var exprFunc = this[key0];
-                //get arguments
-                var args = _.map(keys, function(x) {
-                    return value[x];
-                });
+                var args;
+                // if function has an array of arguments e.g.
+                // title.startsWith('Introduction')
+                // { $startWith: [{ $name : "title" }, 'Introduction'] }
+                if (Array.isArray(value[key0])) {
+                    args = value[key0];
+                } else {
+                    args = keys.map(function (x) {
+                        return value[x];
+                    });
+                }
                 return exprFunc.apply(this, args);
             }
         }

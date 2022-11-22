@@ -1,9 +1,7 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 const { LiteralExpression, ObjectExpression, Operators, SequenceExpression, 
     MemberExpression, ArithmeticExpression, LogicalExpression,
-    AggregateComparisonExpression, MethodCallExpression, ComparisonExpression } = require('../expressions');
-const isComparisonOperator = ComparisonExpression.isComparisonOperator;
-const isArithmeticOperator = ArithmeticExpression.isArithmeticOperator;
+    AggregateComparisonExpression, MethodCallExpression, isArithmeticOperator, isComparisonOperator } = require('../expressions');
 const { instanceOf } = require('../instance-of');
 
 const { parse } = require('esprima');

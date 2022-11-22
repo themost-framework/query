@@ -4,6 +4,7 @@ node_modules
 
 # test
 .nyc_output
+.nycrc.json
 spec
 
 # eslint

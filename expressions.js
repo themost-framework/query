@@ -64,7 +64,9 @@ function MemberExpression(name) {
     this.name = name;
 }
 MemberExpression.prototype.exprOf = function() {
-    return this.name;
+    return {
+        $name: this.name
+    };
 };
 
 /**

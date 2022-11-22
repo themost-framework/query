@@ -4,7 +4,7 @@
   "description": "MOST Web Framework Codename Blueshift - Query Module",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine"
+    "test": "nyc jasmine"
   },
   "peerDependencies": {
     "@themost/common": "^2.5.0"
@@ -45,6 +45,7 @@
     "jasmine": "^3.6.1",
     "jasmine-spec-reporter": "^5.0.2",
     "module-alias": "^2.2.2",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.79.1",
     "rollup-plugin-dts": "^4.2.2",
