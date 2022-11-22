@@ -75,7 +75,9 @@ export declare class QueryExpression {
     ceil(): QueryExpression;
     toLocaleLowerCase(): QueryExpression;
     toLocaleUpperCase(): QueryExpression;
-
+    resolvingMember: (event: { target: QueryExpression, member: string }) => void;
+    resolvingJoinMember: (event: { target: QueryExpression, member: string, fullyQualifiedMember?: string }) => void;
+    resolvingMethod: (event: { target: QueryExpression, method: string }) => void;
 }
 
 export declare class QueryField {
