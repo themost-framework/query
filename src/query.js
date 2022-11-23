@@ -4,7 +4,7 @@ import { ClosureParser } from './closures/ClosureParser';
 const aggregate = Symbol();
 import './polyfills';
 import {ObjectNameValidator} from './object-name.validator';
-import {SyncHook} from 'tapable';
+import {SyncSeriesEventEmitter} from '@themost/events';
 
 class QueryParameter {
     constructor() {
@@ -57,66 +57,22 @@ class QueryExpression {
             value: {}
         });
 
-        Object.defineProperty(this, '_hooks', {
-            configurable: true,
-            enumerable: false,
-            writable: false,
-            value: {
-                resolveMember: new SyncHook([
-                    'event'
-                ]),
-                resolveJoinMember: new SyncHook([
-                    'event'
-                ]),
-                resolveMethod: new SyncHook([
-                    'event'
-                ])
-            }
-        });
+        this.resolvingMember = new SyncSeriesEventEmitter();
+        this.resolvingJoinMember = new SyncSeriesEventEmitter();
+        this.resolvingMethod = new SyncSeriesEventEmitter();
 
-        this.resolvingMember((event) => {
+        this.resolvingMember.subscribe((event) => {
             if (this.$collection) {
                 event.member = this.$collection.concat('.', event.member);
             }
         });
 
-        this.resolvingJoinMember((event) => {
+        this.resolvingJoinMember.subscribe((event) => {
             if (this.$joinCollection) {
                 event.member = this.$joinCollection.concat('.', event.member);
             }
         });
 
-    }
-
-    /**
-     * Registers a hook for resolving member name
-     * @param {function({target:*, member:string})} eventCallback
-     */
-    resolvingMember(eventCallback) {
-        this._hooks.resolveMember.tap({
-            name: 'ResolvingMember'
-        }, eventCallback)
-    }
-
-    /**
-     * Registers a hook for resolving member name used in a join expression
-     * @param {function({target:*, member:string})} eventCallback
-     */
-    resolvingJoinMember(eventCallback) {
-        this._hooks.resolveJoinMember.tap({
-            name: 'ResolvingJoinMember'
-        }, eventCallback);
-    }
-
-    /**
-     * Registers a hook for resolving method name
-     * @param {function({target:*, method:string})} eventCallback
-     */
-    resolvingMethod(eventCallback) {
-        this._hooks.resolveMethod.tap({
-            name: 'ResolvingMethod',
-            context: true
-        }, eventCallback);
     }
 
     /**
@@ -420,29 +376,29 @@ class QueryExpression {
     getClosureParser() {
         const closureParser = new ClosureParser();
         // register sync hooks
-        closureParser.resolvingMember((event) => {
+        closureParser.resolvingMember.subscribe((event) => {
             const newEvent = {
                 target: this,
                 member: event.member
             };
-            this._hooks.resolveMember.call(newEvent);
+            this.resolvingMember.emit(newEvent);
             event.member = newEvent.member
         });
-        closureParser.resolvingJoinMember((event) => {
+        closureParser.resolvingJoinMember.subscribe((event) => {
             const newEvent = {
                 target: this,
                 member: event.member,
                 fullyQualifiedMember: event.fullyQualifiedMember
             };
-            this._hooks.resolveJoinMember.call(newEvent);
+            this.resolvingJoinMember.emit(newEvent);
             event.member = newEvent.member
         });
-        closureParser.resolvingMethod((event) => {
+        closureParser.resolvingMethod.subscribe((event) => {
             const newEvent = {
                 target: this,
                 method: event.method
             };
-            this._hooks.resolveMethod.call(newEvent);
+            this.resolvingMethod.emit(newEvent);
             event.method = newEvent.method
         });
         return closureParser;

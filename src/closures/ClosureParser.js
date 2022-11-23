@@ -11,7 +11,7 @@ import { DateMethodParser } from './DateMethodParser';
 import { StringMethodParser } from './StringMethodParser';
 import { MathMethodParser } from './MathMethodParser';
 import { FallbackMethodParser } from './FallbackMethodParser';
-import {SyncHook} from 'tapable';
+import {SyncSeriesEventEmitter} from '@themost/events';
 
 let ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
@@ -194,45 +194,9 @@ class ClosureParser {
             new FallbackMethodParser()
         ];
         this.params = null;
-        this._hooks = {
-            resolveMember: new SyncHook([
-                'event'
-            ]),
-            resolveJoinMember: new SyncHook([
-                'event'
-            ]),
-            resolveMethod: new SyncHook([
-                'event'
-            ])
-        }
-    }
-
-    /**
-     * @param {function({target:*, member:string})} eventCallback
-     */
-    resolvingMember(eventCallback) {
-        this._hooks.resolveMember.tap({
-            name: 'ResolvingMember'
-        }, eventCallback)
-    }
-
-    /**
-     * @param {function({target:*, member:string, fullyQualifiedMember: string})} eventCallback
-     */
-    resolvingJoinMember(eventCallback) {
-        this._hooks.resolveJoinMember.tap({
-            name: 'ResolvingJoinMember'
-        }, eventCallback);
-    }
-
-    /**
-     * @param {function({target:*, method:string})} eventCallback
-     */
-    resolvingMethod(eventCallback) {
-        this._hooks.resolveMethod.tap({
-            name: 'ResolvingMethod',
-            context: true
-        }, eventCallback);
+        this.resolvingMember = new SyncSeriesEventEmitter();
+        this.resolvingMethod = new SyncSeriesEventEmitter();
+        this.resolvingJoinMember = new SyncSeriesEventEmitter();
     }
 
     /**
@@ -536,10 +500,10 @@ class ClosureParser {
                 // if named parameter is the first parameter
                 if (namedParam0 == namedParam) {
                     // resolve member
-                    self._hooks.resolveMember.call(event);
+                    self.resolvingMember.emit(event);
                 } else {
                     // otherwise resolve member of joined collection
-                    self._hooks.resolveJoinMember.call(event);
+                    self.resolvingJoinMember.emit(event);
                 }
                 return new MemberExpression(event.member);
             }
@@ -566,7 +530,7 @@ class ClosureParser {
                     //get closure parameter expression e.g. x.customer.name
                     let property = expr.property.name;
                     fullyQualifiedMember += property;
-                    this._hooks.resolveJoinMember.call({
+                    this.resolvingJoinMember.emit({
                         target: this,
                         member: property,
                         fullyQualifiedMember: fullyQualifiedMember
