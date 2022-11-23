@@ -19,40 +19,28 @@ ArithmeticExpression.OperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod)$/g;
 
 ArithmeticExpression.prototype.exprOf = function()
 {
-    var p;
-    if (typeof this.left === 'undefined' || this.left===null)
+    if (this.left == null) {
         throw new Error('Expected left operand');
-    else if (typeof this.left.exprOf === 'function')
-        p = this.left.exprOf();
-    else
-        p = this.left;
-    if (typeof this.operator === 'undefined' || this.operator===null)
+    }
+    if (this.operator == null)
         throw new Error('Expected arithmetic operator.');
-    if (this.operator.match(ArithmeticExpression.OperatorRegEx)===null)
+    if (this.operator.match(ArithmeticExpression.OperatorRegEx) == null) {
         throw new Error('Invalid arithmetic operator.');
+    }
     //build right operand e.g. { $add:[ 5 ] }
-    var r = {};
-    if (typeof this.right === 'undefined' || this.right===null) {
-        r[this.operator]=[null];
-    }
-    else if (typeof this.right.exprOf === 'function') {
-        if (this.right instanceof MemberExpression) {
-            r[this.operator] = [{ "$name": this.right.exprOf() }];
-        }
-        else {
-            r[this.operator] = [this.right.exprOf()];
-        }
-
-    }
-    else {
-        r[this.operator]=[this.right];
-    }
-    //add left operand e.g { Price: { $add:[ 5 ] } }
     var result = {};
-    result[p] = r;
+    Object.defineProperty(result, this.operator, {
+        value: [this.left.exprOf(), this.right.exprOf()],
+        enumerable: true,
+        configurable: true
+    });
+    if (this.right == null) {
+        result[this.operator] = [null];
+    }
     //return query expression
     return result;
 };
+
 
 /**
  * @class
@@ -63,7 +51,9 @@ function MemberExpression(name) {
     this.name = name;
 }
 MemberExpression.prototype.exprOf = function() {
-    return this.name;
+    return {
+        $name: this.name
+    };
 };
 
 /**
@@ -128,7 +118,7 @@ function ComparisonExpression(left, op, right)
     this.right = right;
 }
 
-ComparisonExpression.OperatorRegEx = /^(\$eq|\$ne|\$lte|\$lt|\$gte|\$gt|\$in|\$nin)$/g;
+ComparisonExpression.OperatorRegEx = /^(\$eq|\$ne|\$lte|\$lt|\$gte|\$gt|\$in|\$nin|\$bit)$/g;
 
 ComparisonExpression.prototype.exprOf = function()
 {
@@ -222,32 +212,18 @@ function MethodCallExpression(name, args) {
  */
 MethodCallExpression.prototype.exprOf = function() {
     var method = {};
-    var result = {};
     var name = '$'.concat(this.name);
     //set arguments array
     method[name] = [] ;
     if (this.args.length===0)
         throw new Error('Unsupported method expression. Method arguments cannot be empty.');
-    //get first argument
-    if (this.args[0] instanceof MemberExpression) {
-        var member = this.args[0].name;
-        for (var i = 1; i < this.args.length; i++)
-        {
-            var arg = this.args[i];
-            if (typeof arg === 'undefined' || arg===null)
-                method[name].push(null);
-            else if (typeof arg.exprOf === 'function')
-                method[name].push((arg instanceof MemberExpression) ? { $name:arg.exprOf() } : arg.exprOf());
-            else
-                method[name].push(arg);
+    method[name].push.apply(method[name], this.args.map(function (arg) {
+        if (typeof arg.exprOf === 'function') {
+            return arg.exprOf();
         }
-        result[member] = method;
-        return result;
-    }
-    else {
-        throw new Error('Unsupported method expression. The first argument of a method expression must be always a MemberExpression.');
-    }
-
+        return arg;
+    }));
+    return method;
 };
 
 /**
@@ -273,6 +249,119 @@ Operators.In = '$in';
 Operators.NotIn = '$nin';
 Operators.And = '$and';
 Operators.Or = '$or';
+Operators.BitAnd = '$bit';
+
+function SequenceExpression() {
+    this.value = [];
+}
+
+SequenceExpression.prototype.exprOf = function() {
+    return this.value.reduce(function (previousValue, currentValue, currentIndex) {
+        if (currentValue instanceof MemberExpression) {
+            Object.defineProperty(previousValue, currentValue.name, {
+                value: 1,
+                enumerable: true,
+                configurable: true
+            });
+            return previousValue;
+        }
+        else if (currentValue instanceof MethodCallExpression) {
+            // validate method name e.g. Math.floor and get only the last part
+            var name = currentValue.name.split('.');
+            var previousName = name[name.length - 1] + currentIndex.toString();
+            Object.defineProperty(previousValue, previousName, {
+                value: currentValue.exprOf(),
+                enumerable: true,
+                configurable: true
+            });
+            return previousValue;
+        }
+        throw new Error('Sequence expression is invalid or has a member which its type has not implemented yet');
+    }, {});
+}
+
+function ObjectExpression() {
+    //
+}
+ObjectExpression.prototype.exprOf = function() {
+    var finalResult = {};
+    var thisArg = this;
+    Object.keys(this).forEach(function (key) {
+        if (typeof thisArg[key].exprOf === 'function') {
+            Object.defineProperty(finalResult, key, {
+                value: thisArg[key].exprOf(),
+                enumerable: true,
+                configurable: true
+            });
+            return;
+        }
+        throw new Error('Object expression is invalid or has a member which its type has not implemented yet');
+    });
+    return finalResult;
+}
+
+function SimpleMethodCallExpression(name, args) {
+    SimpleMethodCallExpression.super_.call(this, name, args);
+}
+LangUtils.inherits(SimpleMethodCallExpression, MethodCallExpression);
+/**
+ * Converts the current method to the equivalent query expression e.g. { orderDate: { $year: [] } } which is equivalent with year(orderDate)
+ * @returns {*}
+ */
+ SimpleMethodCallExpression.prototype.exprOf = function() {
+    var method = {};
+    var name = '$'.concat(this.name);
+    //set arguments array
+    if (this.args.length === 0)
+        throw new Error('Unsupported method expression. Method arguments cannot be empty.');
+    if (this.args.length === 1) {
+        method[name] = {};
+        var arg;
+        if (typeof this.args[0].exprOf === 'function') {
+            arg = this.args[0].exprOf();
+        } else {
+            arg = this.args[0];
+        }
+        if (typeof arg === 'string') {
+            Object.assign(method[name], {
+                $name: arg
+            });    
+        } else {
+            Object.assign(method[name], arg);
+        }
+        return method;
+    } else {
+        method[name] = this.args.map(function (item) {
+            if (typeof item.exprOf === 'function') {
+                return item.exprOf();
+            } else {
+                return item;
+            }
+        });
+        return method;
+    }
+
+}
+
+
+function AggregateComparisonExpression(left, op, right) {
+    AggregateComparisonExpression.super_.call(this, left, op, right);
+}
+LangUtils.inherits(AggregateComparisonExpression, ComparisonExpression)
+
+/**
+ * Converts the current method to the equivalent query expression e.g. { orderDate: { $year: [] } } which is equivalent with year(orderDate)
+ * @returns {*}
+ */
+ AggregateComparisonExpression.prototype.exprOf = function() {
+    var result = {};
+    result[this.operator] = [
+        (typeof this.left.exprOf === 'function') ? this.left.exprOf() : this.left,
+        (typeof this.right.exprOf === 'function') ? this.right.exprOf() : this.right
+    ];
+    return result;
+}
+
 
 function SwitchExpression(branches, defaultValue) {
     SwitchExpression.super_.call(this, 'switch', [
@@ -296,6 +385,56 @@ SwitchExpression.prototype.exprOf = function() {
     return res;
 }
 
+function SelectAnyExpression(expr, alias) {
+    this.expression = expr;
+    this.as = alias;
+}
+SelectAnyExpression.prototype.exprOf = function() {
+    if (this.as != null) {
+        var res = {};
+        Object.defineProperty(res, this.as, {
+            configurable: true,
+            enumerable: true,
+            writable: true,
+            value: this.expression.exprOf()
+        });
+        return res;
+    }
+    throw new Error('Expression alias cannot be empty');
+}
+
+function AnyExpressionFormatter() {
+    //
+}
+/**
+ * @type {ExpressionBase}
+ */
+ AnyExpressionFormatter.prototype.format = function(expr) {
+    return expr.exprOf();
+}
+/**
+ * @type {Array<ExpressionBase>}
+ */
+ AnyExpressionFormatter.prototype.formatMany = function(expr) {
+    return expr.map(function(item) {
+        return item.exprOf();
+    });
+}
+
+function OrderByAnyExpression(expr, direction) {
+    this.expression = expr;
+    this.direction = direction || 'asc';
+}
+OrderByAnyExpression.prototype.exprOf = function() {
+    var res = {};
+    Object.defineProperty(res, '$' + (this.direction || 'asc'), {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: this.expression.exprOf()
+    });
+    return res;
+}
 
 if (typeof exports !== 'undefined')
 {
@@ -307,6 +446,14 @@ if (typeof exports !== 'undefined')
     module.exports.LiteralExpression =  LiteralExpression;
     module.exports.LogicalExpression =  LogicalExpression;
     module.exports.SwitchExpression =  SwitchExpression;
+    module.exports.SequenceExpression =  SequenceExpression;
+    module.exports.ObjectExpression =  ObjectExpression;
+    module.exports.SimpleMethodCallExpression =  SimpleMethodCallExpression;
+    module.exports.AggregateComparisonExpression =  AggregateComparisonExpression;
+    module.exports.AnyExpressionFormatter =  AnyExpressionFormatter;
+    module.exports.SelectAnyExpression =  SelectAnyExpression;
+    module.exports.OrderByAnyExpression =  OrderByAnyExpression;
+
     /**
      * @param {*=} left The left operand
      * @param {string=} operator The operator

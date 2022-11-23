@@ -4,6 +4,7 @@ import { SqlUtils } from '../../index';
 import { QueryExpression, QueryField } from '../../index';
 import { MemoryFormatter } from './TestMemoryFormatter';
 import { readFileSync } from 'fs';
+import { stdout } from 'process';
 
 const INSTANCE_DB = new Map();
 const DateTimeRegex = /^\d{4}-([0]\d|1[0-2])-([0-2]\d|3[01])(?:[T ](\d+):(\d+)(?::(\d+)(?:\.(\d+))?)?)(?:Z(-?\d*))?([+-](\d+):(\d+))?$/;
@@ -599,7 +600,7 @@ class MemoryAdapter {
              * @param {ExistsCallback} callback
              */
             exists:function(callback) {
-                self.execute(`SELECT COUNT(*) AS "count" FROM "sqlite_master" WHERE "name" = ? AND "type" = 'table';`, [ name ], (err, result) => {
+                self.execute('SELECT COUNT(*) AS "count" FROM "sqlite_master" WHERE "name" = ? AND "type" = \'table\';', [ name ], (err, result) => {
                     if (err) {
                         return callback(err);
                     }
@@ -624,7 +625,7 @@ class MemoryAdapter {
              * @param {VersionCallback} callback
              */
             version:function(callback) {
-                self.execute(`SELECT MAX("version") AS "version" FROM "migrations" WHERE "appliesTo" = ?`,
+                self.execute('SELECT MAX("version") AS "version" FROM "migrations" WHERE "appliesTo" = ?',
                     [name], function(err, result) {
                         if (err) { return callback(err); }
                         if (result.length === 0)
@@ -652,7 +653,7 @@ class MemoryAdapter {
              */
             hasSequence:function(callback) {
                 callback = callback || function() {};
-                self.execute(`SELECT COUNT(*) AS "count" FROM "sqlite_sequence" WHERE "name" = ?`,
+                self.execute('SELECT COUNT(*) AS "count" FROM "sqlite_sequence" WHERE "name" = ?',
                     [name], function(err, result) {
                         if (err) {
                             return callback(err);
@@ -679,7 +680,7 @@ class MemoryAdapter {
              */
             columns:function(callback) {
                 callback = callback || function() {};
-                self.execute(`SELECT c.* from pragma_table_info(?) c;`,
+                self.execute('SELECT c.* from pragma_table_info(?) c;',
                     [name], function(err, result) {
                         if (err) { callback(err); return; }
                         const arr = [];
@@ -738,7 +739,7 @@ class MemoryAdapter {
              * @param {ExistsCallback} callback
              */
             exists:function(callback) {
-                self.execute(`SELECT COUNT(*) count FROM sqlite_master WHERE name=? AND type='view';`, [name], function(err, result) {
+                self.execute('SELECT COUNT(*) count FROM sqlite_master WHERE name=? AND type=\'view\';', [name], function(err, result) {
                     if (err) { callback(err); return; }
                     callback(null, (result[0].count>0));
                 });
@@ -857,6 +858,7 @@ class MemoryAdapter {
             if (sql == null) {
                 return callback.call(self, new Error('The executing command is of the wrong type or empty.'));
             }
+            stdout.write(`SQL (Execution):${sql}\n`);
             //ensure connection
             self.open(function(err) {
                 if (err) {
@@ -903,6 +905,8 @@ class MemoryAdapter {
                             return callback(null, result);
                         }
                         catch (err) {
+                            stdout.write(`SQL (Error):${err.message}\n`);
+                            stdout.write(`SQL (Error):${sql}\n`);
                             return callback(err);
                         }
                     }
@@ -913,6 +917,8 @@ class MemoryAdapter {
                             return callback();
                         }
                         catch (err) {
+                            stdout.write(`SQL (Error):${err.message}\n`);
+                            stdout.write(`SQL (Error):${sql}\n`);
                             return callback(err);
                         }
 
@@ -1060,7 +1066,7 @@ class MemoryAdapter {
                     cols.push.apply(cols, columns);
                 }
                 else {
-                    return callback(new Error("Invalid parameter. Columns parameter must be a string or an array of strings."));
+                    return callback(new Error('Invalid parameter. Columns parameter must be a string or an array of strings.'));
                 }
 
                 const thisArg = this;
@@ -1072,7 +1078,7 @@ class MemoryAdapter {
                     const indexName = formatter.escapeName(name);
                     const indexColumns = cols.map( x => {
                         return formatter.escapeName(x);
-                    }).join(",");
+                    }).join(',');
                     const sqlCreateIndex = `CREATE INDEX ${indexName} ON ${tableName}(${indexColumns})`;
                     if ( ix == null) {
                         self.execute(sqlCreateIndex, [], callback);
@@ -1124,7 +1130,7 @@ class MemoryAdapter {
              */
             drop: function(name, callback) {
                 if (typeof name !== 'string') {
-                    return callback(new Error("Name must be a valid string."));
+                    return callback(new Error('Name must be a valid string.'));
                 }
                 self.execute(`SELECT c.* FROM pragma_index_list(${formatter.escape(table)}) c`, null, function(err, result) {
                     if (err) { return callback(err); }

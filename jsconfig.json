@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "paths": {
+            "@themost/query":[
+                "./index"
+            ],
+            "@themost/query/closures":[
+                "./closures/index"
+            ]
+        }
+    }
+}

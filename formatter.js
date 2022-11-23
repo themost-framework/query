@@ -18,7 +18,7 @@ if (typeof Object.key !== 'function') {
         if (typeof obj === 'undefined' || obj === null)
             return null;
         for(var prop in obj) {
-            if (obj.hasOwnProperty(prop))
+            if (Object.prototype.hasOwnProperty.call(obj, prop))
                 return prop;
         }
         return null;
@@ -30,7 +30,7 @@ var aliasKeyword = ' AS ';
  * @this SqlFormatter
  */
 function getAliasKeyword() {
-    if (this.settings.hasOwnProperty('useAliasKeyword') === false) {
+    if (Object.prototype.hasOwnProperty.call(this.settings, 'useAliasKeyword') === false) {
         return aliasKeyword;
     }
     if (this.settings.useAliasKeyword) {
@@ -148,18 +148,25 @@ SqlFormatter.prototype.escape = function(value,unquoted)
         //add an exception for Date object
         if (value instanceof Date)
             return SqlUtils.escape(value);
-        if (value.hasOwnProperty('$name'))
+        if (Object.prototype.hasOwnProperty.call(value, '$name')) {
             return this.escapeName(value.$name);
-        else {
+        } else {
             //check if value is a known expression e.g. { $length:"name" }
             var keys = _.keys(value),
                 key0 = keys[0];
             if (_.isString(key0) && /^\$/.test(key0) && _.isFunction(this[key0])) {
                 var exprFunc = this[key0];
-                //get arguments
-                var args = _.map(keys, function(x) {
-                    return value[x];
-                });
+                var args;
+                // if function has an array of arguments e.g.
+                // title.startsWith('Introduction')
+                // { $startWith: [{ $name : "title" }, 'Introduction'] }
+                if (Array.isArray(value[key0])) {
+                    args = value[key0];
+                } else {
+                    args = keys.map(function (x) {
+                        return value[x];
+                    });
+                }
                 return exprFunc.apply(this, args);
             }
         }
@@ -341,6 +348,7 @@ SqlFormatter.prototype.formatWhere = function(where)
                         }
                         //call formatter function
                         var f0 = fn.apply(this, args);
+                        // eslint-disable-next-line no-useless-escape
                         return self.formatComparison(argn).replace(/%s/g, f0.replace('$','\$'));
                     }
                     else {
@@ -473,6 +481,28 @@ SqlFormatter.prototype.$substring = function(p0, pos, length)
 
 SqlFormatter.prototype.$substr = SqlFormatter.prototype.$substring;
 
+SqlFormatter.prototype.$avg = function(arg) {
+    return sprintf('AVG(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+SqlFormatter.prototype.$min = function(arg) {
+    return sprintf('MIN(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+SqlFormatter.prototype.$max = function(arg) {
+    return sprintf('MAX(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+SqlFormatter.prototype.$sum = function(arg) {
+    return sprintf('SUM(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+SqlFormatter.prototype.$count = function(arg) {
+    return sprintf('COUNT(%s)', typeof arg === 'string' ? this.escapeName(arg) : this.escape(arg));
+};
+
+
+
 /**
  * Implements lower(str) expression formatter.
  * @param {String} p0
@@ -573,7 +603,7 @@ SqlFormatter.prototype.isField = function(obj) {
     if (_.isNil(obj))
         return false;
     if (typeof obj === 'object')
-        if (obj.hasOwnProperty('$name'))
+        if (Object.prototype.hasOwnProperty.call(obj, '$name'))
             return true;
     return false;
 };
@@ -619,7 +649,7 @@ SqlFormatter.prototype.$mod = function(p0, p1)
     //validate params
     if (_.isNil(p0) || _.isNil(p1))
         return '0';
-    return sprintf('(%s % %s)', this.escape(p0), this.escape(p1));
+    return sprintf('(%s %% %s)', this.escape(p0), this.escape(p1));
 };
 
 /**
@@ -747,19 +777,6 @@ SqlFormatter.prototype.$nin = function(left, right) {
     }
     throw new Error('Invalid in expression. Right operand must be an array');
 }
-
-/**
- * Implements [a mod b] expression formatter.
- * @param p0 {*}
- * @param p1 {*}
- */
-SqlFormatter.prototype.$mod = function(p0, p1)
-{
-    //validate params
-    if (_.isNil(p0) || _.isNil(p1))
-        return '0';
-    return sprintf('(%s % %s)', this.escape(p0), this.escape(p1));
-};
 
 /**
  * Implements [a & b] bitwise and expression formatter.
@@ -981,7 +998,7 @@ SqlFormatter.prototype.formatField = function(obj)
     }
     if (typeof obj === 'object') {
         //if field is a constant e.g. { $value:1000 }
-        if (obj.hasOwnProperty('$value'))
+        if (Object.prototype.hasOwnProperty.call(obj, '$value'))
             return this.escapeConstant(obj['$value']);
         //get table name
         var tableName = Object.key(obj);
@@ -1063,7 +1080,7 @@ SqlFormatter.prototype.formatInsert = function(obj)
     var obj1 = obj.$insert[entity];
     var props = [];
     for(var prop in obj1)
-        if (obj1.hasOwnProperty(prop))
+        if (Object.prototype.hasOwnProperty.call(obj1, prop))
             props.push(prop);
     sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(' , _.map(props, function(x) { return self.escapeName(x); }).join(', '), ') VALUES (',
         _.map(props, function(x)
@@ -1090,7 +1107,7 @@ SqlFormatter.prototype.formatUpdate = function(obj)
     var obj1 = obj.$update[entity];
     var props = [];
     for(var prop in obj1)
-        if (obj1.hasOwnProperty(prop))
+        if (Object.prototype.hasOwnProperty.call(obj1, prop))
             props.push(prop);
     //add basic INSERT statement
     sql = sql.concat('UPDATE ', self.escapeName(entity), ' SET ',
@@ -1167,38 +1184,38 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
     }
     else {
         var expr = obj[prop];
+        var fn;
+        var args;
         if (_.isNil(expr))
             throw new Error('Field definition cannot be empty while formatting.');
         if (typeof expr === 'string') {
             return useAlias ? this.escapeName(expr).concat(' AS ', this.escapeName(prop)) : expr;
+        }
+        if (typeof this[prop] === 'function') {
+            fn = this[prop];
+            args = expr;
+            if (Array.isArray(args)) {
+                return fn.apply(this, args);
+            } else {
+                return fn.call(this, args);
+            }
         }
         //get aggregate expression
         var alias = prop;
         prop = Object.key(expr);
         var name = expr[prop], s;
         switch (prop) {
-            case '$count':
-                s= sprintf('COUNT(%s)',this.escapeName(name));
+            case '$name':
+                s = this.escapeName(name);
                 break;
-            case '$min':
-                s= sprintf('MIN(%s)',this.escapeName(name));
-                break;
-            case '$max':
-                s= sprintf('MAX(%s)',this.escapeName(name));
-                break;
-            case '$avg':
-                s= sprintf('AVG(%s)',this.escapeName(name));
-                break;
-            case '$sum':
-                s= sprintf('SUM(%s)',this.escapeName(name));
-                break;
+            case '$literal':
             case '$value':
-                s= this.escapeConstant(name);
+                s = this.escapeConstant(name);
                 break;
             default :
-                var fn = this[prop];
+                fn = this[prop];
                 if (typeof fn === 'function') {
-                    var args = expr[prop];
+                    args = expr[prop];
                     s = Array.isArray(args) ? fn.apply(this, args) : fn.call(this, args);
                 }
                 else
