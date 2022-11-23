@@ -802,7 +802,7 @@ SqlFormatter.prototype.formatCount = function(query) {
         throw new Error('Invalid query expression. Expected a valid select expression.')
     }
     //get count alias
-    var alias = this.$count || "__count__";
+    var alias = query.$count || "__count__";
     //format select statement (ignore paging parameters even if there are exist)
     var sql = this.formatSelect(query);
     //return final count expression by setting the derived sql statement as sub-query
