@@ -1,4 +1,4 @@
-
+import {SyncSeriesEventEmitter} from '@themost/events';
 export declare class QueryExpression {
 
     static ComparisonOperators: {
@@ -118,9 +118,9 @@ export declare class QueryExpression {
     toLocaleLowerCase(): this;
     toLocaleUpperCase(): this;
 
-    resolvingMember: (event: { target: QueryExpression, member: string }) => void;
-    resolvingJoinMember: (event: { target: QueryExpression, member: string, fullyQualifiedMember?: string }) => void;
-    resolvingMethod: (event: { target: QueryExpression, method: string }) => void;
+    resolvingMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string }>;
+    resolvingJoinMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string, fullyQualifiedMember?: string }>;
+    resolvingMethod: SyncSeriesEventEmitter<{ target: QueryExpression, method: string }>;
 
 }
 
