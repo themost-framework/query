@@ -1,3 +1,5 @@
+import { SyncSeriesEventEmitter } from '@themost/events';
+
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 export declare class QueryExpression {
     $select?: any;
@@ -89,9 +91,9 @@ export declare class QueryExpression {
     ceil(): QueryExpression;
     toLocaleLowerCase(): QueryExpression;
     toLocaleUpperCase(): QueryExpression;
-    resolvingMember: (event: { target: QueryExpression, member: string }) => void;
-    resolvingJoinMember: (event: { target: QueryExpression, member: string, fullyQualifiedMember?: string }) => void;
-    resolvingMethod: (event: { target: QueryExpression, method: string }) => void;
+    resolvingMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string }>;
+    resolvingJoinMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string, fullyQualifiedMember?: string }>;
+    resolvingMethod: SyncSeriesEventEmitter<{ target: QueryExpression, method: string }>;
 }
 
 export declare class QueryField {
