@@ -1,6 +1,6 @@
 import { QueryEntity, QueryExpression } from '../index';
 // eslint-disable-next-line no-unused-vars
-import { length, round, max, min, count, avg } from '../index';
+import { length, round, max, min, count, avg } from '../closures/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 
 describe('QueryExpression.where', () => {

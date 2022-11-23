@@ -649,7 +649,7 @@ SqlFormatter.prototype.$mod = function(p0, p1)
     //validate params
     if (_.isNil(p0) || _.isNil(p1))
         return '0';
-    return sprintf('(%s % %s)', this.escape(p0), this.escape(p1));
+    return sprintf('(%s %% %s)', this.escape(p0), this.escape(p1));
 };
 
 /**
@@ -777,19 +777,6 @@ SqlFormatter.prototype.$nin = function(left, right) {
     }
     throw new Error('Invalid in expression. Right operand must be an array');
 }
-
-/**
- * Implements [a mod b] expression formatter.
- * @param p0 {*}
- * @param p1 {*}
- */
-SqlFormatter.prototype.$mod = function(p0, p1)
-{
-    //validate params
-    if (_.isNil(p0) || _.isNil(p1))
-        return '0';
-    return sprintf('(%s % %s)', this.escape(p0), this.escape(p1));
-};
 
 /**
  * Implements [a & b] bitwise and expression formatter.

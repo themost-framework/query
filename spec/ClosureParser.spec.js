@@ -1,7 +1,7 @@
 import { QueryExpression, QueryEntity } from '../index';
 
 // eslint-disable-next-line no-unused-vars
-import { round, min, max, count } from '../index';
+import { round, min, max, count } from '../closures/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 
 /**
@@ -620,7 +620,7 @@ describe('ClosureParser', () => {
         });
     });
 
-    fit('should use round', async () => {
+    it('should use round', async () => {
         const Products = new QueryEntity('ProductData');
         let a = new QueryExpression().select( x => {
             x.name,

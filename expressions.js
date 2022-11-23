@@ -118,7 +118,7 @@ function ComparisonExpression(left, op, right)
     this.right = right;
 }
 
-ComparisonExpression.OperatorRegEx = /^(\$eq|\$ne|\$lte|\$lt|\$gte|\$gt|\$in|\$nin)$/g;
+ComparisonExpression.OperatorRegEx = /^(\$eq|\$ne|\$lte|\$lt|\$gte|\$gt|\$in|\$nin|\$bit)$/g;
 
 ComparisonExpression.prototype.exprOf = function()
 {
@@ -212,37 +212,18 @@ function MethodCallExpression(name, args) {
  */
 MethodCallExpression.prototype.exprOf = function() {
     var method = {};
-    var result = {};
     var name = '$'.concat(this.name);
     //set arguments array
     method[name] = [] ;
     if (this.args.length===0)
         throw new Error('Unsupported method expression. Method arguments cannot be empty.');
-    //get first argument
-    if (this.args[0] instanceof MemberExpression) {
-        var member = this.args[0].name;
-        for (var i = 1; i < this.args.length; i++)
-        {
-            var arg = this.args[i];
-            if (typeof arg === 'undefined' || arg===null)
-                method[name].push(null);
-            else if (typeof arg.exprOf === 'function')
-                method[name].push((arg instanceof MemberExpression) ? { $name:arg.exprOf() } : arg.exprOf());
-            else
-                method[name].push(arg);
+    method[name].push.apply(method[name], this.args.map(function (arg) {
+        if (typeof arg.exprOf === 'function') {
+            return arg.exprOf();
         }
-        result[member] = method;
-        return result;
-    }
-    else {
-        method[name].push.apply(method[name], this.args.map(function (arg) {
-            if (typeof arg.exprOf === 'function') {
-                return arg.exprOf();
-            }
-            return arg;
-        }));
-    }
-
+        return arg;
+    }));
+    return method;
 };
 
 /**
@@ -268,6 +249,7 @@ Operators.In = '$in';
 Operators.NotIn = '$nin';
 Operators.And = '$and';
 Operators.Or = '$or';
+Operators.BitAnd = '$bit';
 
 function SequenceExpression() {
     this.value = [];

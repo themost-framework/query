@@ -21,6 +21,7 @@ export declare class Operators {
     static NotIn : string;
     static And : string;
     static Or : string;
+    static BitAnd : string;
 }
 
 export declare class ArithmeticExpression implements ExpressionBase {
