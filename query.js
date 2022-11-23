@@ -5,8 +5,8 @@ var _ = require('lodash');
 var Symbol = require('symbol');
 var aggregate = Symbol();
 var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator;
-var SyncHook = require('tapable').SyncHook;
 var ClosureParser = require('./closures/index').ClosureParser;
+var SyncSeriesEventEmitter = require('@themost/events').SyncSeriesEventEmitter;
 // eslint-disable-next-line no-unused-vars
 //noinspection JSUnusedLocalSymbols
 require('./natives');
@@ -147,67 +147,23 @@ function QueryExpression()
         value: { }
     });
 
-    Object.defineProperty(this, '_hooks', {
-        configurable: true,
-        enumerable: false,
-        writable: false,
-        value: {
-            resolveMember: new SyncHook([
-                'event'
-            ]),
-            resolveJoinMember: new SyncHook([
-                'event'
-            ]),
-            resolveMethod: new SyncHook([
-                'event'
-            ])
-        }
-    });
+    this.resolvingMember = new SyncSeriesEventEmitter();
+    this.resolvingJoinMember = new SyncSeriesEventEmitter();
+    this.resolvingMethod = new SyncSeriesEventEmitter();
 
-    this.resolvingMember(function (event) {
+    this.resolvingMember.subscribe(function (event) {
         if (event.target.$collection) {
             event.member = event.target.$collection.concat('.', event.member);
         }
     });
 
-    this.resolvingJoinMember(function (event) {
+    this.resolvingJoinMember.subscribe(function (event) {
         if (event.target.$joinCollection) {
             event.member = event.target.$joinCollection.concat('.', event.member);
         }
     });
-
 }
 
-/**
- * Registers a hook for resolving member name
- * @param {function({target:*, member:string})} eventCallback
- */
- QueryExpression.prototype.resolvingMember = function(eventCallback) {
-    this._hooks.resolveMember.tap({
-        name: 'ResolvingMember'
-    }, eventCallback);
-}
-
-/**
- * Registers a hook for resolving member name used in a join expression
- * @param {function({target:*, member:string})} eventCallback
- */
- QueryExpression.prototype.resolvingJoinMember = function(eventCallback) {
-    this._hooks.resolveJoinMember.tap({
-        name: 'ResolvingJoinMember'
-    }, eventCallback);
-}
-
-/**
- * Registers a hook for resolving method name
- * @param {function({target:*, method:string})} eventCallback
- */
-QueryExpression.prototype.resolvingMethod = function(eventCallback) {
-    this._hooks.resolveMethod.tap({
-        name: 'ResolvingMethod',
-        context: true
-    }, eventCallback);
-}
 
 /**
  * @private
@@ -555,29 +511,29 @@ QueryExpression.prototype.set = function(obj)
     var closureParser = new ClosureParser();
     // register sync hooks
     var self = this;
-    closureParser.resolvingMember(function(event) {
+    closureParser.resolvingMember.subscribe(function(event) {
         var newEvent = {
             target: self,
             member: event.member
         };
-        self._hooks.resolveMember.call(newEvent);
+        self.resolvingMember.emit(newEvent);
         event.member = newEvent.member
     });
-    closureParser.resolvingJoinMember(function(event) {
+    closureParser.resolvingJoinMember.subscribe(function(event) {
         var newEvent = {
             target: self,
             member: event.member,
             fullyQualifiedMember: event.fullyQualifiedMember
         };
-        self._hooks.resolveJoinMember.call(newEvent);
+        self.resolvingJoinMember.emit(newEvent);
         event.member = newEvent.member
     });
-    closureParser.resolvingMethod(function (event) {
+    closureParser.resolvingMethod.subscribe(function (event) {
         var newEvent = {
             target: self,
             method: event.method
         };
-        self._hooks.resolveMethod.call(newEvent);
+        self.resolvingMethod.emit(newEvent);
         event.method = newEvent.method
     });
     return closureParser;

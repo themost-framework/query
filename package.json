@@ -20,12 +20,12 @@
   },
   "homepage": "https://github.com/themost-framework/themost#readme",
   "dependencies": {
+    "@themost/events": "^1.0.5",
     "async": "^2.6.4",
     "esprima": "^4.0.1",
     "lodash": "^4.17.15",
     "sprintf-js": "^1.1.2",
-    "symbol": "^0.3.1",
-    "tapable": "^2.2.1"
+    "symbol": "^0.3.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.6",
