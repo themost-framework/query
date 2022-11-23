@@ -9,7 +9,7 @@ const { DateMethodParser } = require('./DateMethodParser');
 const { StringMethodParser } = require('./StringMethodParser');
 const { MathMethodParser } = require('./MathMethodParser');
 const { FallbackMethodParser } = require('./FallbackMethodParser');
-var SyncSeriesEventEmitter = require('@themost/events').SyncSeriesEventEmitter;
+const { SyncSeriesEventEmitter } = require('@themost/events');
 
 let ExpressionTypes = {
     LogicalExpression : 'LogicalExpression',
