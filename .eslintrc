@@ -14,7 +14,8 @@
       "promise"
     ],
     "extends": [
-        "eslint:recommended"
+        "eslint:recommended",
+        "eslint-node:recommended"
     ],
     "rules": {
       "no-console": "warn",
