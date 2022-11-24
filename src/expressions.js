@@ -110,7 +110,7 @@ class ComparisonExpression {
             if (typeof this.right === 'undefined' || this.right === null)
                 p[this.operator] = null;
             else if (typeof this.right.exprOf === 'function')
-                p[this.operator] = (this.right instanceof MemberExpression) ? { $name: this.right.exprOf() } : this.right.exprOf();
+                p[this.operator] = this.right.exprOf();
 
             else
                 p[this.operator] = this.right;
@@ -129,7 +129,7 @@ class ComparisonExpression {
             if (typeof this.right === 'undefined' || this.right === null)
                 p[this.operator] = null;
             else if (typeof this.right.exprOf === 'function')
-                p[this.operator] = (this.right instanceof MemberExpression) ? { $name: this.right.exprOf() } : this.right.exprOf();
+                p[this.operator] = this.right.exprOf();
 
             else
                 p[this.operator] = this.right;
@@ -152,7 +152,7 @@ class ComparisonExpression {
             if (typeof this.right === 'undefined' || this.right === null)
                 p[this.operator] = null;
             else if (typeof this.right.exprOf === 'function') {
-                p[this.operator] = (this.right instanceof MemberExpression) ? { $name: this.right.exprOf() } : this.right.exprOf();
+                p[this.operator] = this.right.exprOf();
             }
 
             else
@@ -210,8 +210,7 @@ class MethodCallExpression {
                 if (typeof arg === 'undefined' || arg === null)
                     method[name].push(null);
                 else if (typeof arg.exprOf === 'function')
-                    method[name].push((arg instanceof MemberExpression) ? { $name: arg.exprOf() } : arg.exprOf());
-
+                    method[name].push(arg.exprOf());
                 else
                     method[name].push(arg);
             }
