@@ -1195,9 +1195,13 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
             fn = this[prop];
             args = expr;
             if (Array.isArray(args)) {
-                return fn.apply(this, args);
+                return fn.apply(this, args); 
             } else {
-                return fn.call(this, args);
+                if (typeof args === 'undefined') {
+                    return fn.apply(this, []);
+                } else {
+                    return fn.call(this, args);
+                }
             }
         }
         //get aggregate expression
@@ -1216,7 +1220,15 @@ SqlFormatter.prototype.formatFieldEx = function(obj, format)
                 fn = this[prop];
                 if (typeof fn === 'function') {
                     args = expr[prop];
-                    s = Array.isArray(args) ? fn.apply(this, args) : fn.call(this, args);
+                    if (Array.isArray(args)) {
+                        s = fn.apply(this, args); 
+                    } else {
+                        if (typeof args === 'undefined') {
+                            s = fn.apply(this, []);
+                        } else {
+                            s = fn.call(this, args);
+                        }
+                    }
                 }
                 else
                     throw new Error('The specified function is not yet implemented.');
