@@ -418,6 +418,7 @@ SqlFormatter.prototype.$length = function(p0)
 //noinspection JSUnusedGlobalSymbols
 /**
  * Implements length(a) expression formatter.
+ * @deprecated Use $ifNull() instead
  * @param {*} p0
  * @param {*} p1
  * @returns {string}
@@ -428,7 +429,18 @@ SqlFormatter.prototype.$ifnull = function(p0,p1)
 };
 
 /**
- * Implements trim(a) expression formatter.
+ * Evaluates input expression for null values and returns the given value
+ * @param {*} p0
+ * @param {*} p1
+ * @returns {string}
+ */
+ SqlFormatter.prototype.$ifNull = function(p0,p1)
+ {
+     return sprintf('COALESCE(%s,%s)', this.escape(p0), this.escape(p1));
+ };
+
+/**
+ * Evaluates input expression for null values and returns the given value
  * @param {*} p0
  * @returns {string}
  */

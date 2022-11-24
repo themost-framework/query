@@ -22,6 +22,7 @@ export declare class SqlFormatter {
     $regex(p0:any, p1:any): string;
     $length(p0:any): string;
     $ifnull(p0:any, p1:any): string;
+    $ifNull(p0:any, p1:any): string;
     $trim(p0:any): string;
     $concat(p0:any, p1:any): string;
     $indexof(p0:any, p1:any): string;
