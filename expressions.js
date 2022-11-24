@@ -132,7 +132,7 @@ ComparisonExpression.prototype.exprOf = function()
         if (typeof this.right === 'undefined' || this.right===null)
             p[this.operator]=null;
         else if (typeof this.right.exprOf === 'function')
-            p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
+            p[this.operator] = this.right.exprOf();
         else
             p[this.operator]=this.right;
 
@@ -150,7 +150,7 @@ ComparisonExpression.prototype.exprOf = function()
         if (typeof this.right === 'undefined' || this.right===null)
             p[this.operator]=null;
         else if (typeof this.right.exprOf === 'function')
-            p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
+            p[this.operator] = this.right.exprOf();
         else
             p[this.operator]=this.right;
 
@@ -172,7 +172,7 @@ ComparisonExpression.prototype.exprOf = function()
         if (typeof this.right === 'undefined' || this.right===null)
             p[this.operator]=null;
         else if (typeof this.right.exprOf === 'function') {
-            p[this.operator] = (this.right instanceof MemberExpression) ? { $name:this.right.exprOf() } : this.right.exprOf();
+            p[this.operator] = this.right.exprOf();
         }
         else
             p[this.operator]=this.right;

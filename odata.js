@@ -3,12 +3,13 @@ var _ = require("lodash");
 var {trim} = require('lodash');
 var {LangUtils} = require("@themost/common");
 var {sprintf} = require('sprintf-js');
-var {SwitchExpression, SelectAnyExpression, OrderByAnyExpression, SimpleMethodCallExpression, isLogicalOperator,
+var {SwitchExpression, SelectAnyExpression, OrderByAnyExpression, isLogicalOperator,
     createLogicalExpression, isArithmeticOperator, createArithmeticExpression,
     isArithmeticExpression, isLogicalExpression, isComparisonOperator,
     createMemberExpression,
     createComparisonExpression, isMethodCallExpression, isMemberExpression} = require('./expressions');
 var {whilst} = require('async');
+const { MethodCallExpression } = require('./expressions');
 /**
  * @class
  * @constructor
@@ -688,7 +689,7 @@ OpenDataParser.prototype.parseMethodCall = function(callback) {
                    }
                    else {
                        if (_.isNil(expr))
-                           callback.call(self, null, new SimpleMethodCallExpression(method, args));
+                           callback.call(self, null, new MethodCallExpression(method, args));
                        else
                            callback.call(self, null, expr);
                    }
