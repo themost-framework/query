@@ -131,6 +131,11 @@ SqlFormatter.prototype.isComparison = function(obj) {
     return (/^\$(eq|ne|lt|lte|gt|gte|in|nin|text|regex)$/g.test(key));
 };
 
+SqlFormatter.prototype.isLogical = function(obj) {
+    var key = Object.key(obj);
+    return (/^\$(and|or|not|nor)$/g.test(key));
+};
+
 
 /**
  * Escapes an object or a value and returns the equivalent sql value.
@@ -684,7 +689,7 @@ SqlFormatter.prototype.$cond = function(ifExpr, thenExpr, elseExpr) {
     var ifExpression;
     if (instanceOf(ifExpr, QueryExpression)) {
         ifExpression = this.formatWhere(ifExpr.$where);
-    } else if (this.isComparison(ifExpr)) {
+    } else if (this.isComparison(ifExpr) || this.isLogical(ifExpr)) {
         ifExpression = this.formatWhere(ifExpr);
     } else {
         throw new Error('Condition parameter should be an instance of query or comparison expression');
@@ -708,7 +713,7 @@ SqlFormatter.prototype.$switch = function(expr) {
         var caseExpression;
         if (instanceOf(branch.case, QueryExpression)) {
             caseExpression = self.formatWhere(branch.case.$where);
-        } else if (self.isComparison(branch.case)) {
+        } else if (self.isComparison(branch.case) || self.isLogical(branch.case)) {
             caseExpression = self.formatWhere(branch.case);
         } else {
             throw new Error('Case expression should be an instance of query or comparison expression');
