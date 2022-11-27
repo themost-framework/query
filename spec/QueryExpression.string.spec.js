@@ -168,7 +168,7 @@ describe('QueryExpression.where', () => {
         });
     });
 
-    fit('should use toString', async () => {
+    it('should use toString', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
             .select((x) => {
