@@ -809,6 +809,15 @@ SqlFormatter.prototype.$bit = function(p0, p1)
 };
 
 /**
+ * Converts an expression to string.
+ * @param p0 {*}
+ */
+ SqlFormatter.prototype.$toString = function(p0)
+ {
+     return sprintf('CAST(%s AS char)', this.escape(p0));
+ };
+
+/**
  *
  * @param query {QueryExpression|*}
  * @returns {string}

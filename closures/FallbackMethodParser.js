@@ -61,6 +61,9 @@ class FallbackMethodParser {
     static max(args) {
         return new SimpleMethodCallExpression('max', args);
     }
+    static toString(args) {
+        return new SimpleMethodCallExpression('toString', args);
+    }
 }
 
 module.exports = {

@@ -167,4 +167,28 @@ describe('QueryExpression.where', () => {
             expect(item.givenName.concat(' ', item.familyName)).toBe(item.name);
         });
     });
+
+    fit('should use toString', async () => {
+        const Products = new QueryEntity('ProductData');
+        let query = new QueryExpression()
+            .select((x) => {
+                return {
+                    id: x.id,
+                    name: x.name,
+                    price: x.price,
+                    priceText: x.price.toString()
+                }
+            })
+            .from(Products)
+            .where((x) => {
+                return x.price >= 500;
+            })
+            .take(10);
+        let results = await db.executeAsync(query);
+        expect(results.length).toBeTruthy();
+        results.forEach((item) => {
+            expect(item.priceText).toBeInstanceOf(String);
+            expect(item.priceText).toEqual(item.price.toString());
+        });
+    });
 });
