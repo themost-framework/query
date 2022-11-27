@@ -257,6 +257,14 @@ class MemoryFormatter extends SqlFormatter {
     $date(p0) {
         return `date(${this.escape(p0)})`;
     }
+
+    $ifNull(p0, p1) {
+        return `IFNULL(${this.escape(p0)}, ${this.escape(p1)})`;
+    }
+
+    $toString(p0) {
+        return `CAST(${this.escape(p0)} AS TEXT)`;
+    }
 }
 
 export {
