@@ -30,13 +30,13 @@ ArithmeticExpression.prototype.exprOf = function()
     //build right operand e.g. { $add:[ 5 ] }
     var result = {};
     Object.defineProperty(result, this.operator, {
-        value: [this.left.exprOf(), this.right.exprOf()],
+        value: [
+            (this.left != null) ? (typeof this.left.exprOf === 'function' ? this.left.exprOf() : this.left) : null,
+            (this.right != null) ? (typeof this.right.exprOf === 'function' ? this.right.exprOf() : this.right) : null,
+        ],
         enumerable: true,
         configurable: true
     });
-    if (this.right == null) {
-        result[this.operator] = [null];
-    }
     //return query expression
     return result;
 };
@@ -125,66 +125,16 @@ ComparisonExpression.prototype.exprOf = function()
     if (typeof this.operator === 'undefined' || this.operator===null)
         throw new Error('Expected comparison operator.');
 
-    var p, expr, name;
-    if (this.left instanceof MethodCallExpression)
-    {
-        p = {};
-        if (typeof this.right === 'undefined' || this.right===null)
-            p[this.operator]=null;
-        else if (typeof this.right.exprOf === 'function')
-            p[this.operator] = this.right.exprOf();
-        else
-            p[this.operator]=this.right;
-
-        if (this.operator==='$eq')
-            this.left.args.push(p.$eq);
-        else
-            this.left.args.push(p);
-        //return query expression
-        return this.left.exprOf();
-    }
-    else if (this.left instanceof ArithmeticExpression)
-    {
-        p = {};
-        //build comparison expression e.g. { $gt:10 }
-        if (typeof this.right === 'undefined' || this.right===null)
-            p[this.operator]=null;
-        else if (typeof this.right.exprOf === 'function')
-            p[this.operator] = this.right.exprOf();
-        else
-            p[this.operator]=this.right;
-
-        //get left expression
-        expr = this.left.exprOf();
-        //find argument list
-        name = Object.keys(expr)[0];
-        if (this.operator==='$eq')
-            expr[name][this.left.operator].push(p.$eq);
-        else
-            expr[name][this.left.operator].push(p);
-        //return query expression
-        return expr;
-    }
-    else if (this.left instanceof MemberExpression)
-    {
-        p = {};
-        //build comparison expression e.g. { $gt:10 }
-        if (typeof this.right === 'undefined' || this.right===null)
-            p[this.operator]=null;
-        else if (typeof this.right.exprOf === 'function') {
-            p[this.operator] = this.right.exprOf();
-        }
-        else
-            p[this.operator]=this.right;
-        name = this.left.name;
-        expr = {};
-        if (this.operator==='$eq' && !(this.right instanceof MemberExpression))
-            expr[name]=p.$eq;
-        else
-            expr[name] = p;
-        //return query expression
-        return expr;
-    }
+    var result = {};
+    Object.defineProperty(result, this.operator, {
+        configurable: true,
+        enumerable: true,
+        value: [
+            (this.left != null) ? (typeof this.left.exprOf === 'function' ? this.left.exprOf() : this.left) : null,
+            (this.right != null) ? (typeof this.right.exprOf === 'function' ? this.right.exprOf() : this.right) : null
+        ]
+    });
+    return result;
 };
 
 /**
