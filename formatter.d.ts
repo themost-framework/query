@@ -17,6 +17,9 @@ export declare class SqlFormatter {
     escapeConstant(value: any,unquoted?: boolean): string;
     formatWhere(where: any): string;
 
+    $or(...arg:any): string;
+    $and(...arg:any): string;
+    $not(arg:any): string;
     $startswith(p0:any, p1:any): string;
     $endswith(p0:any, p1:any): string;
     $regex(p0:any, p1:any): string;

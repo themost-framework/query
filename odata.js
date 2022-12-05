@@ -514,11 +514,29 @@ OpenDataParser.prototype.parseCommon = function(callback) {
             }
             else {
                 var op = self.getOperator(self.currentToken);
-                if (op===null) {
+                if (op == null) {
                     callback.call(self, new Error('Expected operator.'));
                 }
                 else {
                     self.moveNext();
+                    // if current operator is a logical operator ($or, $and etc)
+                    // parse right operand by using parseCommon() method 
+                    // important note: the current expression probably is not using parentheses
+                    // e.g. (category eq 'Laptops' or category eq 'Desktops') and round(price,2) ge 500 and round(price,2) le 1000
+                    // instead of (category eq 'Laptops' or category eq 'Desktops') and (round(price,2) ge 500) and (round(price,2) le 1000)
+                    if (self.atEnd() === false && isLogicalOperator(op)) {
+                        // parse next expression
+                        return self.parseCommon(function(err, right) {
+                            if (err) {
+                                return callback(err);
+                            }
+                            else {
+                                // and assign right operand
+                                return callback.call(self, null, self.createExpression(result, op, right));
+                            }
+                        });
+                    }
+                    // otherwise, continue parsing next item
                     self.parseCommonItem(function(err, right) {
                         if (err) {
                             callback.call(self, err);
@@ -526,7 +544,8 @@ OpenDataParser.prototype.parseCommon = function(callback) {
                         else {
                             //create odata expression
                             var expr = self.createExpression(result, op, right);
-                            if (!self.atEnd() && (isLogicalOperator(self.getOperator(self.currentToken)))) {
+                            var atEnd = self.atEnd();
+                            if (!atEnd && (isLogicalOperator(self.getOperator(self.currentToken)))) {
                                 var op2 = self.getOperator(self.currentToken);
                                 self.moveNext();
                                 return self.parseCommon(function(err, result) {
