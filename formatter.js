@@ -207,14 +207,24 @@ SqlFormatter.prototype.formatWhere = function(where)
         return '';
     //get property value
     var propertyValue = where[property];
-    if (Object.prototype.hasOwnProperty.call(QueryExpression.ComparisonOperators, property)) {
+    if (this.isComparison(where)) {
         if (Array.isArray(propertyValue)) {
             var formatComparison = this[property];
             if (typeof formatComparison !== 'function') {
-                throw new Error('Comparison formatter cannot be found');
+                throw new Error('Comparison expression formatter cannot be found');
             }
             return formatComparison.apply(this, propertyValue);
         }
+    }
+    if (this.isLogical(where)) {
+        if (Array.isArray(propertyValue) === false) {
+            throw new Error('Logical expression arguments must be array');
+        }
+        const formatLogicalExpr = this[property];
+        if (typeof formatLogicalExpr !== 'function') {
+            throw new Error('Logical expression formatter cannot be found');
+        }
+        return formatLogicalExpr.apply(this, propertyValue);
     }
     switch (property) {
         case '$not':
@@ -726,6 +736,55 @@ SqlFormatter.prototype.$switch = function(expr) {
     }
     str += ' END)';
     return str;
+}
+/**
+ * 
+ * @param {*=} arg
+ * @returns *
+ */
+SqlFormatter.prototype.$or = function(arg) {
+    var args = Array.from(arguments);
+    if (args.length < 2) {
+        throw new Error('A logical expression must have at least two operands.')
+    }
+    var self = this;
+    var sql = '(';
+    sql += args.map(function(value) {
+        return self.escape(value);
+    }).join(' OR ');
+    sql += ')';
+    return sql;
+}
+
+/**
+ * 
+ * @param {*=} arg
+ * @returns *
+ */
+ SqlFormatter.prototype.$and = function(arg) {
+    var args = Array.from(arguments);
+    if (args.length < 2) {
+        throw new Error('A logical expression must have at least two operands.')
+    }
+    var self = this;
+    var sql = '(';
+    sql += args.map(function(value) {
+        return self.escape(value);
+    }).join(' AND ');
+    sql += ')';
+    return sql;
+}
+
+/**
+ * 
+ * @param {*} arg
+ * @returns *
+ */
+ SqlFormatter.prototype.$not = function(arg) {
+    var sql = '(NOT ';
+    sql += this.escape(arg);
+    sql += ')';
+    return sql;
 }
 
 SqlFormatter.prototype.$eq = function(left, right) {
