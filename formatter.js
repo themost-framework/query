@@ -216,16 +216,6 @@ SqlFormatter.prototype.formatWhere = function(where)
             return formatComparison.apply(this, propertyValue);
         }
     }
-    if (this.isLogical(where)) {
-        if (Array.isArray(propertyValue) === false) {
-            throw new Error('Logical expression arguments must be array');
-        }
-        const formatLogicalExpr = this[property];
-        if (typeof formatLogicalExpr !== 'function') {
-            throw new Error('Logical expression formatter cannot be found');
-        }
-        return formatLogicalExpr.apply(this, propertyValue);
-    }
     switch (property) {
         case '$not':
             return '(NOT ' + self.formatWhere(propertyValue) + ')';
@@ -791,6 +781,9 @@ SqlFormatter.prototype.$eq = function(left, right) {
     if (right == null) {
         return sprintf('%s IS NULL', this.escape(left));
     }
+    if (Object.prototype.hasOwnProperty.call(right, '$value') && right.$value == null) {
+        return sprintf('%s IS NULL', this.escape(left));
+    }
     if (Array.isArray(right)) {
         return this.$in(left, right);
     }
@@ -798,6 +791,9 @@ SqlFormatter.prototype.$eq = function(left, right) {
 }
 SqlFormatter.prototype.$ne = function(left, right) {
     if (right == null) {
+        return sprintf('(NOT %s IS NULL)', this.escape(left));
+    }
+    if (Object.prototype.hasOwnProperty.call(right, '$value') && right.$value == null) {
         return sprintf('(NOT %s IS NULL)', this.escape(left));
     }
     if (Array.isArray(right)) {
