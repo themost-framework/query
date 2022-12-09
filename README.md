@@ -10,7 +10,7 @@
 ![MOST Web Framework Logo](https://github.com/themost-framework/common/raw/master/docs/img/themost_framework_v3_128.png)
 
 # @themost/query
-[MOST Web Framework](https://github.com/themost-framework/themost) database-agnostic query module
+[MOST Web Framework](https://github.com/themost-framework) database-agnostic query module and query language tool of [@themost/data ORM](https://github.com/themost-framework/data)
 
 
 License: [BSD-3-Clause](https://github.com/themost-framework/themost-query/blob/master/LICENSE)
@@ -28,7 +28,8 @@ Install @themost/query
 Use `QueryExpression` to build SQL select statements:
 
 	const q = new QueryExpression().select('id', 'name',  'category', 'model', 'price')
-        .from('ProductData').orderBy('name')
+        .from('ProductData').orderBy('name');
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `SELECT ProductData.id, ProductData.name, ProductData.category, ProductData.model, ProductData.price FROM ProductData ORDER BY name ASC`
 
@@ -39,12 +40,14 @@ Use `QueryExpression.and()` and `QueryExpression.or()` to build logical SQL stat
     const q = new QueryExpression().select('id', 'name',  'category', 'model', 'price')
         .where('price').greaterThan(500).and('price').lowerOrEqual(1000)
         .from('ProductData').orderBy('name');
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `SELECT ProductData.id, ProductData.name, ProductData.category, ProductData.model, ProductData.price FROM ProductData WHERE ((price>500) AND (price<=1000)) ORDER BY name ASC`
 
     const q = new QueryExpression().select('id', 'name',  'category', 'model', 'price')
         .where('category').equal('Laptops').or('category').equal('Desktops')
         .from('ProductData').orderBy('name');
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `SELECT ProductData.id, ProductData.name, ProductData.category, ProductData.model, ProductData.price FROM ProductData WHERE ((category='Laptops') OR (category='Desktops')) ORDER BY name ASC`
 
@@ -65,6 +68,7 @@ or use javascript closures and build your SQL statement:
                 price: x.price
             };
         });
+	const SQL = new SqlFormatter().format(q);
 
 ### SQL Select Top
 
@@ -72,6 +76,7 @@ Use `QueryExpression.take()` and `QueryExpression.skip()` to specify the number 
 
 	const q = new QueryExpression().select('id', 'name', 'category', 'model','price')
 	    .from('ProductData').orderBy('name').take(25).skip(25);
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `SELECT ProductData.id, ProductData.name, ProductData.category, ProductData.model, ProductData.price FROM ProductData ORDER BY name ASC LIMIT 25, 25`
 
@@ -81,6 +86,7 @@ Use `QueryExpression.orderBy()`, `QueryExpression.thenBy()`, `QueryExpression.th
 
 	const q = new QueryExpression().select('id', 'name', 'category', 'model','price')
 	    .from('ProductData').orderBy('category').thenByDescending('price');
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `SELECT ProductData.id, ProductData.name, ProductData.category, ProductData.model, ProductData.price FROM ProductData ORDER BY category ASC, price DESC`
 
@@ -146,6 +152,7 @@ Use `QueryExpression.insert()` to build SQL insert statements
 		model: 'XLG15',
 		price: 1199.99
 	}).into('ProductBase');
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `INSERT INTO ProductBase(name, category, model, price) VALUES ('Laptop XLG 15 16GB', 'Laptops', 'XLG15', 1199.99)`
 
@@ -156,6 +163,7 @@ Use `QueryExpression.update()` to build SQL update statements
 	const q = new QueryExpression().update('OrderBase').set({
 		status: 2
 	}).where('orderDate').lowerThan('2022-10-25');
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `UPDATE OrderBase SET status=2 WHERE (orderDate<'2022-10-25')`
 
@@ -164,6 +172,7 @@ SQL > `UPDATE OrderBase SET status=2 WHERE (orderDate<'2022-10-25')`
 Use `QueryExpression.delete()` to build SQL delete statements
 
 	const q = new QueryExpression().delete('OrderBase').where('id').equal(12020);
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `DELETE FROM OrderBase WHERE (id=12020)`
 
@@ -180,6 +189,7 @@ Use `QueryExpression.join()`, `QueryExpression.leftJoin()`, `QueryExpression.rig
 		new QueryExpression().where(new QueryField('orderedItem').from('OrderData'))
 		.equal(new QueryField('id').from('ProductData'))
 	);
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `SELECT OrderData.id, OrderData.orderDate, OrderData.orderStatus, ProductData.name AS product FROM OrderData INNER JOIN ProductData ON (OrderData.orderedItem=ProductData.id)`
 
@@ -203,8 +213,293 @@ or use closures:
 	}, {
 		familyName
 	}).orderByDescending((x) => x.orderDate).take(25);
+	const SQL = new SqlFormatter().format(q);
 
 SQL > `SELECT Orders.id AS id, Orders.orderedItem AS orderedItem, customer.familyName AS customerFamilyName, customer.givenName AS customerGivenName, Orders.orderStatus AS orderStatus FROM OrderData AS Orders LEFT JOIN PersonData AS customer ON Orders.customer = customer.id WHERE customer.familyName = 'Thomas' ORDER BY Orders.orderDate DESC LIMIT 25`
+
+## SQL Functions
+
+`@themost/query` prototype offers a set of common SQL functions for filtering records.
+
+### add()
+
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+		.select(function(x) {
+			return {
+				id: x.id,
+				name: x.name,
+				category: x.category,
+				model: x.model,
+				price: x.price,
+				newPrice: x.price + 50
+			}
+		})
+		.from(Products)
+		.where(function(x) {
+			return (x.price + 50) > 500;
+		}).take(10)
+	.orderByDescending(function(x) { 
+		return {orderDate: x.orderDate }; 
+	}).take(25);
+	const SQL = new SqlFormatter().format(query);
+	
+SQL > `SELECT ProductData.id AS id, ProductData.name AS name, ProductData.category AS category, ProductData.model AS model, ProductData.price AS price, (ProductData.price + 50) AS newPrice FROM ProductData WHERE (ProductData.price + 50) > 500 ORDER BY ProductData.orderDate DESC LIMIT 25`
+
+### subtract()
+
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+		.select(function(x) {
+			return {
+				id: x.id,
+				name: x.name,
+				category: x.category,
+				model: x.model,
+				price: x.price,
+				newPrice: x.price - 100
+			}
+		})
+		.from(Products)
+		.where(function(x) {
+			return (x.price - 100) > 500;
+		}).take(10)
+	.orderByDescending(function(x) { 
+		return {orderDate: x.orderDate }; 
+	}).take(25);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ProductData.id AS id, ProductData.name AS name, ProductData.category AS category, ProductData.model AS model, ProductData.price AS price, (ProductData.price - 100) AS newPrice FROM ProductData WHERE (ProductData.price - 100) > 500 ORDER BY ProductData.orderDate DESC LIMIT 25`
+
+### multiply()
+
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				id: x.id,
+				name: x.name,
+				category: x.category,
+				model: x.model,
+				price: x.price,
+				newPrice: x.price * 0.75
+			}
+		})
+		.from(Products)
+		.where((x) => {
+			return x.price > 500;
+		})
+		.take(10);
+		const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ProductData.id AS id, ProductData.name AS name, ProductData.category AS category, ProductData.model AS model, ProductData.price AS price, (ProductData.price * 0.75) AS newPrice FROM ProductData WHERE ProductData.price > 500 LIMIT 10`
+
+### divide()
+
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+    .select((x) => {
+        return {
+            id: x.id,
+            name: x.name,
+            category: x.category,
+            model: x.model,
+            price: x.price,
+            newPrice: x.price / 1.5
+        }
+    })
+    .from(Products)
+    .where((x) => {
+        return x.price > 500;
+    })
+    .take(10);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ProductData.id AS id, ProductData.name AS name, ProductData.category AS category, ProductData.model AS model, ProductData.price AS price, (ProductData.price / 1.5) AS newPrice FROM ProductData WHERE ProductData.price > 500 LIMIT 10`
+
+### floor()
+
+The floor() function always rounds down and returns the largest integer less than or equal to a given number.
+
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+    .select((x) => {
+        x.id,
+        x.name,
+        x.category,
+        x.model,
+        x.price
+    })
+    .from(Products)
+    .where((x) => {
+        return Math.floor(x.price) === 877;
+    })
+    .orderBy((x) => x.price)
+    .take(10);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ProductData.id, ProductData.name, ProductData.category, ProductData.model, ProductData.price FROM ProductData WHERE FLOOR(ProductData.price) = 877 ORDER BY ProductData.price ASC LIMIT 10`
+
+### ceil()
+
+The ceil() function always rounds up and returns the smaller integer greater than or equal to a given number.
+
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+    .select((x) => {
+        return {
+            id: x.id,
+            name: x.name,
+            category: x.category,
+            model: x.model,
+            price: x.price,
+            alternatePrice: Math.ceil(x.price)
+        }
+    })
+    .from(Products)
+    .where((x) => {
+        return Math.ceil(x.price) === 878;
+    })
+    .orderBy((x) => x.price)
+    .take(10);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ProductData.id AS id, ProductData.name AS name, ProductData.category AS category, ProductData.model AS model, ProductData.price AS price, CEILING(ProductData.price) AS alternatePrice FROM ProductData WHERE CEILING(ProductData.price) = 878 ORDER BY ProductData.price ASC LIMIT 10`
+
+### round()
+
+The round() function returns the value of a number rounded to the nearest number.
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, round} = require("@themost/query");
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				id: x.id,
+				name: x.name,
+				category: x.category,
+				model: x.model,
+				price: x.price,
+				newPrice: round(x.price, 1)
+			}
+		})
+		.from(Products)
+		.where((x) => {
+			return x.price > 500;
+		})
+		.take(10);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ProductData.id AS id, ProductData.name AS name, ProductData.category AS category, ProductData.model AS model, ProductData.price AS price, ROUND(ProductData.price,1) AS newPrice FROM ProductData WHERE ProductData.price > 500 LIMIT 10`
+
+### max()
+
+The max() function returns the largest value of the selected column.
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, round, max} = require("@themost/query");
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				maxPrice: max(x.price)
+			}
+		})
+		.from(Products)
+		.where((x) => {
+			return x.category === 'Laptops';
+		})
+		.take(1);
+
+SQL > `SELECT MAX(ProductData.price) AS maxPrice FROM ProductData WHERE ProductData.category = 'Laptops' LIMIT 1`
+
+### min()
+
+The min() function returns the smallest value of the selected column.
+
+	onst {QueryExpression, SqlFormatter, QueryEntity, QueryField, min} = require("@themost/query");
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				minPrice: min(x.price)
+			}
+		})
+		.from(Products)
+		.where((x) => {
+			return x.category === 'Laptops';
+		})
+		.take(1);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT MIN(ProductData.price) AS minPrice FROM ProductData WHERE ProductData.category = 'Laptops' LIMIT 1`
+
+### count()
+
+The count() function returns the number of rows that matches a specified criteria.
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, count} = require("@themost/query");
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				category: x.category,
+				total: count(x.id)
+			}
+		})
+		.from(Products)
+		.groupBy((x) => x.category);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ProductData.category AS category, COUNT(ProductData.id) AS total FROM ProductData GROUP BY ProductData.category`
+
+### avg()
+
+The avg() function returns the average value of a numeric column. 
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, round, avg} = require("@themost/query");
+	const Products = new QueryEntity('ProductData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				avgPrice: round(avg(x.price),2)
+			}
+		})
+		.from(Products)
+		.where((x) => {
+			return x.category === 'Laptops';
+		})
+		.take(1);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ROUND(AVG(ProductData.price),2) AS avgPrice FROM ProductData WHERE ProductData.category = 'Laptops' LIMIT 1`
+
+### sum()
+
+The sum() function returns the total sum of a numeric column. 
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, round, sum} = require("@themost/query");
+	const Orders = new QueryEntity('OrderData');
+	const Products = new QueryEntity('ProductData').as('orderedItem');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				total: round(sum(x.orderedItem.price),2)
+			}
+		})
+		.from(Orders)
+		.join(Products).with((x, y) => {
+			return x.orderedItem === y.id;
+		})
+		.where((x) => {
+			return x.orderedItem.category === 'Laptops';
+		})
+		.take(1);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ROUND(SUM(orderedItem.price),2) AS total FROM OrderData INNER JOIN ProductData AS orderedItem ON OrderData.orderedItem = orderedItem.id WHERE orderedItem.category = 'Laptops' LIMIT 1`
+
+
+
 
 ## Development
 
