@@ -615,7 +615,7 @@ The getMinutes() method returns the minutes in the specified date according to l
 
 SQL > `SELECT HOUR(OrderData.orderDate) AS hours, MINUTE(OrderData.orderDate) AS minutes, SECOND(OrderData.orderDate) AS seconds FROM OrderData WHERE (YEAR(OrderData.orderDate) = 2019 AND MONTH(OrderData.orderDate) = 1)`
 
-### getMinutes()
+### getSeconds()
 
 The getSeconds() method returns the seconds in the specified date according to local time.
 
@@ -636,9 +636,6 @@ The getSeconds() method returns the seconds in the specified date according to l
 	const SQL = new SqlFormatter().format(query);
 
 SQL > `SELECT HOUR(OrderData.orderDate) AS hours, MINUTE(OrderData.orderDate) AS minutes, SECOND(OrderData.orderDate) AS seconds FROM OrderData WHERE (YEAR(OrderData.orderDate) = 2019 AND MONTH(OrderData.orderDate) = 1)`
-
-## SQL String Functions
-
 
 
 ## Development

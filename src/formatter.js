@@ -357,29 +357,35 @@ class SqlFormatter {
     // noinspection JSUnusedGlobalSymbols
     /**
      * Implements startsWith(a,b) expression formatter.
+     * @deprecated Use $startsWith() instead
      * @param {*} p0
      * @param {*} p1
      * @returns {string}
      */
     $startswith(p0, p1) {
-        //validate params
-        if (isNil(p0) || isNil(p1))
-            return '';
+        return this.$startsWith(p0, p1);
+    }
+
+    $startsWith(p0, p1) {
         return sprintf('(%s REGEXP \'^%s\')', this.escape(p0), this.escape(p1, true));
     }
+
     // noinspection JSUnusedGlobalSymbols
     /**
      * Implements endsWith(a,b) expression formatter.
+     * @deprecated Use $endsWith() instead
      * @param {*} p0
      * @param {*} p1
      * @returns {string}
      */
     $endswith(p0, p1) {
-        //validate params
-        if (isNil(p0) || isNil(p1))
-            return '';
+        return this.$endsWith(p0, p1);
+    }
+
+    $endsWith(p0, p1) {
         return sprintf('(%s REGEXP \'%s$$\')', this.escape(p0), this.escape(p1, true));
     }
+
     /**
      * Implements regular expression formatting.
      * @param {*} p0
@@ -403,13 +409,19 @@ class SqlFormatter {
     //noinspection JSUnusedGlobalSymbols
     /**
      * Implements length(a) expression formatter.
+     * @deprecated Use $ifNull() instead
      * @param {*} p0
      * @param {*} p1
      * @returns {string}
      */
     $ifnull(p0, p1) {
+        return this.$ifNull(p0, p1);
+    }
+
+    $ifNull(p0, p1) {
         return sprintf('COALESCE(%s,%s)', this.escape(p0), this.escape(p1));
     }
+
     /**
      * Implements trim(a) expression formatter.
      * @param {*} p0
