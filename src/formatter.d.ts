@@ -15,11 +15,14 @@ export declare class SqlFormatter {
     escapeConstant(value: any,unquoted?: boolean): string | any;
     
 
+    $startsWith(p0:any, p1:any): string | any;
+    $endsWith(p0:any, p1:any): string | any;
     $startswith(p0:any, p1:any): string | any;
     $endswith(p0:any, p1:any): string | any;
     $regex(p0:any, p1:any): string | any;
     $length(p0:any): string | any;
     $ifnull(p0:any, p1:any): string | any;
+    $ifNull(p0:any, p1:any): string | any;
     $trim(p0:any): string | any;
     $concat(...p0:any): string | any;
     $indexof(p0:any, p1:any): string | any;
