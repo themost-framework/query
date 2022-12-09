@@ -498,6 +498,146 @@ The sum() function returns the total sum of a numeric column.
 
 SQL > `SELECT ROUND(SUM(orderedItem.price),2) AS total FROM OrderData INNER JOIN ProductData AS orderedItem ON OrderData.orderedItem = orderedItem.id WHERE orderedItem.category = 'Laptops' LIMIT 1`
 
+## SQL Date Functions
+
+### getFullYear()
+
+The getFullYear() method returns the year of the specified date according to local time.
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, round, sum} = require("@themost/query");
+	const Orders = new QueryEntity('OrderData');
+	const Products = new QueryEntity('ProductData').as('orderedItem');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				total: round(sum(x.orderedItem.price),2)
+			}
+		})
+		.from(Orders)
+		.join(Products).with((x, y) => {
+			return x.orderedItem === y.id;
+		})
+		.where((x) => {
+			return x.orderedItem.category === 'Laptops' &&
+				x.orderDate.getFullYear() === 2019
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT ROUND(SUM(orderedItem.price),2) AS total FROM OrderData INNER JOIN ProductData AS orderedItem ON OrderData.orderedItem = orderedItem.id WHERE (orderedItem.category = 'Laptops' AND YEAR(OrderData.orderDate) = 2019)`
+
+### getMonth()
+
+The getMonth() method returns the month in the specified date according to local time
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, count} = require("@themost/query");
+	const Orders = new QueryEntity('OrderData');
+	const Products = new QueryEntity('ProductData').as('orderedItem');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				month: x.orderDate.getMonth(),
+				total: count(x.id)
+			}
+		})
+		.from(Orders)
+		.groupBy((x) => x.orderDate.getMonth())
+		.where((x) => {
+			return x.orderDate.getFullYear() === 2019;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT MONTH(OrderData.orderDate) AS month, COUNT(OrderData.id) AS total FROM OrderData WHERE YEAR(OrderData.orderDate) = 2019 GROUP BY MONTH(OrderData.orderDate)`
+
+### getDate()
+
+The getDate() method returns the day of the month for the specified date according to local time.
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, count} = require("@themost/query");
+	const Orders = new QueryEntity('OrderData');
+	const Products = new QueryEntity('ProductData').as('orderedItem');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				dayOfMonth: x.orderDate.getDate(),
+				total: count(x.id)
+			}
+		})
+		.from(Orders)
+		.groupBy((x) => x.orderDate.getDate())
+		.where((x) => {
+			return x.orderDate.getFullYear() === 2019 && x.orderDate.getMonth() === 1;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT DAY(OrderData.orderDate) AS dayOfMonth, COUNT(OrderData.id) AS total FROM OrderData WHERE (YEAR(OrderData.orderDate) = 2019 AND MONTH(OrderData.orderDate) = 1) GROUP BY DAY(OrderData.orderDate)`
+
+### getHours()
+
+The getHours() method returns the hour for the specified date, according to local time.
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, count} = require("@themost/query");
+	const Orders = new QueryEntity('OrderData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				hours: x.orderDate.getHours(),
+				minutes: x.orderDate.getMinutes(),
+				seconds: x.orderDate.getSeconds(),
+			}
+		})
+		.from(Orders)
+		.where((x) => {
+			return x.orderDate.getFullYear() === 2019 && x.orderDate.getMonth() === 1;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT HOUR(OrderData.orderDate) AS hours, MINUTE(OrderData.orderDate) AS minutes, SECOND(OrderData.orderDate) AS seconds FROM OrderData WHERE (YEAR(OrderData.orderDate) = 2019 AND MONTH(OrderData.orderDate) = 1)`
+
+### getMinutes()
+
+The getMinutes() method returns the minutes in the specified date according to local time.
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, count} = require("@themost/query");
+	const Orders = new QueryEntity('OrderData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				hours: x.orderDate.getHours(),
+				minutes: x.orderDate.getMinutes(),
+				seconds: x.orderDate.getSeconds(),
+			}
+		})
+		.from(Orders)
+		.where((x) => {
+			return x.orderDate.getFullYear() === 2019 && x.orderDate.getMonth() === 1;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT HOUR(OrderData.orderDate) AS hours, MINUTE(OrderData.orderDate) AS minutes, SECOND(OrderData.orderDate) AS seconds FROM OrderData WHERE (YEAR(OrderData.orderDate) = 2019 AND MONTH(OrderData.orderDate) = 1)`
+
+### getMinutes()
+
+The getSeconds() method returns the seconds in the specified date according to local time.
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField, count} = require("@themost/query");
+	const Orders = new QueryEntity('OrderData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				hours: x.orderDate.getHours(),
+				minutes: x.orderDate.getMinutes(),
+				seconds: x.orderDate.getSeconds(),
+			}
+		})
+		.from(Orders)
+		.where((x) => {
+			return x.orderDate.getFullYear() === 2019 && x.orderDate.getMonth() === 1;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT HOUR(OrderData.orderDate) AS hours, MINUTE(OrderData.orderDate) AS minutes, SECOND(OrderData.orderDate) AS seconds FROM OrderData WHERE (YEAR(OrderData.orderDate) = 2019 AND MONTH(OrderData.orderDate) = 1)`
+
+## SQL String Functions
 
 
 
