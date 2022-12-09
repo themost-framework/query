@@ -5,7 +5,7 @@ node_modules
 spec
 .nycrc.json
 .nyc_output
-
+.gitpod.yml
 
 # eslint
 .eslintrc
