@@ -12,6 +12,23 @@
 # @themost/query
 [MOST Web Framework](https://github.com/themost-framework) database-agnostic query module and query language parser of [@themost/data](https://github.com/themost-framework/data)
 
+`@themost/query` introduces javascript closures-to-SQL prototype. 
+
+Write javascript closures and let `@themost/query` extract the equivalent SQL statements for querying data:
+
+	new QueryExpression().select((x) => {
+		return {
+			id: x.id,
+			name: x.name,
+			category: x.category,
+			model: x.model,
+			price: x.price
+		}
+	}).from(Products)
+	.where((x) => {
+		return x.price > 500;
+	}).take(10);
+
 
 License: [BSD-3-Clause](https://github.com/themost-framework/themost-query/blob/master/LICENSE)
 
