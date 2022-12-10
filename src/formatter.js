@@ -442,15 +442,26 @@ class SqlFormatter {
     }
     /**
      * Implements indexOf(str,substr) expression formatter.
+     * @deprecated use $indexOf() instead
      * @param {string} p0 The source string
      * @param {string} p1 The string to search for
      * @returns {string}
      */
     $indexof(p0, p1) {
-        return sprintf('(LOCATE(%s,%s)-1)', this.escape(p1), this.escape(p0));
+        return this.$indexOf(p0, p1);
     }
     $indexOf(p0, p1) {
-        return this.$indexof(p0, p1);
+        return sprintf('(LOCATE(%s,%s)-1)', this.escape(p1), this.escape(p0));
+    }
+    // noinspection JSUnusedGlobalSymbols
+    /**
+     * Implements indexOf(str,substr) expression formatter.
+     * @param {string} p0 The source string
+     * @param {string} p1 The string to search for
+     * @returns {string}
+     */
+    $indexOfBytes(p0, p1) {
+        return this.$indexOf(p0, p1);
     }
     /**
      * Implements substring(str,pos) expression formatter.

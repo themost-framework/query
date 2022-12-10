@@ -26,6 +26,8 @@ export declare class SqlFormatter {
     $trim(p0:any): string | any;
     $concat(...p0:any): string | any;
     $indexof(p0:any, p1:any): string | any;
+    $indexOf(p0:any, p1:any): string | any;
+    $indexOfBytes(p0:any, p1:any): string | any;
     $substring(p0: any, pos: number, length?: number): string | any;
     $substr(p0: any, pos: number, length?: number): string | any;
     $tolower(p0: any): string | any;
