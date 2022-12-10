@@ -15,6 +15,9 @@ export declare class SqlFormatter {
     escapeConstant(value: any,unquoted?: boolean): string | any;
     
 
+    $or(...arg:any): string;
+    $and(...arg:any): string;
+    $not(arg:any): string;
     $startsWith(p0:any, p1:any): string | any;
     $endsWith(p0:any, p1:any): string | any;
     $startswith(p0:any, p1:any): string | any;

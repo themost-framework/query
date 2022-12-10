@@ -9,13 +9,26 @@ describe('OpenDataParser', () => {
         const parser = new OpenDataParser();
         let expr = await parser.parseAsync('id eq 100');
         expect(expr). toEqual({
-            id: 100
+            $eq: [
+                { $name: 'id' },
+                100
+            ]
         });
         expr = await parser.parseAsync('active eq true and category eq \'Laptops\'');
-        expect(expr). toEqual({
+        expect(expr).toEqual({
             $and: [
-                { active: true },
-                { category: 'Laptops' }
+                {
+                    $eq: [
+                        { $name: 'active' },
+                        true
+                    ]
+                },
+                {
+                    $eq: [
+                        { $name: 'category' },
+                        'Laptops'
+                    ]
+                }
             ]
         });
     });

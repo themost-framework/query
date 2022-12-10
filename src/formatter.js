@@ -108,8 +108,12 @@ class SqlFormatter {
         }
     }
     isComparison(obj) {
-        let key = Object.key(obj);
+        const key = Object.key(obj);
         return (/^\$(eq|ne|lt|lte|gt|gte|in|nin|text|regex)$/g.test(key));
+    }
+    isLogical(obj) {
+        const key = Object.key(obj);
+        return (/^\$(and|or|not|nor)$/g.test(key));
     }
     /**
      * Escapes an object or a value and returns the equivalent sql value.
@@ -1104,6 +1108,9 @@ class SqlFormatter {
         if (right == null) {
             return sprintf('%s IS NULL', this.escape(left));
         }
+        if (Object.prototype.hasOwnProperty.call(right, '$value') && right.$value == null) {
+            return sprintf('%s IS NULL', this.escape(left));
+        }
         if (Array.isArray(right)) {
             return this.$in(left, right);
         }
@@ -1111,6 +1118,9 @@ class SqlFormatter {
     }
     $ne(left, right) {
         if (right == null) {
+            return sprintf('(NOT %s IS NULL)', this.escape(left));
+        }
+        if (Object.prototype.hasOwnProperty.call(right, '$value') && right.$value == null) {
             return sprintf('(NOT %s IS NULL)', this.escape(left));
         }
         if (Array.isArray(right)) {
@@ -1253,6 +1263,40 @@ class SqlFormatter {
         }
         str += ' END)';
         return str;
+    }
+    // eslint-disable-next-line no-unused-vars
+    $or(arg) {
+        const args = Array.from(arguments);
+        if (args.length < 2) {
+            throw new Error('A logical expression must have at least two operands.')
+        }
+        let sql = '(';
+        sql += args.map((value) => {
+            return this.escape(value);
+        }).join(' OR ');
+        sql += ')';
+        return sql;
+    }
+
+    // eslint-disable-next-line no-unused-vars
+    $and(arg) {
+        const args = Array.from(arguments);
+        if (args.length < 2) {
+            throw new Error('A logical expression must have at least two operands.')
+        }
+        let sql = '(';
+        sql += args.map((value) => {
+            return this.escape(value);
+        }).join(' AND ');
+        sql += ')';
+        return sql;
+    }
+
+    $not(arg) {
+        let sql = '(NOT ';
+        sql += this.escape(arg);
+        sql += ')';
+        return sql;
     }
 }
 
