@@ -10,7 +10,7 @@
 ![MOST Web Framework Logo](https://github.com/themost-framework/common/raw/master/docs/img/themost_framework_v3_128.png)
 
 # @themost/query
-[MOST Web Framework](https://github.com/themost-framework) database-agnostic query module and query language tool of [@themost/data ORM](https://github.com/themost-framework/data)
+[MOST Web Framework](https://github.com/themost-framework) database-agnostic query module and query language parser of [@themost/data](https://github.com/themost-framework/data)
 
 
 License: [BSD-3-Clause](https://github.com/themost-framework/themost-query/blob/master/LICENSE)
@@ -20,6 +20,52 @@ License: [BSD-3-Clause](https://github.com/themost-framework/themost-query/blob/
 Install @themost/query
 
     npm i @themost/query
+
+## Data adapters
+
+Use [MOST Web Framework](https://github.com/themost-framework) data adapters and connect with any of the available database engines:
+
+- [MySQL](https://github.com/themost-framework/mysql)
+- [MariaDB](https://github.com/themost-framework/mysql)
+- [Microsoft Sql Server](https://github.com/themost-framework/mssql)
+- [PostgreSQL](https://github.com/themost-framework/pg)
+- [SQlite](https://github.com/themost-framework/sqlite)
+- [Oracle](https://github.com/themost-framework/oracle)
+
+An example of using `@themost/sqlite#SqliteAdapter` to connect with a SQlite database and querying data:
+
+		import { QueryField } from '@themost/query';
+		import { QueryEntity, QueryExpression } from '@themost/query';
+		import { SqliteAdapter } from '@themost/sqlite';
+
+		// initialize data connection
+		const db = new SqliteAdapter({
+            name: 'local',
+            database: './db/local.db'
+        });
+		// get query entity
+		const Products = new QueryEntity('ProductData');
+		// build query
+		const query = new QueryExpression()
+			.select((x) => {
+				x.id,
+				x.name,
+				x.category,
+				x.price
+			})
+			.from(Products)
+			.take(25);
+		// execute query
+		const results = await db.executeAsync(query);
+		// and close connection
+		await db.close();
+
+Features: [SQL Select](#sql-select), [SQL Select From](#sql-select-from),
+[SQL Logical Operators](#sql-and-or), [SQL Select Top](#sql-select-top),
+[SQL Order By](#sql-order-by), [SQL Group By](#sql-group-by),
+[SQL Where](#sql-where), [SQL Insert](#sql-insert), [SQL Update](#sql-update),
+[SQL Delete](#sql-delete), [SQL Functions](#sql-functions),
+[SQL Date Functions](#sql-date-functions), [SQL String Functions](#sql-string-functions)
 
 ## SQL Select
 
@@ -80,7 +126,7 @@ Use `QueryExpression.take()` and `QueryExpression.skip()` to specify the number 
 
 SQL > `SELECT ProductData.id, ProductData.name, ProductData.category, ProductData.model, ProductData.price FROM ProductData ORDER BY name ASC LIMIT 25, 25`
 
-### SQL Order by
+### SQL Order By
 
 Use `QueryExpression.orderBy()`, `QueryExpression.thenBy()`, `QueryExpression.thenByDescending()` to sort the result-set in ascending or descending order.
 
@@ -89,6 +135,22 @@ Use `QueryExpression.orderBy()`, `QueryExpression.thenBy()`, `QueryExpression.th
 	const SQL = new SqlFormatter().format(q);
 
 SQL > `SELECT ProductData.id, ProductData.name, ProductData.category, ProductData.model, ProductData.price FROM ProductData ORDER BY category ASC, price DESC`
+
+### SQL Group By
+
+Use `QueryExpression.groupBy()` to group rows that have the same values into summary rows.
+
+	const {QueryExpression, SqlFormatter, QueryEntity, QueryField} = require("@themost/query");
+	const Products = new QueryEntity('OrderData').as('ProductData');
+	const query = new QueryExpression().select(
+		new QueryField().count('id').as('total'),
+		new QueryField('category')
+		).from(Products).groupBy(
+			new QueryField('category')
+		);
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT COUNT(id) AS total, category FROM OrderData AS ProductData GROUP BY category`
 
 ### SQL Where
 
@@ -746,6 +808,51 @@ SQL > `SELECT PersonData.id AS id, PersonData.familyName AS familyName, UPPER(Pe
 	const SQL = new SqlFormatter().format(query);
 
 SQL > `SELECT PersonData.id AS id, PersonData.familyName AS familyName, SUBSTRING(PersonData.givenName,1,4) AS givenName1, PersonData.givenName AS givenName FROM PersonData WHERE SUBSTRING(PersonData.givenName,1,4) = 'Chri'`
+
+### concat()
+
+The concat() method concatenates the string arguments to the calling string and returns a new string.
+
+	const {QueryExpression, SqlFormatter, QueryEntity} = require("@themost/query");
+	const People = new QueryEntity('PersonData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				id: x.id,
+				familyName: x.familyName,
+				givenName: x.givenName,
+				name: x.givenName.concat(' ', x.familyName)
+			}
+		})
+		.from(People)
+		.where((x) => {
+			return x.givenName.indexOf('Chri') >= 0;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT PersonData.id AS id, PersonData.familyName AS familyName, PersonData.givenName AS givenName, CONCAT(PersonData.givenName, ' ', PersonData.familyName) AS name FROM PersonData WHERE (LOCATE('Chri',PersonData.givenName)-1) >= 0`
+
+### indexOf()
+
+The indexOf() method, given one argument: a substring to search for, searches the entire calling string, and returns the index of the first occurrence of the specified substring.
+
+	const {QueryExpression, SqlFormatter, QueryEntity} = require("@themost/query");
+	const People = new QueryEntity('PersonData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				id: x.id,
+				familyName: x.familyName,
+				givenName: x.givenName
+			}
+		})
+		.from(People)
+		.where((x) => {
+			return x.givenName.indexOf('Chri') >= 0;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT PersonData.id AS id, PersonData.familyName AS familyName, PersonData.givenName AS givenName FROM PersonData WHERE (LOCATE('Chri',PersonData.givenName)-1) >= 0`
 
 
 
