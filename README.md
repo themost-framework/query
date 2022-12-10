@@ -637,6 +637,117 @@ The getSeconds() method returns the seconds in the specified date according to l
 
 SQL > `SELECT HOUR(OrderData.orderDate) AS hours, MINUTE(OrderData.orderDate) AS minutes, SECOND(OrderData.orderDate) AS seconds FROM OrderData WHERE (YEAR(OrderData.orderDate) = 2019 AND MONTH(OrderData.orderDate) = 1)`
 
+## SQL String Functions
+
+### startsWith()
+
+The startsWith() method determines whether a string begins with the characters of a specified string, returning true or false as appropriate.
+
+	const {QueryExpression, SqlFormatter, QueryEntity} = require("@themost/query");
+	const People = new QueryEntity('PersonData');
+	let query = new QueryExpression()
+		.select((x) => {
+			x.id,
+			x.familyName,
+			x.givenName,
+			x.email,
+			x.dateCreated
+		})
+		.from(People)
+		.where((x) => {
+			return x.familyName.startsWith('Cam') === true;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT PersonData.id, PersonData.familyName, PersonData.givenName, PersonData.email, PersonData.dateCreated FROM PersonData WHERE (PersonData.familyName REGEXP '^Cam') = true`
+
+### endsWith()
+
+The endsWith() method determines whether a string ends with the characters of a specified string, returning true or false as appropriate.
+
+	const {QueryExpression, SqlFormatter, QueryEntity} = require("@themost/query");
+	const People = new QueryEntity('PersonData');
+	let query = new QueryExpression()
+		.select((x) => {
+			x.id,
+			x.familyName,
+			x.givenName,
+			x.email,
+			x.dateCreated
+		})
+		.from(People)
+		.where((x) => {
+			return x.familyName.endsWith('er') === true;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT PersonData.id, PersonData.familyName, PersonData.givenName, PersonData.email, PersonData.dateCreated FROM PersonData WHERE (PersonData.familyName REGEXP 'er$$') = true`
+
+### includes()
+
+The includes() method performs a search to determine whether one string may be found within another string, returning true or false as appropriate.
+
+	const {QueryExpression, SqlFormatter, QueryEntity} = require("@themost/query");
+	const People = new QueryEntity('PersonData');
+	let query = new QueryExpression()
+		.select((x) => {
+			x.id,
+			x.familyName,
+			x.givenName,
+			x.email,
+			x.dateCreated
+		})
+		.from(People)
+		.where((x) => {
+			return x.givenName.includes('Chris') === true;
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT PersonData.id, PersonData.familyName, PersonData.givenName, PersonData.email, PersonData.dateCreated FROM PersonData WHERE (PersonData.givenName REGEXP 'Chris') = true`
+
+### toUpperCase()
+
+	const {QueryExpression, SqlFormatter, QueryEntity} = require("@themost/query");
+	const People = new QueryEntity('PersonData');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				id: x.id,
+				familyName: x.familyName,
+				givenName1: x.givenName.toUpperCase(),
+				givenName: x.givenName
+			}
+		})
+		.from(People)
+		.where((x) => {
+			return x.givenName.toUpperCase() === 'CHRISTOPHER';
+		});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT PersonData.id AS id, PersonData.familyName AS familyName, UPPER(PersonData.givenName) AS givenName1, PersonData.givenName AS givenName FROM PersonData WHERE UPPER(PersonData.givenName) = 'CHRISTOPHER'`
+
+### substr()
+
+	const {QueryExpression, SqlFormatter, QueryEntity} = require("@themost/query");
+	const People = new QueryEntity('PersonData');
+	let query = new QueryExpression()
+	.select((x) => {
+		return {
+			id: x.id,
+			familyName: x.familyName,
+			givenName1: x.givenName.substr(0,4),
+			givenName: x.givenName
+		}
+	})
+	.from(People)
+	.where((x) => {
+		return x.givenName.substr(0,4) === 'Chri';
+	});
+	const SQL = new SqlFormatter().format(query);
+
+SQL > `SELECT PersonData.id AS id, PersonData.familyName AS familyName, SUBSTRING(PersonData.givenName,1,4) AS givenName1, PersonData.givenName AS givenName FROM PersonData WHERE SUBSTRING(PersonData.givenName,1,4) = 'Chri'`
+
+
 
 ## Development
 
