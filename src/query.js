@@ -5,6 +5,7 @@ const aggregate = Symbol();
 import './polyfills';
 import {ObjectNameValidator} from './object-name.validator';
 import {SyncSeriesEventEmitter} from '@themost/events';
+import { instanceOf } from './instance-of';
 
 class QueryParameter {
     constructor() {
@@ -1571,49 +1572,59 @@ class QueryField {
     }
     /**
      * Sets the entity of the current field
-     * @param entity {string}
+     * @param entity {string|QueryEntity}
      * @returns {QueryField}
      */
     from(entity) {
         let name;
-        if (typeof entity !== 'string')
-            throw new Error('Invalid argument. Expected string');
-        //get property
-        if (!isNil(this.$name)) {
+        /**
+         * @type {string}
+         */
+        let fromEntity;
+        if (instanceOf(entity, QueryEntity)) {
+            fromEntity = entity.$as || entity.name;
+        } else if (typeof entity === 'string') {
+            fromEntity = entity;
+        }
+        if (fromEntity == null) {
+            throw new Error('Invalid argument. Expected a valid instance of query entity or string.');
+        }
+        ObjectNameValidator.validator.test(fromEntity, false);
+        // get property
+        if (this.$name != null) {
             if (typeof this.$name === 'string') {
                 //check if an entity is already defined
                 name = this.$name;
                 if (QueryField.FieldNameExpression.test(name))
                     //if not append entity name
-                    this.$name = entity.concat('.', name);
+                    this.$name = fromEntity.concat('.', name);
 
                 else
                     //split field name and add entity
-                    this.$name = entity.concat('.', name.split('.')[1]);
-            }
-
-            else
+                    this.$name = fromEntity.concat('.', name.split('.')[1]);
+            } else {
                 throw new Error('Invalid field definition.');
+            }
         }
         else {
-            //get default property
+            // get default property
             let alias = Object.key(this);
             if (isNil(alias))
                 throw new Error('Field definition cannot be empty at this context');
-            //get field expression
+            // get field expression
             let expr = this[alias];
-            //get field name
+            // get field name
             let aggregate = Object.key(expr);
             if (isNil(aggregate))
                 throw new Error('Field expression cannot be empty at this context');
             name = expr[aggregate];
             if (QueryField.FieldNameExpression.test(name))
-                //if not append entity name
-                expr[aggregate] = entity.concat('.', name);
+                // if not append entity name
+                expr[aggregate] = fromEntity.concat('.', name);
 
             else
-                //split field name and add entity
-                expr[aggregate] = entity.concat('.', name.split('.')[1]);
+                // split field name and add entity
+                expr[aggregate] = fromEntity.concat('.', name.split('.')[1]);
         }
         return this;
     }
