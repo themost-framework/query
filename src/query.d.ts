@@ -155,7 +155,7 @@ export declare class QueryField {
     static second(name): QueryField;
 
     select(name: string): QueryField;
-    from(entity: string): QueryField;
+    from(entity: string | QueryEntity): QueryField;
     count(name: string): QueryField;
     sum(name: string): QueryField;
     min(name: string): QueryField;
