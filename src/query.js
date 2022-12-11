@@ -9,6 +9,21 @@ import {SyncSeriesEventEmitter} from '@themost/events';
 class QueryParameter {
     constructor() {
     }
+
+    static replace(expr, replacement) {
+        for(const property in expr) {
+            if (Object.prototype.hasOwnProperty.call(expr, property) === true) {
+                if (expr[property] instanceof QueryParameter) {
+                    expr[property] = replacement;
+                }
+                if (typeof expr[property] === 'object') {
+                    QueryParameter.replace(expr[property], replacement);
+                }
+            }
+        }
+        return expr;
+    }
+
 }
 
 
@@ -1007,16 +1022,31 @@ class QueryExpression {
      * @returns {QueryExpression}
      */
     bit(value, result) {
-        let p0 = this.prop();
-        if (p0) {
-            let comparison = { $bit: [value, result] };
-            if (typeof this[aggregate] === 'object') {
-                comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], comparison);
-                delete this[aggregate];
-            }
-            let expr = QueryFieldComparer.prototype.compareWith.call(p0, comparison);
-            this.__append(expr);
+        let prop = this.prop();
+        if (prop == null) {
+            throw new Error('Bitwise and left operand is missing.');
         }
+        if (result == null) {
+            throw new Error('Bitwise and right operand cannot be empty.');
+        }
+        let left;
+        if (typeof this[aggregate] === 'object') {
+            left = QueryParameter.replace(this[aggregate], new QueryField(prop));
+            delete this[aggregate];
+        } else {
+            left = new QueryField(prop);
+        }
+        this.__append({
+            '$eq': [
+                {
+                    '$bit': [
+                        left,
+                        value
+                    ]
+                },
+                result
+            ]
+        });
         return this;
     }
     /**
