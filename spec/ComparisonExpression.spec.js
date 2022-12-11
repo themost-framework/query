@@ -1,4 +1,4 @@
-import { SqlFormatter, QueryEntity, QueryExpression } from '../src/index';
+import { SqlFormatter, QueryEntity, QueryExpression, QueryField } from '../src/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 
 describe('SqlFormatter', () => {
@@ -62,6 +62,82 @@ describe('SqlFormatter', () => {
         expect(result.length).toBeTruthy();
         result.forEach( x => {
             expect((x.orderDate.getMonth() - 1) & 1).toBe(0);
+        });
+    });
+
+    it('should format in', async () => {
+        const Orders = new QueryEntity('OrderData');
+        let a = new QueryExpression().select(
+            'id',
+            'orderedItem',
+            'orderStatus',
+            'orderDate'
+        ).from(Orders).where('orderedItem').equal(34).and('orderStatus').in([2, 3]);
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+        results.forEach( x => {
+            expect(x.orderedItem).toEqual(34);
+            expect([2, 3].includes(x.orderStatus)).toBeTruthy();
+        });
+        a = new QueryExpression().select(
+            'id',
+            'orderedItem',
+            'orderStatus',
+            'orderDate'
+        ).from(Orders).where('orderedItem').equal(34).and('orderStatus').equal([2, 3]);
+        results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+        results.forEach( x => {
+            expect(x.orderedItem).toEqual(34);
+            expect([2, 3].includes(x.orderStatus)).toBeTruthy();
+        });
+    });
+
+    it('should format in and join', async () => {
+        const Orders = new QueryEntity('OrderData');
+        const OrderStatusTypes = new QueryEntity('OrderStatusTypeData');
+        let a = new QueryExpression().select(
+            'id',
+            'orderedItem',
+            new QueryField('name').from('OrderStatusTypeData').as('orderStatus')
+        ).from(Orders).join(
+            OrderStatusTypes
+        ).with(
+            new QueryExpression().where(
+                new QueryField('orderStatus').from('OrderData')
+            ).equal(
+                new QueryField('id').from('OrderStatusTypeData')
+            )
+        ).where('orderedItem').equal(34).and(
+            new QueryField('name').from('OrderStatusTypeData')
+        ).in([
+            'Delivered',
+            'Pickup'
+        ]);
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+        results.forEach( x => {
+            expect(x.orderedItem).toEqual(34);
+            expect([
+                'Delivered',
+                'Pickup'
+            ].includes(x.orderStatus)).toBeTruthy();
+        });
+    });
+
+    it('should format nin', async () => {
+        const Orders = new QueryEntity('OrderData');
+        let a = new QueryExpression().select(
+            'id',
+            'orderedItem',
+            'orderStatus',
+            'orderDate'
+        ).from(Orders).where('orderedItem').equal(34).and('orderStatus').notIn([2, 3]);
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+        results.forEach( x => {
+            expect(x.orderedItem).toEqual(34);
+            expect([2, 3].includes(x.orderStatus)).toBeFalsy();
         });
     });
     
