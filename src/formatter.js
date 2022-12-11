@@ -1272,7 +1272,7 @@ class SqlFormatter {
         }
         let sql = '(';
         sql += args.map((value) => {
-            return this.escape(value);
+            return this.formatWhere(value);
         }).join(' OR ');
         sql += ')';
         return sql;
@@ -1286,7 +1286,7 @@ class SqlFormatter {
         }
         let sql = '(';
         sql += args.map((value) => {
-            return this.escape(value);
+            return this.formatWhere(value);
         }).join(' AND ');
         sql += ')';
         return sql;
@@ -1294,7 +1294,7 @@ class SqlFormatter {
 
     $not(arg) {
         let sql = '(NOT ';
-        sql += this.escape(arg);
+        sql += this.formatWhere(arg);
         sql += ')';
         return sql;
     }
