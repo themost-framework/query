@@ -815,11 +815,21 @@ class QueryExpression {
             const closureParser = this.getClosureParser();
             // get closure and params
             let selectArgs = Array.from(arguments);
-            fields = closureParser.parseSelect.apply(closureParser, selectArgs);
-            // and return
-            this.$group = fields.map(function (item) {
-                return { $desc: item };
-            });
+            let params = {};
+            // if the last arguments is a type of object
+            // set params and remove it
+            if (typeof selectArgs[selectArgs.length - 1] === 'object') {
+                params = selectArgs.splice(selectArgs.length - 1, 1)[0];
+            }
+            if (selectArgs.length > 1) {
+                this.$group = [];
+                for (const selectArg of selectArgs) {
+                    const results = closureParser.parseSelect(selectArg, params);
+                    this.$group.push(...results);
+                }
+            } else {
+                this.$group = closureParser.parseSelect(selectArgs[0], params);
+            }
             return this;
         }
 
