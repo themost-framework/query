@@ -157,17 +157,24 @@ SQL > `SELECT ProductData.id, ProductData.name, ProductData.category, ProductDat
 
 Use `QueryExpression.groupBy()` to group rows that have the same values into summary rows.
 
-	const {QueryExpression, SqlFormatter, QueryEntity, QueryField} = require("@themost/query");
-	const Products = new QueryEntity('OrderData').as('ProductData');
-	const query = new QueryExpression().select(
-		new QueryField().count('id').as('total'),
-		new QueryField('category')
-		).from(Products).groupBy(
-			new QueryField('category')
-		);
+	const Orders = new QueryEntity('OrderData');
+	const Products = new QueryEntity('ProductData').as('orderedItem');
+	let query = new QueryExpression()
+		.select((x) => {
+			return {
+				total: count(x.id),
+				product: x.orderedItem.name,
+				orderYear: x.orderDate.getFullYear()
+			}
+		})
+		.from(Orders)
+		.join(Products).with((x, y) => {
+			return x.orderedItem === y.id;
+		})
+		.groupBy(x => x.orderedItem.name, x => x.orderDate.getFullYear());
 	const SQL = new SqlFormatter().format(query);
 
-SQL > `SELECT COUNT(id) AS total, category FROM OrderData AS ProductData GROUP BY category`
+SQL > `SELECT COUNT(OrderData.id) AS total, orderedItem.name AS product, YEAR(OrderData.orderDate) AS orderYear FROM OrderData INNER JOIN ProductData AS orderedItem ON OrderData.orderedItem = orderedItem.id GROUP BY orderedItem.name, YEAR(OrderData.orderDate)`
 
 ### SQL Where
 
