@@ -1,4 +1,4 @@
-import { QueryEntity, QueryExpression, count } from '../src/index';
+import { QueryEntity, QueryExpression, count, SqlFormatter } from '../src/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 
 describe('SqlFormatter', () => {
