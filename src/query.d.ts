@@ -76,7 +76,7 @@ export declare class QueryExpression {
     thenByDescending(name: string): this;
     thenByDescending<T>(expr: (value: T) => any): this;
     groupBy(...field: Array<any>): this;
-    groupBy<T>(...expr: Array<(value: T) => any>, params?: any): this;
+    groupBy<T>(...args: [...expr:[(value: T) => any], params?: any]): this;
     or(field: any): this;
     and(field: any): this;
     equal(value: any): this;
