@@ -403,11 +403,15 @@ class QueryExpression {
         closureParser.resolvingJoinMember.subscribe((event) => {
             const newEvent = {
                 target: this,
+                object: event.object,
                 member: event.member,
                 fullyQualifiedMember: event.fullyQualifiedMember
             };
             this.resolvingJoinMember.emit(newEvent);
-            event.member = newEvent.member
+            event.member = newEvent.member;
+            if (event.object !== newEvent.object) {
+                event.object = newEvent.object;
+            }
         });
         closureParser.resolvingMethod.subscribe((event) => {
             const newEvent = {
@@ -685,6 +689,7 @@ class QueryExpression {
         }
         //destroy temp object
         this.privates.expand = null;
+        delete this.$joinCollection;
         //and return QueryExpression
         return this;
     }

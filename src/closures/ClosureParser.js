@@ -530,12 +530,18 @@ class ClosureParser {
                     //get closure parameter expression e.g. x.customer.name
                     let property = expr.property.name;
                     fullyQualifiedMember += property;
-                    this.resolvingJoinMember.emit({
+                    const object = expr.object.property.name;
+                    const event = {
                         target: this,
+                        object: object,
                         member: property,
                         fullyQualifiedMember: fullyQualifiedMember
-                    });
-                    return new MemberExpression(expr.object.property.name + '.' + property);
+                    };
+                    this.resolvingJoinMember.emit(event);
+                    if (event.object !== object) {
+                        return new MemberExpression(event.object + '.' + property);
+                    }
+                    return new MemberExpression(object + '.' + property);
                 }
                 else {
                     //evaluate object member value e.g. item.title or item.status.id

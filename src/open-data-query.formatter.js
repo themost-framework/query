@@ -212,10 +212,10 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     escapeName(name) {
-        const result = super.escapeName(name);
+        const result = super.escapeName(name).replace(/\./g, '/');
         if (this.$collection) {
             // trim collection name e.g. Products.id 
-            return result.replace(new RegExp('^' + this.$collection + '\\.', 'g'), '');
+            return result.replace(new RegExp('^' + this.$collection + '\\/', 'g'), '');
         }
         return result;
     }

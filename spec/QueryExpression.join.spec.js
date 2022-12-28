@@ -24,7 +24,7 @@ describe('SqlFormatter', () => {
         const Customers = new QueryEntity('PersonData').as('customer');
         const PostalAddresses = new QueryEntity('PostalAddressData').as('address');
         const OrderStatusTypes = new QueryEntity('OrderStatusTypeData').as('orderStatus');
-         const q = new QueryExpression().from(Orders).select((x) => {
+        const q = new QueryExpression().from(Orders).select((x) => {
             return {
                 id: x.id,
                 orderedItem: x.orderedItem,
@@ -41,7 +41,7 @@ describe('SqlFormatter', () => {
         }).leftJoin(OrderStatusTypes).with((x, y) => {
             return x.orderStatus === y.id;
         })
-        .orderByDescending((x) => x.orderDate).take(25);
+            .orderByDescending((x) => x.orderDate).take(25);
         const results = await db.executeAsync(q);
         expect(results.length).toBeTruthy();
     });
@@ -65,12 +65,12 @@ describe('SqlFormatter', () => {
         }).leftJoin(OrderStatusTypes).with((x, y) => {
             return x.orderStatus === y.id;
         })
-        .where((x, familyName) => {
-            return x.customer.familyName === familyName;
-        }, {
-            familyName
-        })
-        .orderByDescending((x) => x.orderDate).take(25);
+            .where((x, familyName) => {
+                return x.customer.familyName === familyName;
+            }, {
+                familyName
+            })
+            .orderByDescending((x) => x.orderDate).take(25);
         const results = await db.executeAsync(q);
         expect(results.length).toBeTruthy();
     });
@@ -111,12 +111,12 @@ describe('SqlFormatter', () => {
         }).join(Products).with((x, y) => {
             return x.orderedItem === y.id
         })
-        .where((x, product) => {
-            return x.orderedItem.name === product;
-        }, {
-            product: 'MSI GX70 3BE-007US'
-        })
-        .orderByDescending((x) => x.orderDate).take(25);
+            .where((x, product) => {
+                return x.orderedItem.name === product;
+            }, {
+                product: 'MSI GX70 3BE-007US'
+            })
+            .orderByDescending((x) => x.orderDate).take(25);
         const results = await db.executeAsync(q);
         expect(results.length).toBeTruthy();
         results.forEach((result) => {
@@ -140,12 +140,12 @@ describe('SqlFormatter', () => {
         }).leftJoin(PostalAddresses).with((x, y) => {
             return x.customer.address === y.id
         })
-        .where((x, email) => {
-            return x.customer.email === email;
-        }, {
-            email: 'cameron.ball@example.com'
-        })
-        .orderByDescending((x) => x.orderDate).take(25);
+            .where((x, email) => {
+                return x.customer.email === email;
+            }, {
+                email: 'cameron.ball@example.com'
+            })
+            .orderByDescending((x) => x.orderDate).take(25);
         const results = await db.executeAsync(q);
         expect(results.length).toBeTruthy();
         results.forEach((result) => {
