@@ -1,9 +1,9 @@
-import { QueryExpression, round } from '../src/index';
+import { round, OpenDataQuery } from '../src/index';
 import { OpenDataQueryFormatter } from '../src/index';
 describe('OpenDataQuery.select', () => {
 
     it('should format $select', () => {
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select((x) => {
                 x.id,
                 x.name,
@@ -18,7 +18,7 @@ describe('OpenDataQuery.select', () => {
     });
 
     it('should format functions', () => {
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select((x) => {
                 return {
                     id: x.id,
@@ -35,7 +35,7 @@ describe('OpenDataQuery.select', () => {
     });
 
     it('should format methods', () => {
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select((x) => {
                 return {
                     id: x.id,
@@ -53,15 +53,7 @@ describe('OpenDataQuery.select', () => {
     });
 
     it('should format nested attributes', () => {
-        let query = new QueryExpression().from('Orders');
-        query.resolvingJoinMember.subscribe((event) => {
-            const fullyQualifiedMember = event.fullyQualifiedMember.split('.');
-            if (fullyQualifiedMember.length > 2) {
-                // remove last element
-                fullyQualifiedMember.pop();
-                event.object = fullyQualifiedMember.reverse().join('.');
-            }
-        });
+        let query = new OpenDataQuery().from('Orders');
         query.select((x) => {
                 return {
                     id: x.id,
@@ -70,10 +62,11 @@ describe('OpenDataQuery.select', () => {
                     orderedItem: x.orderedItem.name,
                     orderDate: x.orderDate
                 }
-            });
+            }).take(25);
         expect(query).toBeTruthy();
         const formatter = new OpenDataQueryFormatter();
         let result = formatter.formatSelect(query);
         expect(result.$select).toEqual('id,customer/familyName as customer,customer/address/streetAddress as streetAddress,orderedItem/name as orderedItem,orderDate');
+        expect(result.$top).toEqual(25);
     });
 });
