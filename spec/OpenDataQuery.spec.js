@@ -1,16 +1,16 @@
-import { QueryExpression, round, QueryEntity } from '../src/index';
-import { OpenDataQueryFormatter } from './OpenDataQueryFormatter';
-describe('OpenDataQuery', () => {
+import { OpenDataQuery, round, QueryEntity } from '../src/index';
+import { OpenDataQueryFormatter } from '../src/index';
+describe('OpenDataQueryFormatter', () => {
 
     it('should format $select', () => {
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select('id', 'name', 'category', 'price')
             .from('Products');
         expect(query).toBeTruthy();
         const formatter = new OpenDataQueryFormatter();
         let result = formatter.formatSelect(query);
         expect(result.$select).toEqual('id,name,category,price');
-        query = new QueryExpression()
+        query = new OpenDataQuery()
             .select( x => {
                 x.id,
                 x.name,
@@ -24,7 +24,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $select with alias', () => {
         const formatter = new OpenDataQueryFormatter();
-        const query = new QueryExpression()
+        const query = new OpenDataQuery()
             .select( x => {
                 return {
                     id: x.id,
@@ -40,7 +40,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $eq operator', () => {
         const formatter = new OpenDataQueryFormatter();
-        const query = new QueryExpression()
+        const query = new OpenDataQuery()
             .select( x => {
                 return {
                     id: x.id,
@@ -59,7 +59,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $ne operator', () => {
         const formatter = new OpenDataQueryFormatter();
-        const query = new QueryExpression()
+        const query = new OpenDataQuery()
             .select( x => {
                 x.id,
                 x.name,
@@ -75,7 +75,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $gt and $ge operators', () => {
         const formatter = new OpenDataQueryFormatter();
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select( x => {
                 x.id,
                 x.name,
@@ -87,7 +87,7 @@ describe('OpenDataQuery', () => {
             });
         let result = formatter.formatSelect(query);
         expect(result.$filter).toEqual('price ge 500');
-        query = new QueryExpression()
+        query = new OpenDataQuery()
             .select( x => {
                 x.id,
                 x.name,
@@ -103,7 +103,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $lt and $le operators', () => {
         const formatter = new OpenDataQueryFormatter();
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select( x => {
                 x.id,
                 x.name,
@@ -115,7 +115,7 @@ describe('OpenDataQuery', () => {
             });
         let result = formatter.formatSelect(query);
         expect(result.$filter).toEqual('price le 500');
-        query = new QueryExpression()
+        query = new OpenDataQuery()
             .select( x => {
                 x.id,
                 x.name,
@@ -132,7 +132,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $and', async () => {
         const Products = new QueryEntity('Products');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select((x) => {
                 x.id,
                 x.name,
@@ -152,7 +152,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $or', async () => {
         const Products = new QueryEntity('Products');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select((x) => {
                 x.id,
                 x.name,
@@ -172,7 +172,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $add', async () => {
         const Products = new QueryEntity('Products');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .from(Products)
             .where((x) => {
                 return x.price + 2.45 === 5.00;
@@ -184,7 +184,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $sub', async () => {
         const Products = new QueryEntity('Products');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .from(Products)
             .where((x) => {
                 return x.price - 0.45 === 2.00;
@@ -196,7 +196,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $mul', async () => {
         const Products = new QueryEntity('Products');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .from(Products)
             .where((x) => {
                 return x.price * 2 === 5.1;
@@ -208,7 +208,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $div', async () => {
         const Products = new QueryEntity('Products');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .from(Products)
             .where((x) => {
                 return x.rating / 2 === 2;
@@ -220,7 +220,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $mod', async () => {
         const Products = new QueryEntity('Products');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .from(Products)
             .where((x) => {
                 return (x.rating % 5) === 0;
@@ -232,7 +232,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $day', async () => {
         const Employees = new QueryEntity('Employees');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select((x) => {
                 x.id,
                 x.givenName,
@@ -249,7 +249,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $month and year', async () => {
         const Employees = new QueryEntity('Employees');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select((x) => {
                 x.id,
                 x.givenName,
@@ -266,7 +266,7 @@ describe('OpenDataQuery', () => {
 
     it('should format $orderby', async () => {
         const People = new QueryEntity('People');
-        let query = new QueryExpression()
+        let query = new OpenDataQuery()
             .select((x) => {
                 x.id,
                 x.givenName,

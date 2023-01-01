@@ -29,6 +29,6 @@ export declare class ClosureParser {
     parseIdentifier(expr: any): any;
     parseLiteral(expr: any): any;
     resolvingMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string }>;
-    resolvingJoinMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string, fullyQualifiedMember?: string }>;
+    resolvingJoinMember: SyncSeriesEventEmitter<{ target: QueryExpression, object: string, member: string, fullyQualifiedMember?: string }>;
     resolvingMethod: SyncSeriesEventEmitter<{ target: QueryExpression, method: string }>;
 }
