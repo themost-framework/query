@@ -150,6 +150,10 @@ class SqlFormatter {
                         });
                     }
                     return exprFunc.apply(this, args);
+                } else if (keys.length === 1) {
+                    // backward compatibility for simple equal expression
+                    // e.g. { "category": "Laptops" }
+                    return this.$eq(new QueryField(key0), value[key0]);
                 }
             }
         }
