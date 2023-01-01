@@ -1,7 +1,7 @@
 import { OpenDataQuery, any } from '../src/index';
 import { OpenDataQueryFormatter } from '../src/index';
 
-fdescribe('OpenDataQuery.expand', () => {
+describe('OpenDataQuery.expand', () => {
 
     it('should format $expand', () => {
         let query = new OpenDataQuery().from('Orders')
