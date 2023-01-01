@@ -298,6 +298,13 @@ class OpenDataQueryFormatter extends SqlFormatter {
                 $groupby
             });
         }
+        // format group by
+        const $expand = this.formatExpand(expr.$expand);
+        if ($expand) {
+            Object.assign(result, {
+                $expand
+            });
+        }
         if (typeof expr.$skip === 'number') {
             Object.assign(result, {
                 $skip: expr.$skip
@@ -311,6 +318,45 @@ class OpenDataQueryFormatter extends SqlFormatter {
         delete this.$collection;
         return result;
         
+    }
+
+    formatExpand(expr) {
+        const results = [];
+        if (expr == null) {
+            return null;
+        }
+        if (Array.isArray(expr) === false) {
+            throw new Error('Expected an array of expand expressions');
+        }
+        for (const arg of expr) {
+            if (typeof arg === 'object') {
+                // get expand name
+                const expand = arg.$collection;
+                if (expand == null) {
+                    throw new Error('Expand attribute cannot be empty at this context');
+                }
+                // get expand params
+                const params = new OpenDataQueryFormatter().formatSelect(arg);
+                const str = Object.keys(params).filter((key) => {
+                    return Object.prototype.hasOwnProperty.call(params, key);
+                }).map((key) => {
+                    return `${key}=${params[key]}`;
+                }).join(';');
+                if (str.length > 0) {
+                    results.push(`${expand}(${str})`);
+                } else {
+                    results.push(expand);
+                }
+            } else if (typeof arg === 'string') {
+                results.push(arg)
+            } else {
+                throw new Error('Expected string or instance of query expression');
+            }
+        }
+        if (results.length === 0) {
+            return null;
+        }
+        return results.join(',');
     }
 
     formatWhere(expr) {
