@@ -286,6 +286,9 @@ class ClosureParser {
         if (fnExpr.body.type === ExpressionTypes.MemberExpression) {
             return this.parseMember(fnExpr.body);
         }
+        if (fnExpr.body.type == ExpressionTypes.BinaryExpression) {
+            return this.parseCommon(fnExpr.body).exprOf();
+        }
         //validate expression e.g. return [EXPRESSION];
         if (fnExpr.body.body[0].type !== ExpressionTypes.ReturnStatement) {
             throw new Error('Invalid closure syntax. A closure expression must return a value.');

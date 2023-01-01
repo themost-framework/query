@@ -36,6 +36,9 @@ function any(expr) {
     if (typeof expr === 'string') {
         return new OpenDataQuery(expr);
     }
+    if (typeof expr !== 'function') {
+        throw new Error('Expected closure');
+    }
     /**
      * @type {Array<{$name: string}>}
      */
