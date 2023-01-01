@@ -132,7 +132,7 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     $or(p0, p1) {
-        return sprintf('(%s and %s)', this.escape(p0), this.escape(p1));
+        return sprintf('(%s or %s)', this.escape(p0), this.escape(p1));
     }
 
     $add(p0, p1) {
