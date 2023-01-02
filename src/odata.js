@@ -10,7 +10,7 @@ import {
     MemberExpression,
     SwitchExpression
 } from './expressions';
-import { SelectAnyExpression } from './expressions';
+import { SelectAnyExpression, AnyExpressionFormatter } from './expressions';
 import { OrderByAnyExpression } from './expressions';
 import { trim } from 'lodash';
 import { series } from 'async'
@@ -196,7 +196,7 @@ class OpenDataParser {
             //
         };
         return this.parseSelectSequenceAsync(str).then(function(results) {
-            return callback(results);
+            return callback(null, results);
         }).catch(function(err) {
             return callback(err);
         });
@@ -388,8 +388,8 @@ class OpenDataParser {
         callback = callback || function () {
             //
         };
-        return this.parseOrderBySequenceAsync(str).then(function(results) {
-            return callback(results);
+        void this.parseOrderBySequenceAsync(str).then(function(results) {
+            return callback(null, results);
         }).catch(function(err) {
             return callback(err);
         });
@@ -1291,40 +1291,81 @@ class OpenDataParser {
     }
 
     /**
-     * @param {{$select?:string,$filter?:string,$orderBy?:string,$groupBy?:string,$top:number,$skip:number}} queryParams 
+     * @param {{$select?:string,$filter?:string,$orderBy?:string,$groupBy?:string,$top:number,$skip:number}} queryOptions 
      * @param {function(Error,*)} callback 
      */
-    parseQueryOptions(queryParams, callback) {
+    parseQueryOptions(queryOptions, callback) {
         const self = this;
         series([
             function(cb) {
-                self.parse(queryParams.$filter, cb);
+                self.parse(queryOptions.$filter, cb);
             },
             function(cb) {
-                self.parseSelectSequence(queryParams.$select, cb);
+                self.parseSelectSequence(queryOptions.$select, function(err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    if (result) {
+                        try {
+                            return cb(null, new AnyExpressionFormatter().formatMany(result));
+                        } catch (error) {
+                            return cb(error);
+                        }
+                    }
+                    return cb();
+                });
             },
             function(cb) {
-                self.parseOrderBySequence(queryParams.$orderBy, cb);
+                self.parseOrderBySequence(queryOptions.$orderBy, function(err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    if (result) {
+                        try {
+                            return cb(null, new AnyExpressionFormatter().formatMany(result));
+                        } catch (error) {
+                            return cb(error);
+                        }
+                    }
+                    return cb();
+                });
             },
             function(cb) {
-                self.parseGroupBySequence(queryParams.$groupBy, cb);
+                self.parseGroupBySequence(queryOptions.$groupBy, function(err, result) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    if (result) {
+                        try {
+                            return cb(null, new AnyExpressionFormatter().formatMany(result));
+                        } catch (error) {
+                            return cb(error);
+                        }
+                    }
+                    return cb();
+                });
             }
         ], function(err, results) {
             if (err) {
                 return callback(err);
             }
-            return callback(null, results);
+            return callback(null, {
+                $where: results[0],
+                $select: results[1],
+                $order: results[2],
+                $group: results[3]
+            });
         });
     }
 
     /**
-     * @param {{$select?:string,$filter?:string,$orderBy?:string,$groupBy?:string,$top:any,$skip:any,$levels?:any}} queryParams 
+     * @param {{$select?:string,$filter?:string,$orderBy?:string,$groupBy?:string,$top:any,$skip:any,$levels?:any}} queryOptions 
      * @returns Promise<*> 
      */
-    parseQueryOptionsAsync(queryParams) {
+    parseQueryOptionsAsync(queryOptions) {
         const self = this;
         return new Promise(function(resolve, reject) {
-            void self.parseQueryOptions(queryParams, function(err, results) {
+            void self.parseQueryOptions(queryOptions, function(err, results) {
                 if (err) {
                     return reject(err);
                 }

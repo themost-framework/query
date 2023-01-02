@@ -2,10 +2,10 @@
 
 import { ExpressionBase } from "./expressions";
 import { OrderByAnyExpression } from "./expressions";
-import {MemberExpression, MethodCallExpression} from "./expressions";
+import { MemberExpression, MethodCallExpression } from "./expressions";
 
 export declare interface TokenType {
-    Literal : string;
+    Literal: string;
     Identifier: string;
     Syntax: string;
 }
@@ -31,10 +31,10 @@ export declare interface OperatorType {
 
 export declare class Token {
     constructor(tokenType: string);
-    
+
     static TokenType: TokenType;
     static Operator: OperatorType;
-    
+
     isParenOpen(): boolean;
     isParenClose(): boolean;
     isSlash(): boolean;
@@ -69,29 +69,29 @@ export declare interface StringType {
 
 export declare class LiteralToken extends Token {
     constructor(value: string, literalType: string);
-    static PositiveInfinity : LiteralToken;
-    static NegativeInfinity : LiteralToken;
-    static NaN : LiteralToken;
-    static True : LiteralToken;
-    static False : LiteralToken;
-    static Null : LiteralToken;
-    
+    static PositiveInfinity: LiteralToken;
+    static NegativeInfinity: LiteralToken;
+    static NaN: LiteralToken;
+    static True: LiteralToken;
+    static False: LiteralToken;
+    static Null: LiteralToken;
+
 }
 
 export declare class IdentifierToken extends Token {
     constructor(name: string);
     identifier: string;
-    
+
 }
 
 export declare class SyntaxToken extends Token {
     constructor(chr: string);
     syntax: string;
-    static ParenOpen : SyntaxToken; 
-    static ParenClose : SyntaxToken; 
-    static Slash : SyntaxToken; 
-    static Comma : SyntaxToken; 
-    static Negative : SyntaxToken; 
+    static ParenOpen: SyntaxToken;
+    static ParenClose: SyntaxToken;
+    static Slash: SyntaxToken;
+    static Comma: SyntaxToken;
+    static Negative: SyntaxToken;
 }
 
 export declare class OpenDataParser {
@@ -114,13 +114,13 @@ export declare class OpenDataParser {
     atStart(): boolean;
     parseCommon(callback: (err?: Error, res?: any) => void): void;
     parseCommonItem(callback: (err?: Error, res?: any) => void): void;
-    createExpression(left: any,operator: string, right: any): any;
+    createExpression(left: any, operator: string, right: any): any;
     parseMethodCall(callback: (err?: Error, res?: MethodCallExpression) => void): void;
     parseMethodCallArguments(args: Array<any>, callback: (err?: Error, res?: any) => void): void;
     parseMember(callback: (err?: Error, res?: MemberExpression) => void): void;
     resolveMember(member: any, callback: (err?: Error, res?: any) => void): void;
     resolveMethod(method: any, args: Array<any>, callback: (err?: Error, res?: any) => void): void;
-    toList():Array<Token>;
+    toList(): Array<Token>;
     getNext(): Token;
     parseSyntax(): SyntaxToken;
     parseIdentifier(minus?: boolean): Token;
@@ -140,7 +140,8 @@ export declare class OpenDataParser {
     parseGroupBySequenceAsync(str: string): Promise<Array<ExpressionBase>>;
     parseOrderBySequence(str: string, callback: (err?: Error, res?: Array<OrderByAnyExpression>) => void): void;
     parseOrderBySequenceAsync(str: string): Promise<Array<OrderByAnyExpression>>;
-    parseExpandSequence(str: string): Array<{ name: string, options: {
+    parseExpandSequence(str: string): Array<{
+        name: string, options: {
             $select?: string,
             $filter?: string,
             $expand?: string,
@@ -151,7 +152,20 @@ export declare class OpenDataParser {
             $skip?: any;
         }
     }>;
-    parseExpandSequenceAsync(str: string): Promise<Array<{ name: string, options: {
+    parseExpandSequenceAsync(str: string): Promise<Array<{
+        name: string, options: {
+            $select?: string,
+            $filter?: string,
+            $expand?: string,
+            $groupBy?: string,
+            $orderBy?: string,
+            $levels?: any;
+            $top?: any;
+            $skip?: any;
+        }
+    }>>;
+
+    parseQueryOptions(queryOptions: {
         $select?: string,
         $filter?: string,
         $expand?: string,
@@ -160,8 +174,18 @@ export declare class OpenDataParser {
         $levels?: any;
         $top?: any;
         $skip?: any;
-    }
-}>>;
+    }, callback: (err?: Error, res?: any) => void): void;
+
+    parseQueryOptionsAsync(queryOptions: {
+        $select?: string,
+        $filter?: string,
+        $expand?: string,
+        $groupBy?: string,
+        $orderBy?: string,
+        $levels?: any;
+        $top?: any;
+        $skip?: any;
+    }): Promise<any>;
 
 }
 
