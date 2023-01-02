@@ -441,7 +441,11 @@ class OpenDataQueryFormatter extends SqlFormatter {
         if (expr == null) {
             return;
         }
-        return super.formatGroupBy(expr);
+        if (Array.isArray(expr)) {
+            return expr.map((item) => {
+                return this.format(item, '%ff');
+            }).join(',');
+        }
     }
 
 }
