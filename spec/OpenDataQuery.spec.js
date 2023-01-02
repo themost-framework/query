@@ -167,7 +167,7 @@ describe('OpenDataQueryFormatter', () => {
             .take(10);
         let result = new OpenDataQueryFormatter().formatSelect(query);
         expect(result.$select).toEqual('id,name,category,model,price');
-        expect(result.$filter).toEqual('(category eq \'Tablets\' and category eq \'Laptops\')');
+        expect(result.$filter).toEqual('(category eq \'Tablets\' or category eq \'Laptops\')');
     });
 
     it('should format $add', async () => {
