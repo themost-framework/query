@@ -14,10 +14,18 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     $startswith(p0, p1) {
+        return this.$startsWith(p0, p1);
+    }
+
+    $startsWith(p0, p1) {
         return sprintf('startswith(%s,%s)', this.escape(p0), this.escape(p1));
     }
 
     $endswith(p0, p1) {
+        return this.$endsWith(p0, p1);
+    }
+
+    $endsWith(p0, p1) {
         return sprintf('endswith(%s,%s)', this.escape(p0), this.escape(p1));
     }
 
@@ -29,24 +37,69 @@ class OpenDataQueryFormatter extends SqlFormatter {
         return sprintf('trim(%s)', this.escape(p0));
     }
 
+    /**
+     * Implements indexOf(str,substr) expression formatter.
+     * @deprecated use $indexOf() instead
+     * @param {string} p0 The source string
+     * @param {string} p1 The string to search for
+     * @returns {string}
+     */
     $indexof(p0, p1) {
+        return this.$indexOf(p0, p1);
+    }
+
+    /**
+     * Implements indexOf(str,substr) expression formatter.
+     * @param {string} p0 The source string
+     * @param {string} p1 The string to search for
+     * @returns {string}
+     */
+    $indexOf(p0, p1) {
         return sprintf('indexof(%s,%s)', this.escape(p0), this.escape(p1));
     }
 
-    $concat() {
+    /**
+     * Implements indexOf(str,substr) expression formatter.
+     * @param {string} p0 The source string
+     * @param {string} p1 The string to search for
+     * @returns {string}
+     */
+    $indexOfBytes(p0, p1) {
+        return this.$indexOf(p0, p1);
+    }
+    
+    /**
+     * @param {...*} _arg 
+     * @returns 
+     */
+    $concat(_arg) {
         let args = Array.from(arguments);
         let self = this;
-        return sprintf('concat(%s)', args.map(function (arg) {
-            return self.escape(arg);
-        }).join(', '));
+        // try to format expression like concat(concat(s0,s1),s3)...
+        let str = '';
+        let index = 0;
+        if (args.length < 2) {
+            throw new Error('concat() dialect function expects two or more arguments')
+        }
+        while(index < args.length) {
+            const s0 = args[index];
+            if (str.length === 0) {
+                index += 1;
+                const s1 = args[index];
+                str = sprintf('concat(%s,%s)', self.escape(s0), self.escape(s1));
+            } else {
+                str = sprintf('concat(%s,%s)', self.escape(s0), str);
+            }
+            index += 1;
+        }
+        return str;
     }
 
     $substring(p0, pos, length) {
         if (length)
-            return sprintf('substring(%s,%s,%s)', this.escape(p0), pos.valueOf() + 1, length.valueOf());
-
+            return sprintf('substring(%s,%s,%s)', this.escape(p0), this.escape(pos), this.escape(length));
         else
-            return sprintf('substringof(%s,%s)', this.escape(p0), pos.valueOf() + 1);
+            return sprintf('substring(%s,%s)', this.escape(p0),  this.escape(pos));
     }
 
     $substr(p0, pos, length) {
@@ -132,7 +185,7 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     $or(p0, p1) {
-        return sprintf('(%s and %s)', this.escape(p0), this.escape(p1));
+        return sprintf('(%s or %s)', this.escape(p0), this.escape(p1));
     }
 
     $add(p0, p1) {
@@ -388,7 +441,11 @@ class OpenDataQueryFormatter extends SqlFormatter {
         if (expr == null) {
             return;
         }
-        return super.formatGroupBy(expr);
+        if (Array.isArray(expr)) {
+            return expr.map((item) => {
+                return this.format(item, '%ff');
+            }).join(',');
+        }
     }
 
 }

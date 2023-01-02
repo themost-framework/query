@@ -31,6 +31,9 @@ class StringMethodParser extends PrototypeMethodParser {
     substr(args) {
         return new SimpleMethodCallExpression('substr', args);
     }
+    substring(args) {
+        return new SimpleMethodCallExpression('substring', args);
+    }
     trim(args) {
         return new SimpleMethodCallExpression('trim', args);
     }

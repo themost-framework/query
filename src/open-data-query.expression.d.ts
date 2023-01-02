@@ -5,4 +5,4 @@ export declare class OpenDataQuery extends QueryExpression {
     expand<T>(...args: [...expr:[(value: T) => any], params?: any]): this;
 }
 
-export function any<T>(expr:string | [(value: T) => any]): OpenDataQuery;
+export function any<T>(expr:string | ((value: T) => any)): OpenDataQuery;
