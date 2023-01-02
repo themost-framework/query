@@ -723,6 +723,27 @@ describe('ClosureParser', () => {
         
     });
 
+    fit('should use order by with expression', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select( x => {
+            x.name,
+            x.price
+        }).from(Products).where( x => {
+            return x.category === 'Laptops';
+        }).orderBy((x) => {
+            return round(x.price, 1);
+        }).thenByDescending((x) => {
+            return x.releaseDate.getFullYear();
+        });
+        let results = await db.executeAsync(a);
+        expect(results.length).toBeTruthy();
+        results.forEach( (x, index) => {
+            if (index > 0) {
+                expect(x.price).toBeGreaterThanOrEqual(results[index-1].price);
+            }
+        });
+    });
+
     it('should use order by descending', async () => {
         const Products = new QueryEntity('ProductData');
         let a = new QueryExpression().select( x => {

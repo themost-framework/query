@@ -405,6 +405,8 @@ class ClosureParser {
             let objectExpression = bodyExpression.argument;
             if (objectExpression && objectExpression.type === ExpressionTypes.ObjectExpression) {
                 return self.parseObject(objectExpression);
+            } else if (objectExpression && objectExpression.type === ExpressionTypes.CallExpression) {
+                return self.parseMethod(objectExpression);
             }
         }
         throw new Error('The given expression is not yet implemented (' + expr.type + ').');
