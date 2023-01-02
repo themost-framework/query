@@ -723,7 +723,7 @@ describe('ClosureParser', () => {
         
     });
 
-    fit('should use order by with expression', async () => {
+    it('should use order by with expression', async () => {
         const Products = new QueryEntity('ProductData');
         let a = new QueryExpression().select( x => {
             x.name,
