@@ -13,6 +13,7 @@ import {
 import { SelectAnyExpression } from './expressions';
 import { OrderByAnyExpression } from './expressions';
 import { trim } from 'lodash';
+import { series } from 'async'
 
 class OpenDataParser {
     constructor() {
@@ -1288,6 +1289,50 @@ class OpenDataParser {
     static isIdentifierChar(c) {
         return OpenDataParser.isIdentifierStartChar(c) || OpenDataParser.isDigit(c);
     }
+
+    /**
+     * @param {{$select?:string,$filter?:string,$orderBy?:string,$groupBy?:string,$top:number,$skip:number}} queryParams 
+     * @param {function(Error,*)} callback 
+     */
+    parseQueryOptions(queryParams, callback) {
+        const self = this;
+        series([
+            function(cb) {
+                self.parse(queryParams.$filter, cb);
+            },
+            function(cb) {
+                self.parseSelectSequence(queryParams.$select, cb);
+            },
+            function(cb) {
+                self.parseOrderBySequence(queryParams.$orderBy, cb);
+            },
+            function(cb) {
+                self.parseGroupBySequence(queryParams.$groupBy, cb);
+            }
+        ], function(err, results) {
+            if (err) {
+                return callback(err);
+            }
+            return callback(null, results);
+        });
+    }
+
+    /**
+     * @param {{$select?:string,$filter?:string,$orderBy?:string,$groupBy?:string,$top:any,$skip:any,$levels?:any}} queryParams 
+     * @returns Promise<*> 
+     */
+    parseQueryOptionsAsync(queryParams) {
+        const self = this;
+        return new Promise(function(resolve, reject) {
+            void self.parseQueryOptions(queryParams, function(err, results) {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(results);
+            });
+        });
+    }
+
 }
 
 OpenDataParser.ArithmeticOperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod)$/g;
