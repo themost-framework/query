@@ -261,7 +261,7 @@ describe('OpenDataQueryFormatter', () => {
             })
             .take(10);
         let result = new OpenDataQueryFormatter().formatSelect(query);
-        expect(result.$filter).toEqual('(month(birthDate) eq 8 and year(birthDate) eq 2002)');
+        expect(result.$filter).toEqual('((month(birthDate) sub 1) eq 8 and year(birthDate) eq 2002)');
     });
 
     it('should format $orderby', async () => {
@@ -283,7 +283,7 @@ describe('OpenDataQueryFormatter', () => {
             })
             .take(10);
         let result = new OpenDataQueryFormatter().formatSelect(query);
-        expect(result.$filter).toEqual('(month(birthDate) eq 8 and year(birthDate) eq 2002)');
+        expect(result.$filter).toEqual('((month(birthDate) sub 1) eq 8 and year(birthDate) eq 2002)');
         expect(result.$orderby).toEqual('birthDate,familyName desc');
     });
 
