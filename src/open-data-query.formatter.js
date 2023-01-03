@@ -1,5 +1,7 @@
 import { sprintf } from 'sprintf-js';
 import { SqlFormatter } from './formatter';
+import { instanceOf } from './instance-of';
+import { QueryExpression } from './query';
 
 class UnsupportedFormatError extends Error {
     constructor() {
@@ -238,6 +240,48 @@ class OpenDataQueryFormatter extends SqlFormatter {
 
     $sum(p0) {
         return sprintf('sum(%s)', this.escape(p0));
+    }
+
+    $cond(ifExpr, thenExpr, elseExpr) {
+        // validate ifExpr which should an instance of QueryExpression or a comparison expression
+        let ifExpression;
+        if (instanceOf(ifExpr, QueryExpression)) {
+            ifExpression = this.formatWhere(ifExpr.$where);
+        } else if (this.isComparison(ifExpr)) {
+            ifExpression = this.formatWhere(ifExpr);
+        } else {
+            throw new Error('Condition parameter should be an instance of query or comparison expression');
+        }
+        return sprintf('case(%s:%s,true:%s)', ifExpression, this.escape(thenExpr), this.escape(elseExpr));
+    }
+
+    $switch(expr) {
+        const branches = expr.branches;
+        const defaultValue = expr.default;
+        if (Array.isArray(branches) === false) {
+            throw new Error('Switch branches must be an array');
+        }
+        if (branches.length === 0) {
+            throw new Error('Switch branches cannot be empty');
+        }
+        let str = 'case(';
+        str += branches.map((branch) => {
+            let caseExpression;
+            if (instanceOf(branch.case, QueryExpression)) {
+                caseExpression = this.formatWhere(branch.case.$where);
+            } else if (this.isComparison(branch.case)) {
+                caseExpression = this.formatWhere(branch.case);
+            } else {
+                throw new Error('Case expression should be an instance of query or comparison expression');
+            }
+            return sprintf('%s:%s', caseExpression, this.escape(branch.then));
+        }).join(',');
+        if (typeof defaultValue !== 'undefined') {
+            str += ',true:';
+            str += this.escape(defaultValue);
+        }
+        str += ')';
+        return str;
     }
 
     formatFixedSelect() {
