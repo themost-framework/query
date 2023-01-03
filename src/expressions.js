@@ -376,11 +376,23 @@ class SwitchExpression extends MethodCallExpression {
     exprOf() {
         const res = {};
         let name = '$'.concat(this.name);
+        /**
+         * @type {{branches:Array<*>,default:*}}
+         */
+        const arg0 = this.args[0];
         Object.defineProperty(res, name, {
             configurable: true,
             enumerable: true,
             writable: true,
-            value: this.args[0]
+            value: {
+                branches: arg0.branches.map((branch) => {
+                    return {
+                        case: branch.case != null && typeof branch.case.exprOf === 'function' ?  branch.case.exprOf() : branch.case,
+                        then: branch.then != null && typeof branch.then.exprOf === 'function' ?  branch.then.exprOf() : branch.then,
+                    };
+                }),
+                default: arg0.default && typeof arg0.default.exprOf === 'function' ? arg0.default.exprOf() : arg0.default
+            }
         });
         return res;
     }
