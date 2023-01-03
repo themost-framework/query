@@ -125,7 +125,7 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     $month(p0) {
-        return sprintf('month(%s)', this.escape(p0));
+        return sprintf('(month(%s) sub 1)', this.escape(p0));
     }
 
     $year(p0) {
