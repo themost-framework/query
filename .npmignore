@@ -27,3 +27,6 @@ spec
 # babel
 babel.config.js
 rollup.config.js
+
+# gitpod
+.gitpod.yml

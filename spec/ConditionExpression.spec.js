@@ -1,6 +1,6 @@
 import {SqlFormatter, QueryExpression, QueryField, OpenDataParser, QueryEntity} from '../src/index';
 import {MemoryAdapter} from './test/TestMemoryAdapter';
-import {MemoryFormatter} from "./test/TestMemoryFormatter";
+import {MemoryFormatter} from './test/TestMemoryFormatter';
 
 describe('ConditionExpression', () => {
 

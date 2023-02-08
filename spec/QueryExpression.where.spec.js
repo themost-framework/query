@@ -57,6 +57,23 @@ describe('QueryExpression.where', () => {
         expect(results[0].email).toBe('cameron.ball@example.com');
     });
 
+    it('should use where with object destructuring', async () => {
+        const People = new QueryEntity('PersonData');
+        let query = new QueryExpression()
+            .select(({ id, familyName: lastName, givenName: firstName, email, dateCreated }) => {
+                id, lastName, firstName, email, dateCreated
+            })
+            .from(People)
+            .where(({ email }) => {
+                return email === 'cameron.ball@example.com';
+            })
+            .take(1);
+        let results = await db.executeAsync(query);
+        expect(results.length).toBe(1);
+        expect(results[0].email).toEqual('cameron.ball@example.com');
+        expect(results[0].firstName).toEqual('Cameron');
+    });
+
     it('should use not equal', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()

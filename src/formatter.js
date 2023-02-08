@@ -1040,8 +1040,9 @@ class SqlFormatter {
                             s = fn.call(this, args);
                         }
                     }
-                    else
+                    else {
                         throw new Error('The specified function is not yet implemented.');
+                    }
             }
             return useAlias ? s.concat(' AS ', this.escapeName(alias)) : s;
         }

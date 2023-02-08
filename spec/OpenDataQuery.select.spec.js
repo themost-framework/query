@@ -17,6 +17,34 @@ describe('OpenDataQuery.select', () => {
         expect(result.$select).toEqual('id,name,category,price');
     });
 
+    it('should format $select with object destructuring', () => {
+        let query = new OpenDataQuery()
+            .select(({id, name, category, price}) => {
+                id,
+                name,
+                category,
+                price
+            })
+            .from('Products');
+        expect(query).toBeTruthy();
+        let formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,name,category,price');
+
+        query = new OpenDataQuery()
+            .select(({id, name, category: productCategory, price}) => {
+                id,
+                name,
+                productCategory,
+                price
+            })
+            .from('Products');
+        expect(query).toBeTruthy();
+        formatter = new OpenDataQueryFormatter();
+        result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,name,category as productCategory,price');
+    });
+
     it('should format functions', () => {
         let query = new OpenDataQuery()
             .select((x) => {
@@ -61,6 +89,29 @@ describe('OpenDataQuery.select', () => {
                     streetAddress: x.customer.address.streetAddress,
                     orderedItem: x.orderedItem.name,
                     orderDate: x.orderDate
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,customer/familyName as customer,customer/address/streetAddress as streetAddress,orderedItem/name as orderedItem,orderDate');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should format nested attributes with object destructuring', () => {
+        let query = new OpenDataQuery().from('Orders');
+        query.select(({ 
+            id,
+            orderedItem: { name: orderedItem },
+            orderDate,
+            customer: { familyName: customer, address: { streetAddress } }
+        }) => {
+                return { 
+                    id,
+                    customer,
+                    streetAddress,
+                    orderedItem,
+                    orderDate
                 }
             }).take(25);
         expect(query).toBeTruthy();
