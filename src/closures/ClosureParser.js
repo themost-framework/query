@@ -567,15 +567,34 @@ class ClosureParser {
             if (namedParam0.type === 'ObjectPattern') {
                 //
                 const property = namedParam0.properties.find((x) => {
-                    return x.type === 'Property' && x.key != null && x.key.name === expr.name;
+                    return x.type === 'Property' && x.value != null && x.value.name === expr.name;
                 });
                 if (property) {
+
+                    let member = property.value.name;
+                    let alias;
+                    if (property.key.name !== property.value.name) {
+                        member = property.key.name;
+                        alias = property.value.name;
+                    }
                     const memberEvent = {
                         target: this,
-                        member: property.key.name
+                        member: member
                     }
                     self.resolvingMember.emit(memberEvent);
-                    return new MemberExpression(memberEvent.member);
+                    if (alias == null) {
+                        return new MemberExpression(memberEvent.member);
+                    } else {
+                        const memberWithAlias = new ObjectExpression();
+                        Object.defineProperty(memberWithAlias, alias, {
+                            configurable: true,
+                            enumerable: true,
+                            value: new MemberExpression(memberEvent.member)
+                        });
+                        return memberWithAlias;
+                    }
+
+                    
                 }
             }
             throw new Error('Invalid member expression.');
