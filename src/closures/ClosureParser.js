@@ -593,11 +593,12 @@ class ClosureParser {
                         return memberWithAlias;
                     }
                 } else {
+                    let qualifiedMember1;
                     // try to find nested property
                     /**
                      * @param {Array<any>} properties 
                      * @param {string} name
-                     * @param { name: string } fullyQualifiedMember 
+                     * @param {{name:string, alias:string}} fullyQualifiedMember 
                      * @returns {*}
                      */
                     const tryFindUnpackedProperty = (properties, name, qualifiedMember) => {
@@ -605,45 +606,50 @@ class ClosureParser {
                         while(index < properties.length) {
                             const prop = properties[index];
                             if (prop.value && prop.value.type === 'ObjectPattern') {
-                                qualifiedMember.name += '.';
-                                qualifiedMember.name += prop.key.name;
-                                const prop1 = tryFindUnpackedProperty(prop.value.properties, name, qualifiedMember);
+                                const newQualifiedMember = {
+                                    name: '',
+                                    alias: null
+                                }
+                                const prop1 = tryFindUnpackedProperty(prop.value.properties, name, newQualifiedMember);
                                 if (prop1) {
+                                    qualifiedMember.name += '.';
+                                    qualifiedMember.name += prop.key.name;
+                                    qualifiedMember.name += newQualifiedMember.name;
+                                    if (newQualifiedMember.alias) {
+                                        qualifiedMember.alias = newQualifiedMember.alias;
+                                    }
                                     return prop1;
                                 }
                             } else if (prop.value && prop.value.type === 'Identifier') {
                                 if (prop.value.name === name) {
                                     qualifiedMember.name += '.';
-                                    qualifiedMember.name += name;
+                                    if (prop.key.name !== prop.value.name) {
+                                        qualifiedMember.name += prop.key.name;
+                                        qualifiedMember.alias = prop.value.name;
+                                    } else {
+                                        qualifiedMember.name += name;
+                                    }
                                     return prop;
                                 }
                             }
                             index += 1;
                         }
                     };
-                    const qualifiedMember1 = {
-                        name: ''
+                    qualifiedMember1 = {
+                        name: '',
+                        alias: null
                     };
                     property = tryFindUnpackedProperty(namedParam0.properties, expr.name, qualifiedMember1);
                     if (property) {
                         const memberPath = qualifiedMember1.name.substring(1).split('.');
+                        alias = qualifiedMember1.alias;
                         const memberEvent = {
                             target: this,
                             member: memberPath[memberPath.length - 1],
                             fullyQualifiedMember: memberPath.join('.')
                         }
                         self.resolvingJoinMember.emit(memberEvent);
-                        if (alias == null) {
-                            return new MemberExpression(memberEvent.fullyQualifiedMember);
-                        } else {
-                            const memberWithAlias = new ObjectExpression();
-                            Object.defineProperty(memberWithAlias, alias, {
-                                configurable: true,
-                                enumerable: true,
-                                value: new MemberExpression(memberEvent.fullyQualifiedMember)
-                            });
-                            return memberWithAlias;
-                        }
+                        return new MemberExpression(memberEvent.fullyQualifiedMember);
                     }
                     
                 }
