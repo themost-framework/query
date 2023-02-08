@@ -96,7 +96,7 @@ describe('ClosureParser', () => {
 
     });
 
-    fit('should unpack nested object properties', async () => {
+    it('should unpack nested object properties', async () => {
         const People = new QueryEntity('PersonData');
         const PostalAddresses = new QueryEntity('PostalAddressData').as('address');
         let a = new QueryExpression().select(({
