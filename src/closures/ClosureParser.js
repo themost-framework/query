@@ -563,16 +563,15 @@ class ClosureParser {
         else {
             // get first parameter
             namedParam0 = self.namedParams[0];
+            let alias;
             // support object destructing param
             if (namedParam0.type === 'ObjectPattern') {
                 //
-                const property = namedParam0.properties.find((x) => {
-                    return x.type === 'Property' && x.value != null && x.value.name === expr.name;
+                let property = namedParam0.properties.find((x) => {
+                    return x.type === 'Property' && x.value != null && x.value.type === 'Identifier' &&  x.value.name === expr.name;
                 });
                 if (property) {
-
                     let member = property.value.name;
-                    let alias;
                     if (property.key.name !== property.value.name) {
                         member = property.key.name;
                         alias = property.value.name;
@@ -593,7 +592,59 @@ class ClosureParser {
                         });
                         return memberWithAlias;
                     }
-
+                } else {
+                    // try to find nested property
+                    /**
+                     * @param {Array<any>} properties 
+                     * @param {string} name
+                     * @param { name: string } fullyQualifiedMember 
+                     * @returns {*}
+                     */
+                    const tryFindUnpackedProperty = (properties, name, qualifiedMember) => {
+                        let index = 0;
+                        while(index < properties.length) {
+                            const prop = properties[index];
+                            if (prop.value && prop.value.type === 'ObjectPattern') {
+                                qualifiedMember.name += '.';
+                                qualifiedMember.name += prop.key.name;
+                                const prop1 = tryFindUnpackedProperty(prop.value.properties, name, qualifiedMember);
+                                if (prop1) {
+                                    return prop1;
+                                }
+                            } else if (prop.value && prop.value.type === 'Identifier') {
+                                if (prop.value.name === name) {
+                                    qualifiedMember.name += '.';
+                                    qualifiedMember.name += name;
+                                    return prop;
+                                }
+                            }
+                            index += 1;
+                        }
+                    };
+                    const qualifiedMember1 = {
+                        name: ''
+                    };
+                    property = tryFindUnpackedProperty(namedParam0.properties, expr.name, qualifiedMember1);
+                    if (property) {
+                        const memberPath = qualifiedMember1.name.substring(1).split('.');
+                        const memberEvent = {
+                            target: this,
+                            member: memberPath[memberPath.length - 1],
+                            fullyQualifiedMember: memberPath.join('.')
+                        }
+                        self.resolvingJoinMember.emit(memberEvent);
+                        if (alias == null) {
+                            return new MemberExpression(memberEvent.fullyQualifiedMember);
+                        } else {
+                            const memberWithAlias = new ObjectExpression();
+                            Object.defineProperty(memberWithAlias, alias, {
+                                configurable: true,
+                                enumerable: true,
+                                value: new MemberExpression(memberEvent.fullyQualifiedMember)
+                            });
+                            return memberWithAlias;
+                        }
+                    }
                     
                 }
             }

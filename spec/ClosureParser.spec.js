@@ -96,6 +96,30 @@ describe('ClosureParser', () => {
 
     });
 
+    fit('should unpack nested object properties', async () => {
+        const People = new QueryEntity('PersonData');
+        const PostalAddresses = new QueryEntity('PostalAddressData').as('address');
+        let a = new QueryExpression().select(({
+                id,
+                familyName: lastName,
+                givenName: firstName,
+                address: { streetAddress }
+            }) => {
+            id,
+            lastName,
+            firstName,
+            streetAddress
+        }).from(People).where( x => {
+            return x.id === 355;
+        }).leftJoin(PostalAddresses).with((x, y) => {
+            return x.address === y.id;
+        });
+        let result = await db.executeAsync(a);
+        expect(result).toBeTruthy();
+        expect(result.length).toBe(1);
+
+    });
+
     it('should use greater than expression', async () => {
         const Products = new QueryEntity('ProductData');
         let a = new QueryExpression().select( x => {
