@@ -326,6 +326,9 @@ class ClosureParser {
         else if (expr.type === ExpressionTypes.ConditionalExpression) {
             return this.parseCondition(expr);
         }
+        else if (expr.type === ExpressionTypes.ObjectExpression) {
+            return this.parseObject(expr);
+        }
         throw new Error('The given expression type (' + expr.type + ') is invalid or it has not implemented yet.');
     }
     /**
@@ -484,12 +487,13 @@ class ClosureParser {
     }
     parseMember(expr) {
         let self = this;
+        if (self.namedParams.length === 0) {
+            throw new Error('Invalid or missing closure parameter');
+        }
+        let namedParam0;
         if (expr.property) {
-            if (self.namedParams.length === 0) {
-                throw new Error('Invalid or missing closure parameter');
-            }
             // get first parameter
-            let namedParam0 = self.namedParams[0];
+            namedParam0 = self.namedParams[0];
             // find parameter by name
             let namedParam = self.namedParams.find(function (item) {
                 return (item.name === expr.object.name);
@@ -557,6 +561,23 @@ class ClosureParser {
             }
         }
         else {
+            // get first parameter
+            namedParam0 = self.namedParams[0];
+            // support object destructing param
+            if (namedParam0.type === 'ObjectPattern') {
+                //
+                const property = namedParam0.properties.find((x) => {
+                    return x.type === 'Property' && x.key != null && x.key.name === expr.name;
+                });
+                if (property) {
+                    const memberEvent = {
+                        target: this,
+                        member: property.key.name
+                    }
+                    self.resolvingMember.emit(memberEvent);
+                    return new MemberExpression(memberEvent.member);
+                }
+            }
             throw new Error('Invalid member expression.');
         }
     }
@@ -655,6 +676,10 @@ class ClosureParser {
         }
     }
     parseIdentifier(expr) {
+        const namedParam0 = this.namedParams && this.namedParams[0];
+        if (namedParam0.type === 'ObjectPattern') {
+            return this.parseMember(expr);
+        }
         if (this.params && Object.prototype.hasOwnProperty.call(this.params, expr.name)) {
             return new LiteralExpression(this.params[expr.name]);
         }

@@ -56,6 +56,28 @@ describe('ClosureParser', () => {
         
     });
 
+    it('should use object destructuring', async () => {
+        const People = new QueryEntity('PersonData');
+        let a = new QueryExpression().select(({id, familyName, givenName}) => {
+            id,
+            familyName,
+            givenName
+        })
+        .from(People).where( x => {
+            return x.id === 355;
+        });
+        expect(a.$where).toEqual({
+                $eq: [
+                    { $name: 'PersonData.id' },
+                    355
+                ]
+            });
+        let result = await db.executeAsync(a);
+        expect(result).toBeTruthy();
+        expect(result.length).toBe(1);
+        expect(result[0].id).toBe(355);
+    });
+
     it('should use greater than expression', async () => {
         const Products = new QueryEntity('ProductData');
         let a = new QueryExpression().select( x => {
