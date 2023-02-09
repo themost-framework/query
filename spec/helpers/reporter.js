@@ -1,11 +1,11 @@
-// eslint-disable-next-line node/no-unpublished-require
-var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
+const SpecReporter = require('jasmine-spec-reporter').SpecReporter;
 
-jasmine.getEnv().clearReporters();               // remove default reporter logs
+// eslint-disable-next-line no-undef
 jasmine.getEnv().addReporter(new SpecReporter({  // add jasmine-spec-reporter
     spec: {
         displayPending: true,
         displayStacktrace: 'raw'
     }
 }));
+// eslint-disable-next-line no-undef
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
