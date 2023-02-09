@@ -226,7 +226,7 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     $contains(p0, p1) {
-        return sprintf('contains(%s, %s)', this.escape(p0), this.escape(p1));
+        return sprintf('contains(%s, %s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $count(p0) {
