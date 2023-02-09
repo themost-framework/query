@@ -1,5 +1,10 @@
 import { OpenDataQuery, round, QueryEntity } from '../src/index';
 import { OpenDataQueryFormatter } from '../src/index';
+
+function me() {
+    return null;
+}
+
 describe('OpenDataQueryFormatter', () => {
 
     it('should format $select', () => {
@@ -305,6 +310,19 @@ describe('OpenDataQueryFormatter', () => {
         let result = new OpenDataQueryFormatter().formatSelect(query);
         expect(result.$filter).toEqual('customer/address/streetAddress ne $it/billingAddress/streetAddress');
         expect(result.$orderby).toEqual('customer/familyName,customer/givenName');
+    });
+
+    it('should use me() function', async () => {
+        const Orders = new QueryEntity('Orders');
+        let query = new OpenDataQuery()
+            .from(Orders)
+            .where((x) => {
+                return x.createdBy === me();
+            })
+            .orderByDescending((x) => x.dateCreate)
+            .take(10);
+        let result = new OpenDataQueryFormatter().formatSelect(query);
+        expect(result.$filter).toEqual('createdBy eq me()');
     });
 
 });
