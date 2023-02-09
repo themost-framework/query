@@ -148,8 +148,9 @@ class MethodCallExpression {
         let name = '$'.concat(this.name);
         //set arguments array
         method[name] = [];
-        if (this.args.length === 0)
-            throw new Error('Unsupported method expression. Method arguments cannot be empty.');
+        if (this.args.length === 0) {
+            return method;
+        }
         //get first argument
         if (this.args[0] instanceof MemberExpression) {
             for (let i = 0; i < this.args.length; i++) {
@@ -262,8 +263,10 @@ class SimpleMethodCallExpression extends MethodCallExpression {
         let method = {};
         let name = '$'.concat(this.name);
         //set arguments array
-        if (this.args.length === 0)
-            throw new Error('Unsupported method expression. Method arguments cannot be empty.');
+        if (this.args.length === 0) {
+            method[name] = [];
+            return method;
+        }
         if (this.args.length === 1) {
             method[name] = {};
             let arg;

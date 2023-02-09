@@ -499,7 +499,77 @@ class OpenDataQueryFormatter extends SqlFormatter {
         }
     }
 
+    /**
+     * now() function returns the current point in time
+     * @returns {string}
+     */
+    $now() {
+        return 'now()';
+    }
+
+    /**
+     * today() function returns the current date
+     * @returns {string}
+     */
+    $today() {
+        return 'today()';
+    }
+
+    /**
+     * me() function returns the identifier of the current user
+     * @returns {string}
+     */
+    $me() {
+        return 'me()';
+    }
+
+    /**
+     * whoami() function returns the name of the current user
+     * @returns {string}
+     */
+    $whoami() {
+        return 'whoami()';
+    }
+
 }
+/**
+ * A helper function for supporting me() method while using closures for OData queries
+ * @returns {string | number}
+ */
+function me() {
+    return null;
+}
+
+/**
+ * A helper function for supporting today() method while using closures for OData queries
+ * @returns  {Date}
+ */
+function today() {
+    const value = new Date();
+    value.setHours(0,0,0,0);
+    return value;
+}
+
+/**
+ * A helper function for supporting now() method while using closures for OData queries
+ * @returns {Date}
+ */
+function now() {
+    return new Date();
+}
+
+/**
+ * A helper function for supporting whoami() method while using closures for OData queries
+ * @returns {string}
+ */
+function whoami() {
+    return null;
+}
+
 export {
+    me,
+    now,
+    today,
+    whoami,
     OpenDataQueryFormatter
 }
