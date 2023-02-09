@@ -287,4 +287,24 @@ describe('OpenDataQueryFormatter', () => {
         expect(result.$orderby).toEqual('birthDate,familyName desc');
     });
 
+    it('should use $it', async () => {
+        const Orders = new QueryEntity('Orders');
+        let query = new OpenDataQuery()
+            .select(({ id, customer : { familyName, givenName } }) => {
+                id,
+                givenName,
+                familyName
+            })
+            .from(Orders)
+            .where((x) => {
+                return x.customer.address.streetAddress !== x.billingAddress.streetAddress;
+            })
+            .orderBy((x) => x.customer.familyName)
+            .thenBy((x) => x.customer.givenName)
+            .take(10);
+        let result = new OpenDataQueryFormatter().formatSelect(query);
+        expect(result.$filter).toEqual('customer/address/streetAddress ne $it/billingAddress/streetAddress');
+        expect(result.$orderby).toEqual('customer/familyName,customer/givenName');
+    });
+
 });

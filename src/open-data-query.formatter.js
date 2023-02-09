@@ -15,12 +15,18 @@ class OpenDataQueryFormatter extends SqlFormatter {
         this.settings.forceAlias = false;
     }
 
+    escapeRight(value) {
+        if (Object.prototype.hasOwnProperty.call(value, '$name'))
+            return `$it/${this.escapeName(value.$name)}`;
+        return super.escape(value)
+    }
+
     $startswith(p0, p1) {
         return this.$startsWith(p0, p1);
     }
 
     $startsWith(p0, p1) {
-        return sprintf('startswith(%s,%s)', this.escape(p0), this.escape(p1));
+        return sprintf('startswith(%s,%s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $endswith(p0, p1) {
@@ -28,7 +34,7 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     $endsWith(p0, p1) {
-        return sprintf('endswith(%s,%s)', this.escape(p0), this.escape(p1));
+        return sprintf('endswith(%s,%s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $length(p0) {
@@ -74,6 +80,7 @@ class OpenDataQueryFormatter extends SqlFormatter {
      * @param {...*} _arg 
      * @returns 
      */
+    // eslint-disable-next-line no-unused-vars
     $concat(_arg) {
         let args = Array.from(arguments);
         let self = this;
@@ -155,31 +162,31 @@ class OpenDataQueryFormatter extends SqlFormatter {
     $round(p0, p1) {
         if (p1 == null)
             p1 = 0;
-        return sprintf('round(%s,%s)', this.escape(p0), this.escape(p1));
+        return sprintf('round(%s,%s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $eq(p0, p1) {
-        return sprintf('%s eq %s', this.escape(p0), this.escape(p1));
+        return sprintf('%s eq %s', this.escape(p0), this.escapeRight(p1));
     }
 
     $ne(p0, p1) {
-        return sprintf('%s ne %s', this.escape(p0), this.escape(p1));
+        return sprintf('%s ne %s', this.escape(p0), this.escapeRight(p1));
     }
 
     $gt(p0, p1) {
-        return sprintf('%s gt %s', this.escape(p0), this.escape(p1));
+        return sprintf('%s gt %s', this.escape(p0), this.escapeRight(p1));
     }
 
     $gte(p0, p1) {
-        return sprintf('%s ge %s', this.escape(p0), this.escape(p1));
+        return sprintf('%s ge %s', this.escape(p0), this.escapeRight(p1));
     }
 
     $lt(p0, p1) {
-        return sprintf('%s lt %s', this.escape(p0), this.escape(p1));
+        return sprintf('%s lt %s', this.escape(p0), this.escapeRight(p1));
     }
 
     $lte(p0, p1) {
-        return sprintf('%s le %s', this.escape(p0), this.escape(p1));
+        return sprintf('%s le %s', this.escape(p0), this.escapeRight(p1));
     }
 
     $and(p0, p1) {
@@ -191,15 +198,15 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     $add(p0, p1) {
-        return sprintf('(%s add %s)', this.escape(p0), this.escape(p1));
+        return sprintf('(%s add %s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $sub(p0, p1) {
-        return sprintf('(%s sub %s)', this.escape(p0), this.escape(p1));
+        return sprintf('(%s sub %s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $mul(p0, p1) {
-        return sprintf('(%s mul %s)', this.escape(p0), this.escape(p1));
+        return sprintf('(%s mul %s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $multiply(p0, p1) {
@@ -207,7 +214,7 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     $div(p0, p1) {
-        return sprintf('(%s div %s)', this.escape(p0), this.escape(p1));
+        return sprintf('(%s div %s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $divide(p0, p1) {
@@ -215,11 +222,11 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     $mod(p0, p1) {
-        return sprintf('(%s mod %s)', this.escape(p0), this.escape(p1));
+        return sprintf('(%s mod %s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $contains(p0, p1) {
-        return sprintf('contains(%s, %s)', this.escape(p0), this.escape(p1));
+        return sprintf('contains(%s, %s)', this.escape(p0), this.escapeRight(p1));
     }
 
     $count(p0) {
