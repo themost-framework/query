@@ -1,9 +1,5 @@
 import { OpenDataQuery, round, QueryEntity } from '../src/index';
-import { OpenDataQueryFormatter } from '../src/index';
-
-function me() {
-    return null;
-}
+import { OpenDataQueryFormatter, me } from '../src/index';
 
 describe('OpenDataQueryFormatter', () => {
 
@@ -319,7 +315,7 @@ describe('OpenDataQueryFormatter', () => {
             .where((x) => {
                 return x.createdBy === me();
             })
-            .orderByDescending((x) => x.dateCreate)
+            .orderByDescending((x) => x.dateCreated)
             .take(10);
         let result = new OpenDataQueryFormatter().formatSelect(query);
         expect(result.$filter).toEqual('createdBy eq me()');

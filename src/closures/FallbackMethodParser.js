@@ -62,6 +62,18 @@ class FallbackMethodParser {
     static max(args) {
         return new SimpleMethodCallExpression('max', args);
     }
+    static me() {
+        return new SimpleMethodCallExpression('me', []);
+    }
+    static today() {
+        return new SimpleMethodCallExpression('today', []);
+    }
+    static whoami() {
+        return new SimpleMethodCallExpression('today', []);
+    }
+    static now() {
+        return new SimpleMethodCallExpression('now', []);
+    }
 }
 
 export {
