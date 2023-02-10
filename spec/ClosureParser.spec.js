@@ -60,13 +60,16 @@ describe('ClosureParser', () => {
 
     it('should use object destructuring', async () => {
         const People = new QueryEntity('PersonData');
+        const identifier = 355;
         let a = new QueryExpression().select(({id, familyName, givenName}) => {
             id,
             familyName,
             givenName
         })
         .from(People).where( x => {
-            return x.id === 355;
+            return x.id === identifier;
+        }, {
+            identifier
         });
         expect(a.$where).toEqual({
                 $eq: [

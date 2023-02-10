@@ -752,12 +752,12 @@ class ClosureParser {
         }
     }
     parseIdentifier(expr) {
+        if (this.params && Object.prototype.hasOwnProperty.call(this.params, expr.name)) {
+            return new LiteralExpression(this.params[expr.name]);
+        }
         const namedParam0 = this.namedParams && this.namedParams[0];
         if (namedParam0.type === 'ObjectPattern') {
             return this.parseMember(expr);
-        }
-        if (this.params && Object.prototype.hasOwnProperty.call(this.params, expr.name)) {
-            return new LiteralExpression(this.params[expr.name]);
         }
         throw new Error('Identifier cannot be found or is inaccessible. Consider passing parameters if they are used inside method.');
     }
