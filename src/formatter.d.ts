@@ -15,8 +15,8 @@ export declare class SqlFormatter {
     escapeConstant(value: any,unquoted?: boolean): string | any;
     
 
-    $or(...arg:any): string;
-    $and(...arg:any): string;
+    $or(...arg:any[]): string;
+    $and(...arg:any[]): string;
     $not(arg:any): string;
     $startsWith(p0:any, p1:any): string | any;
     $endsWith(p0:any, p1:any): string | any;
@@ -27,7 +27,7 @@ export declare class SqlFormatter {
     $ifnull(p0:any, p1:any): string | any;
     $ifNull(p0:any, p1:any): string | any;
     $trim(p0:any): string | any;
-    $concat(...p0:any): string | any;
+    $concat(...p0:any[]): string | any;
     $indexof(p0:any, p1:any): string | any;
     $indexOf(p0:any, p1:any): string | any;
     $indexOfBytes(p0:any, p1:any): string | any;

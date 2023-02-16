@@ -92,7 +92,7 @@ class MemoryAdapter {
 
     /**
      * Closes database connection
-     * @param {function(): *} callback
+     * @param {function()=} callback
      * @returns {*}
      */
     close(callback) {

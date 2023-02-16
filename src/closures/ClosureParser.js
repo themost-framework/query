@@ -581,17 +581,18 @@ class ClosureParser {
                         member: member
                     }
                     self.resolvingMember.emit(memberEvent);
-                    if (alias == null) {
-                        return new MemberExpression(memberEvent.member);
-                    } else {
-                        const memberWithAlias = new ObjectExpression();
-                        Object.defineProperty(memberWithAlias, alias, {
-                            configurable: true,
-                            enumerable: true,
-                            value: new MemberExpression(memberEvent.member)
-                        });
-                        return memberWithAlias;
-                    }
+                    return new MemberExpression(memberEvent.member);
+                    // if (alias == null) {
+                    //     return new MemberExpression(memberEvent.member);
+                    // } else {
+                    //     const memberWithAlias = new ObjectExpression();
+                    //     Object.defineProperty(memberWithAlias, alias, {
+                    //         configurable: true,
+                    //         enumerable: true,
+                    //         value: new MemberExpression(memberEvent.member)
+                    //     });
+                    //     return memberWithAlias;
+                    // }
                 } else {
                     let qualifiedMember1;
                     // try to find nested property
