@@ -41,11 +41,13 @@ describe('QueryExpression.where', () => {
         const People = new QueryEntity('PersonData');
         let query = new QueryExpression()
             .select((x) => {
-                x.id,
-                x.familyName,
-                x.givenName,
-                x.email,
-                x.dateCreated
+                return {
+                    id: x.id,
+                    familyName: x.familyName,
+                    givenName: x.givenName,
+                    email: x.email,
+                    dateCreated: x.dateCreated
+                }
             })
             .from(People)
             .where((x) => {
@@ -61,7 +63,7 @@ describe('QueryExpression.where', () => {
         const People = new QueryEntity('PersonData');
         let query = new QueryExpression()
             .select(({ id, familyName: lastName, givenName: firstName, email, dateCreated }) => {
-                id, lastName, firstName, email, dateCreated
+                return { id, lastName, firstName, email, dateCreated }
             })
             .from(People)
             .where(({ email }) => {
@@ -74,16 +76,31 @@ describe('QueryExpression.where', () => {
         expect(results[0].firstName).toEqual('Cameron');
     });
 
+    it('should use where with inline params', async () => {
+        const People = new QueryEntity('PersonData');
+        let query = new QueryExpression()
+            .select(({ id, familyName: lastName, givenName: firstName, email, dateCreated }) => {
+                return { id, lastName, firstName, email, dateCreated }
+            })
+            .from(People)
+            .where(({ email }, customerEmail) => {
+                return email === customerEmail;
+            }, {
+                customerEmail: 'cameron.ball@example.com'
+            })
+            .take(1);
+        let results = await db.executeAsync(query);
+        expect(results.length).toBe(1);
+        expect(results[0].email).toEqual('cameron.ball@example.com');
+        expect(results[0].firstName).toEqual('Cameron');
+    });
+
     it('should use not equal', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
-            .select((x) => {
-                x.id,
-                x.name,
-                x.category,
-                x.model,
-                x.price
-            })
+            .select(({id, name, category, model, price}) => ({
+                id, name, category, model, price
+            }))
             .from(Products)
             .where((x) => {
                 return x.category !== 'Laptops';
@@ -99,13 +116,9 @@ describe('QueryExpression.where', () => {
     it('should use greater than', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
-            .select((x) => {
-                x.id,
-                x.name,
-                x.category,
-                x.model,
-                x.price
-            })
+            .select(({id, name, category, model, price}) => ({
+                id, name, category, model, price
+            }))
             .from(Products)
             .where((x) => {
                 return x.price > 400;
@@ -121,13 +134,9 @@ describe('QueryExpression.where', () => {
     it('should use lower than', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
-            .select((x) => {
-                x.id,
-                x.name,
-                x.category,
-                x.model,
-                x.price
-            })
+            .select(({id, name, category, model, price}) => ({
+                id, name, category, model, price
+            }))
             .from(Products)
             .where((x) => {
                 return x.price < 800 && x.category === 'Laptops';
@@ -144,13 +153,9 @@ describe('QueryExpression.where', () => {
     it('should use greater than or equal', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
-            .select((x) => {
-                x.id,
-                x.name,
-                x.category,
-                x.model,
-                x.price
-            })
+            .select(({id, name, category, model, price}) => ({
+                id, name, category, model, price
+            }))
             .from(Products)
             .where((x) => {
                 return x.price >= 877.64 && x.category === 'Laptops';
@@ -169,13 +174,9 @@ describe('QueryExpression.where', () => {
     it('should use floor', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
-            .select((x) => {
-                x.id,
-                x.name,
-                x.category,
-                x.model,
-                x.price
-            })
+            .select(({id, name, category, model, price}) => ({
+                id, name, category, model, price
+            }))
             .from(Products)
             .where((x) => {
                 return Math.floor(x.price) === 877;
@@ -354,10 +355,10 @@ describe('QueryExpression.where', () => {
         const maxPrice = results[0].maxPrice;
 
         query = new QueryExpression()
-            .select((x) => {
-                x.id,
-                x.price
-            })
+            .select(({id, price}) => ({
+                id,
+                price
+            }))
             .from(Products)
             .where((x) => {
                 return x.category === 'Laptops';
@@ -387,10 +388,10 @@ describe('QueryExpression.where', () => {
         const minPrice = results[0].minPrice;
 
         query = new QueryExpression()
-            .select((x) => {
-                x.id,
-                x.price
-            })
+            .select(({id, price}) => ({
+                id,
+                price
+            }))
             .from(Products)
             .where((x) => {
                 return x.category === 'Laptops';
@@ -421,10 +422,10 @@ describe('QueryExpression.where', () => {
         }).total;
 
         query = new QueryExpression()
-            .select((x) => {
-                x.id,
-                x.name
-            })
+            .select(({id, name}) => ({
+                id,
+                name
+            }))
             .from(Products)
             .where((x) => {
                 return x.category === 'Laptops';

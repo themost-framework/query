@@ -1,8 +1,10 @@
-import { QueryExpression } from './query';
+import { QueryExpression, QueryFunc } from './query';
+
+export type ExpandArg<T> = (value: T, ...param: any[]) => any
 
 export declare class OpenDataQuery extends QueryExpression {
-    expand(...expr: any[]): this;
-    expand<T>(...args: [...expr:[(value: T) => any], params?: any]): this;
+    expand(...expr: (string | OpenDataQuery)[]): this;
+    expand<T>(...args: QueryFunc<T>[]): this;
 }
 
 export function any<T>(expr:string | ((value: T) => any)): OpenDataQuery;

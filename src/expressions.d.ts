@@ -25,6 +25,7 @@ export declare const Operators: {
     NotIn : string,
     And : string,
     Or : string,
+    BitAnd: string
 }
 
 export declare class ArithmeticExpression implements ExpressionBase {

@@ -162,6 +162,7 @@ function mean() {
     return args.reduce(reducer) / args.length;
 }
 
+// noinspection JSCommentMatchesSignature
 /**
  * @param {...*} args
  * @returns {number}
@@ -286,7 +287,7 @@ class ClosureParser {
         if (fnExpr.body.type === ExpressionTypes.MemberExpression) {
             return this.parseMember(fnExpr.body);
         }
-        if (fnExpr.body.type == ExpressionTypes.BinaryExpression) {
+        if (fnExpr.body.type === ExpressionTypes.BinaryExpression) {
             return this.parseCommon(fnExpr.body).exprOf();
         }
         //validate expression e.g. return [EXPRESSION];
@@ -507,7 +508,7 @@ class ClosureParser {
                     member: expr.property.name
                 }
                 // if named parameter is the first parameter
-                if (namedParam0 == namedParam) {
+                if (namedParam0 === namedParam) {
                     // resolve member
                     self.resolvingMember.emit(event);
                 } else {
@@ -581,24 +582,25 @@ class ClosureParser {
                         member: member
                     }
                     self.resolvingMember.emit(memberEvent);
-                    if (alias == null) {
-                        return new MemberExpression(memberEvent.member);
-                    } else {
-                        const memberWithAlias = new ObjectExpression();
-                        Object.defineProperty(memberWithAlias, alias, {
-                            configurable: true,
-                            enumerable: true,
-                            value: new MemberExpression(memberEvent.member)
-                        });
-                        return memberWithAlias;
-                    }
+                    return new MemberExpression(memberEvent.member);
+                    // if (alias == null) {
+                    //     return new MemberExpression(memberEvent.member);
+                    // } else {
+                    //     const memberWithAlias = new ObjectExpression();
+                    //     Object.defineProperty(memberWithAlias, alias, {
+                    //         configurable: true,
+                    //         enumerable: true,
+                    //         value: new MemberExpression(memberEvent.member)
+                    //     });
+                    //     return memberWithAlias;
+                    // }
                 } else {
                     let qualifiedMember1;
                     // try to find nested property
                     /**
                      * @param {Array<any>} properties 
                      * @param {string} name
-                     * @param {{name:string, alias:string}} fullyQualifiedMember 
+                     * @param {{name:string, alias:string}} qualifiedMember
                      * @returns {*}
                      */
                     const tryFindUnpackedProperty = (properties, name, qualifiedMember) => {
@@ -606,6 +608,9 @@ class ClosureParser {
                         while(index < properties.length) {
                             const prop = properties[index];
                             if (prop.value && prop.value.type === 'ObjectPattern') {
+                                /**
+                                 * @type {{name: string, alias: string}}
+                                 */
                                 const newQualifiedMember = {
                                     name: '',
                                     alias: null

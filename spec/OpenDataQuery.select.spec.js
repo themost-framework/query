@@ -4,12 +4,12 @@ describe('OpenDataQuery.select', () => {
 
     it('should format $select', () => {
         let query = new OpenDataQuery()
-            .select((x) => {
-                x.id,
-                x.name,
-                x.category,
-                x.price
-            })
+            .select(({id, name, category, price}) => ({
+                id,
+                name,
+                category,
+                price
+            }))
             .from('Products');
         expect(query).toBeTruthy();
         const formatter = new OpenDataQueryFormatter();
@@ -19,25 +19,26 @@ describe('OpenDataQuery.select', () => {
 
     it('should format $select with object destructuring', () => {
         let query = new OpenDataQuery()
-            .select(({id, name, category, price}) => {
+            .select(({id, name, category, price, releaseDate}) => ({
                 id,
                 name,
                 category,
-                price
-            })
+                price,
+                releaseDate
+            }))
             .from('Products');
         expect(query).toBeTruthy();
         let formatter = new OpenDataQueryFormatter();
         let result = formatter.formatSelect(query);
-        expect(result.$select).toEqual('id,name,category,price');
+        expect(result.$select).toEqual('id,name,category,price,releaseDate');
 
         query = new OpenDataQuery()
-            .select(({id, name, category: productCategory, price}) => {
+            .select(({id, name, category: productCategory, price}) => ({
                 id,
                 name,
                 productCategory,
                 price
-            })
+            }))
             .from('Products');
         expect(query).toBeTruthy();
         formatter = new OpenDataQueryFormatter();
