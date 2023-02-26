@@ -485,7 +485,41 @@ class ClosureParser {
             this.parseCommon(objectExpression.alternate)
         ]);
     }
-    parseMember(expr) {
+
+    /**
+     * @param {string} name 
+     * @returns any
+     */
+    isMember(name) {
+        const self = this;
+        if (self.namedParams.length === 0) {
+            throw new Error('Invalid or missing closure parameter');
+        }
+        const  namedParam0 = self.namedParams[0];
+        if (namedParam0.type === 'ObjectPattern') {
+            // validate param which is an object destructuring expression
+            let property = namedParam0.properties.find((x) => {
+                return x.type === 'Property' && x.value != null && x.value.type === 'Identifier' &&  x.value.name === name;
+            });
+            if (property.key.name !== property.value.name) {
+                return property.key
+            } else {
+                return property.value;
+            }
+        } else {
+            // search for a named param with the same name
+            const param = self.namedParams.find(function (item) {
+                return (item.type === 'Identifier' && item.name === name);
+            });
+            return param;
+        }
+    }
+
+    /**
+     * @param {any} expr
+     * @param {{useAlias:boolean}=} options
+     */
+    parseMember(expr, options) {
         let self = this;
         if (self.namedParams.length === 0) {
             throw new Error('Invalid or missing closure parameter');
@@ -580,6 +614,9 @@ class ClosureParser {
                         target: this,
                         member: member
                     }
+                    if (options && options.useAlias === false) {
+                        alias = null;
+                    }
                     self.resolvingMember.emit(memberEvent);
                     if (alias == null) {
                         return new MemberExpression(memberEvent.member);
@@ -667,7 +704,9 @@ class ClosureParser {
             throw new Error('Invalid or unsupported method expression.');
         }
         let method = expr.callee.property.name;
-        let result = self.parseMember(expr.callee.object);
+        let result = self.parseMember(expr.callee.object, {
+            useAlias: false
+        });
         let args = [result];
         expr.arguments.forEach(function (arg) {
             args.push(self.parseCommon(arg));
@@ -711,7 +750,8 @@ class ClosureParser {
             if (expr.callee.object != null) {
                 // find identifier name
                 name = getObjectExpressionIdentifier(expr.callee.object);
-                if (name === self.namedParams[0].name) {
+                const tryMember = self.isMember(name);
+                if (tryMember) {
                     return self.parseMethodCall(expr);
                 }
             }

@@ -102,6 +102,66 @@ describe('QueryExpression.where', () => {
         });
     });
 
+    it('should use with object destructuring and indexOf', async () => {
+        const Products = new QueryEntity('ProductData');
+        let query = new QueryExpression()
+            .select(({name, price, category}) => {
+                return {
+                    name,
+                    price,
+                    category
+                }
+            })
+            .from(Products)
+            .where(({name}) => {
+                return name.indexOf('Intel') >= 0;
+            });
+        let results = await db.executeAsync(query);
+        expect(results.length).toBeTruthy();
+        results.forEach((item) => {
+            expect(item.name.indexOf('Intel')).toBeGreaterThanOrEqual(0);
+        });
+
+        query = new QueryExpression()
+            .select(({name, price, category}) => {
+                return {
+                    name,
+                    price,
+                    category
+                }
+            })
+            .from(Products) 
+            .where(({name: productName}) => { // use object destructuting with name
+                return productName.indexOf('Intel') >= 0;
+            });
+        results = await db.executeAsync(query);
+        expect(results.length).toBeTruthy();
+        results.forEach((item) => {
+            expect(item.name.indexOf('Intel')).toBeGreaterThanOrEqual(0);
+        });
+    });
+
+    it('should use indexOf', async () => {
+        const Products = new QueryEntity('ProductData');
+        let query = new QueryExpression()
+            .select((x) => {
+                return {
+                    name: x.name,
+                    price: x.price,
+                    category: x.category
+                }
+            })
+            .from(Products)
+            .where((x) => {
+                return x.name.indexOf('Intel') >= 0;
+            });
+        let results = await db.executeAsync(query);
+        expect(results.length).toBeTruthy();
+        results.forEach((item) => {
+            expect(item.name.indexOf('Intel')).toBeGreaterThanOrEqual(0);
+        });
+    });
+
     it('should use toUpperCase', async () => {
         const People = new QueryEntity('PersonData');
         let query = new QueryExpression()
