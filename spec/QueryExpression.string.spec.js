@@ -60,6 +60,7 @@ describe('QueryExpression.where', () => {
         });
     });
 
+
     it('should use endsWith', async () => {
         const People = new QueryEntity('PersonData');
         let query = new QueryExpression()
@@ -160,6 +161,33 @@ describe('QueryExpression.where', () => {
         results.forEach((item) => {
             expect(item.name.indexOf('Intel')).toBeGreaterThanOrEqual(0);
         });
+    });
+
+    it('should use nested object destructuring and indexOf', async () => {
+        const People = new QueryEntity('PersonData');
+        const PostalAddresses = new QueryEntity('PostalAddressData').as('address');
+        let query = new QueryExpression()
+            .select(({id, familyName, givenName,email, address: { addressCountry }}) => {
+                return {
+                    id,
+                    familyName,
+                    givenName,
+                    email,
+                    addressCountry
+                }
+            })
+            .from(People)
+            .leftJoin(PostalAddresses).with((x, y) => {
+                return x.address === y.id;
+            })
+            .where(({ address: { addressCountry }}) => {
+                return addressCountry.indexOf('UK') >= 0;
+            }).take(0);
+        let results = await db.executeAsync(query);
+        expect(results.length).toBeGreaterThan(0);
+        for (const result of results) {
+            expect(result.addressCountry).toEqual('UK');    
+        }
     });
 
     it('should use toUpperCase', async () => {

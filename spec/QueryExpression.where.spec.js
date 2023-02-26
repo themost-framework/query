@@ -57,6 +57,54 @@ describe('QueryExpression.where', () => {
         expect(results[0].email).toBe('cameron.ball@example.com');
     });
 
+    it('should use object destructuring and equal expression', async () => {
+        const People = new QueryEntity('PersonData');
+        let query = new QueryExpression()
+            .select(({id, familyName, givenName,email}) => {
+                return {
+                    id,
+                    familyName,
+                    givenName,
+                    email
+                }
+            })
+            .from(People)
+            .where(({email}) => {
+                return email === 'cameron.ball@example.com';
+            })
+            .take(1);
+        let results = await db.executeAsync(query);
+        expect(results.length).toBe(1);
+        expect(results[0].email).toBe('cameron.ball@example.com');
+    });
+
+    it('should use nested object destructuring and equal expression', async () => {
+        const People = new QueryEntity('PersonData');
+        const PostalAddresses = new QueryEntity('PostalAddressData').as('address');
+        let query = new QueryExpression()
+            .select(({id, familyName, givenName,email, address: { addressCountry }}) => {
+                return {
+                    id,
+                    familyName,
+                    givenName,
+                    email,
+                    addressCountry
+                }
+            })
+            .from(People)
+            .leftJoin(PostalAddresses).with((x, y) => {
+                return x.address === y.id;
+            })
+            .where(({ address: { addressCountry }}) => {
+                return addressCountry === 'UK';
+            }).take(0);
+        let results = await db.executeAsync(query);
+        expect(results.length).toBeGreaterThan(0);
+        for (const result of results) {
+            expect(result.addressCountry).toEqual('UK');    
+        }
+    });
+
     it('should use where with object destructuring', async () => {
         const People = new QueryEntity('PersonData');
         let query = new QueryExpression()

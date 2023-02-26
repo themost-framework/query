@@ -486,6 +486,41 @@ class ClosureParser {
         ]);
     }
 
+    tryUnpackedProperty = (properties, name, qualifiedMember) => {
+        let index = 0;
+        while(index < properties.length) {
+            const prop = properties[index];
+            if (prop.value && prop.value.type === 'ObjectPattern') {
+                const newQualifiedMember = {
+                    name: '',
+                    alias: null
+                }
+                const prop1 = this.tryUnpackedProperty(prop.value.properties, name, newQualifiedMember);
+                if (prop1) {
+                    qualifiedMember.name += '.';
+                    qualifiedMember.name += prop.key.name;
+                    qualifiedMember.name += newQualifiedMember.name;
+                    if (newQualifiedMember.alias) {
+                        qualifiedMember.alias = newQualifiedMember.alias;
+                    }
+                    return prop1;
+                }
+            } else if (prop.value && prop.value.type === 'Identifier') {
+                if (prop.value.name === name) {
+                    qualifiedMember.name += '.';
+                    if (prop.key.name !== prop.value.name) {
+                        qualifiedMember.name += prop.key.name;
+                        qualifiedMember.alias = prop.value.name;
+                    } else {
+                        qualifiedMember.name += name;
+                    }
+                    return prop;
+                }
+            }
+            index += 1;
+        }
+    }
+
     /**
      * @param {string} name 
      * @returns any
@@ -501,10 +536,19 @@ class ClosureParser {
             let property = namedParam0.properties.find((x) => {
                 return x.type === 'Property' && x.value != null && x.value.type === 'Identifier' &&  x.value.name === name;
             });
-            if (property.key.name !== property.value.name) {
-                return property.key
+            if (property) {
+                if (property.key.name !== property.value.name) {
+                    return property.key
+                } else {
+                    return property.value;
+                }
             } else {
-                return property.value;
+                let qualifiedMember = {
+                    name: '',
+                    alias: null
+                };
+                property = self.tryUnpackedProperty(namedParam0.properties, name, qualifiedMember);
+                return property;
             }
         } else {
             // search for a named param with the same name
