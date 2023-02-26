@@ -1,5 +1,6 @@
 import { QueryExpression } from './query';
 import { ClosureParser } from './closures/ClosureParser';
+import { instanceOf } from './instance-of';
 
 class OpenDataQuery extends QueryExpression {
     constructor() {
@@ -17,7 +18,7 @@ class OpenDataQuery extends QueryExpression {
         const args = Array.from(arguments);
         this.$expand = [];
         for (const arg of args) {
-            if (arg instanceof OpenDataQuery) {
+            if (instanceOf(arg, OpenDataQuery)) {
                 this.$expand.push(arg);
             } else if (typeof arg === 'function') {
                 // convert closure to query expression
