@@ -487,7 +487,7 @@ class ClosureParser {
         ]);
     }
 
-    tryUnpackedProperty = (properties, name, qualifiedMember) => {
+    tryUnpackedProperty(properties, name, qualifiedMember) {
         let index = 0;
         while(index < properties.length) {
             const prop = properties[index];
