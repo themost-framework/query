@@ -52,7 +52,7 @@ export declare class QueryExpression {
     distinct(value: any): this;
     where<T>(expr: (value: T, ...param: any[]) => any, params?: any): this;
     where(expr: string | any): this;
-    injectWhere(where: any);
+    injectWhere(where: any): void;
     delete(entity: string): this;
     insert(obj: any): this;
     into(entity: string): this;
@@ -159,15 +159,15 @@ export declare class QueryField {
     static divide(name: string, divider: number): QueryField;
     static multiply(name: string, multiplier: number): QueryField;
     static round(name: string, n: number): QueryField;
-    static length(name): QueryField;
-    static trim(name): QueryField;
-    static year(name): QueryField;
-    static date(name): QueryField;
-    static day(name): QueryField;
-    static month(name): QueryField;
-    static hour(name): QueryField;
-    static minute(name): QueryField;
-    static second(name): QueryField;
+    static length(name: string): QueryField;
+    static trim(name: string): QueryField;
+    static year(name: string): QueryField;
+    static date(name: string): QueryField;
+    static day(name: string): QueryField;
+    static month(name: string): QueryField;
+    static hour(name: string): QueryField;
+    static minute(name: string): QueryField;
+    static second(name: string): QueryField;
 
     select(name: string): QueryField;
     from(entity: string | QueryEntity): QueryField;
