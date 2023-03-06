@@ -28,5 +28,8 @@ spec
 babel.config.js
 rollup.config.js
 
+# typescript
+tsconfig.json
+
 # gitpod
 .gitpod.yml
