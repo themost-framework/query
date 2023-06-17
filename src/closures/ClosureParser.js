@@ -626,10 +626,7 @@ class ClosureParser {
                         fullyQualifiedMember: fullyQualifiedMember
                     };
                     this.resolvingJoinMember.emit(event);
-                    if (event.object !== object) {
-                        return new MemberExpression(event.object + '.' + property);
-                    }
-                    return new MemberExpression(object + '.' + property);
+                    return new MemberExpression(event.object + '.' + event.member);
                 }
                 else {
                     //evaluate object member value e.g. item.title or item.status.id
