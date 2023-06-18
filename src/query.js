@@ -84,8 +84,8 @@ class QueryExpression {
         });
 
         this.resolvingJoinMember.subscribe((event) => {
-            if (this.$joinCollection) {
-                event.member = this.$joinCollection.concat('.', event.member);
+            if (this.$joinCollection != null && event.object == null) {
+                event.object = this.$joinCollection;
             }
         });
 
@@ -403,7 +403,7 @@ class QueryExpression {
         closureParser.resolvingJoinMember.subscribe((event) => {
             const newEvent = {
                 target: this,
-                object: event.object,
+                object: event.object || this.$joinCollection,
                 member: event.member,
                 fullyQualifiedMember: event.fullyQualifiedMember
             };

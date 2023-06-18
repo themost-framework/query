@@ -867,10 +867,8 @@ class MemoryAdapter {
                     //prepare statement - the traditional way
                     const prepared = self.prepare(sql, values);
                     if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
-                        process.stdout.write('DEBUG (execute):');
-                        process.stdout.write(' ');
-                        process.stdout.write(prepared);
-                        process.stdout.write('\n');
+                        console.debug('DEBUG (execute):');
+                        console.debug(prepared);
                     }
                     let results;
                     let result = [];

@@ -593,6 +593,12 @@ class ClosureParser {
                     // otherwise resolve member of joined collection
                     self.resolvingJoinMember.emit(event);
                 }
+                // if event.object is not null
+                if (event.object != null) {
+                    // concat member expression e.g. new MemberExpression(address.id)
+                    return new MemberExpression(event.object + '.' +  event.member);
+                }
+                // otherwise, use only member e.g. ew MemberExpression(id)
                 return new MemberExpression(event.member);
             }
             else {
@@ -725,6 +731,7 @@ class ClosureParser {
                     property = tryFindUnpackedProperty(namedParam0.properties, expr.name, qualifiedMember1);
                     if (property) {
                         const memberPath = qualifiedMember1.name.substring(1).split('.');
+                        // eslint-disable-next-line no-unused-vars
                         alias = qualifiedMember1.alias;
                         const memberEvent = {
                             target: this,
