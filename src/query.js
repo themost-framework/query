@@ -2043,6 +2043,40 @@ class QueryFieldComparer {
         }
         //get aggregate function
         let aggr = Object.key(this), name;
+        // compare expression with any value
+        /** 
+         * e.g. {
+         *      $ifNull: [
+         *          '$isActive',
+         *          false
+         *      ]
+         * }
+         * with {
+         *      $ne: true
+         * }
+         * which should produce an expression like IFNULL(`isActive`, false) <> false
+         */
+        if (aggr.startsWith('$') && Array.isArray(this[aggr])) {
+            // get operator
+            let op = Object.key(comparison);
+            // and create a new expression e.g. 
+            /**
+             * {
+             *      "$ne": [
+             *          $ifNull: [
+             *              '$isActive',
+             *              false
+             *          ],
+             *          true
+             *      ]
+             * }
+             */
+            expr[op] = [
+              this,
+              comparison[op]
+            ];
+            return expr;
+          }
         if (isArray(this[aggr])) {
             //get first element (the field name)
             name = QueryField.prototype.nameOf.call(this[aggr][0]);
