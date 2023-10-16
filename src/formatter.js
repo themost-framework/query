@@ -1226,7 +1226,7 @@ class SqlFormatter {
         let ifExpression;
         if (instanceOf(ifExpr, QueryExpression)) {
             ifExpression = this.formatWhere(ifExpr.$where);
-        } else if (this.isComparison(ifExpr)) {
+        } else if (this.isComparison(ifExpr) || this.isLogical(ifExpr)) {
             ifExpression = this.formatWhere(ifExpr);
         } else {
             throw new Error('Condition parameter should be an instance of query or comparison expression');
@@ -1255,7 +1255,7 @@ class SqlFormatter {
             let caseExpression;
             if (instanceOf(branch.case, QueryExpression)) {
                 caseExpression = this.formatWhere(branch.case.$where);
-            } else if (this.isComparison(branch.case)) {
+            } else if (this.isComparison(branch.case) || this.isLogical(branch.case)) {
                 caseExpression = this.formatWhere(branch.case);
             } else {
                 throw new Error('Case expression should be an instance of query or comparison expression');
