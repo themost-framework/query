@@ -6,6 +6,7 @@ import { QueryExpression, QueryField } from './query';
 import { instanceOf } from './instance-of';
 import './polyfills';
 import { ObjectNameValidator } from './object-name.validator';
+import { isNameReference, trimNameReference } from './name-reference';
 
 const ALIAS_KEYWORD = ' AS ';
 const DEFAULT_COUNT_ALIAS = '__count__';
@@ -133,6 +134,12 @@ class SqlFormatter {
                 return this.escapeName(value.$name);
             else if (Object.prototype.hasOwnProperty.call(value, '$value'))
                 return this.escape(value.$value);
+            else if (Object.prototype.hasOwnProperty.call(value, '$literal')) {
+                return this.escape(value.$literal);   
+            }
+            else if (Object.prototype.hasOwnProperty.call(value, '$getField') && typeof value.$getField === 'string') {
+                return this.escapeName(value.$getField);   
+            }
             else {
                 //check if value is a known expression e.g. { $length:"name" }
                 let keys = Object.keys(value), key0 = keys[0];
@@ -975,7 +982,11 @@ class SqlFormatter {
         if (typeof name !== 'string') {
             throw new Error('Invalid name expression. Expected string.');
         }
-        return ObjectNameValidator.validator.escape(name, this.settings.nameFormat);
+        let str = name;
+        if (isNameReference(str)) {
+            str = trimNameReference(name);
+        }
+        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
     }
     /**
      * @param obj {QueryField}

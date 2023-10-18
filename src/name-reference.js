@@ -1,5 +1,6 @@
 
 const REFERENCE_REGEXP = /^\$/;
+const NAME_REGEXP = /^(\$\w+)((\.(\w+))+)?$/
 
 /**
  * Returns true if the specified string is a method (e.g. $concat) or name reference (e.g. $dateCreated)
@@ -8,6 +9,22 @@ const REFERENCE_REGEXP = /^\$/;
  */
 function isMethodOrNameReference(str) {
     return REFERENCE_REGEXP.test(str)
+}
+
+/**
+ * @param {string} str 
+ * @returns {string}
+ */
+function isNameReference(str) {
+    return NAME_REGEXP.test(str)
+}
+
+/**
+ * @param {string} str 
+ * @returns {string}
+ */
+function trimNameReference(str) {
+    return str.replace(/^\$(\w+)/, '$1');
 }
 
 /**
@@ -45,6 +62,8 @@ function hasNameReference(str) {
 
 export {
     hasNameReference,
+    isNameReference,
+    trimNameReference,
     isMethodOrNameReference,
     getOwnPropertyWithNameRef
 }
