@@ -29,7 +29,8 @@ let ExpressionTypes = {
     CallExpression:'CallExpression',
     ObjectExpression:'ObjectExpression',
     SequenceExpression:'SequenceExpression',
-    ConditionalExpression: 'ConditionalExpression'
+    ConditionalExpression: 'ConditionalExpression',
+    VariableDeclaration: 'VariableDeclaration'
 };
 
 // noinspection JSCommentMatchesSignature
@@ -180,6 +181,7 @@ function getObjectExpressionIdentifier(object) {
 }
 
 class ClosureParser {
+
     constructor() {
         /**
          * @type Array
@@ -198,6 +200,7 @@ class ClosureParser {
         this.resolvingMember = new SyncSeriesEventEmitter();
         this.resolvingMethod = new SyncSeriesEventEmitter();
         this.resolvingJoinMember = new SyncSeriesEventEmitter();
+        this.resolvingVariable = new SyncSeriesEventEmitter();
     }
 
     /**
@@ -289,6 +292,41 @@ class ClosureParser {
         }
         if (fnExpr.body.type === ExpressionTypes.BinaryExpression) {
             return this.parseCommon(fnExpr.body).exprOf();
+        }
+        if (fnExpr.body.type === ExpressionTypes.BlockStatement) {
+            if (fnExpr.body.body.length === 2) {
+                if (
+                    fnExpr.body.body[0].type === ExpressionTypes.VariableDeclaration &&
+                    fnExpr.body.body[1].type === ExpressionTypes.ReturnStatement
+                ) {
+                    const variableDeclaration = fnExpr.body.body[0];
+                    /**
+                     * @param {{name:string,type:string,init:*}} event 
+                     */
+                    const resolvingVariable = (event) => {
+                        const declaration = variableDeclaration.declarations.find((item) => {
+                            return item.id &&
+                                item.id.type === 'Identifier' &&
+                                item.id.name === event.name;
+                        });
+                        if (declaration) {
+                            const init = declaration.init;
+                            Object.assign(event, {
+                                init
+                            });
+                        }
+                    }
+                    try {
+                        this.resolvingVariable.subscribe(resolvingVariable);
+                        const returnStatement = fnExpr.body.body[1];
+                        return this.parseCommon(returnStatement.argument).exprOf();
+                    }
+                    finally {
+                        this.resolvingVariable.unsubscribe(resolvingVariable)
+                    }
+                    
+                }
+            } 
         }
         //validate expression e.g. return [EXPRESSION];
         if (fnExpr.body.body[0].type !== ExpressionTypes.ReturnStatement) {
@@ -392,10 +430,89 @@ class ClosureParser {
         });
         return finalResult;
     }
+
+    isBlockStatementWithVars(expr) {
+        if (Array.isArray(expr.body) && expr.body.length == 2) {
+            if (expr.body[0].type === ExpressionTypes.VariableDeclaration && 
+                expr.body[1].type === ExpressionTypes.ReturnStatement) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    parseSelectBlockAndVars(expr) {
+        if (expr.type !== ExpressionTypes.BlockStatement) {
+            throw new Error(`Expected BlockStatement. Got ${expr.type}`)
+        }
+        /**
+         * @type {{type:string,declarations:{type:string,id:*,init:*}[]}}
+         */
+        const variableDeclaration = expr.body[0];
+        if (variableDeclaration.type !== ExpressionTypes.VariableDeclaration) {
+            throw new Error(`Expected VariableDeclaration. Got ${variableDeclaration.type}`)
+        }
+        /**
+         * @type {{type:string,argument:{type:string,properties:*[]}}}
+         */
+        const returnStatement = expr.body[1];
+        if (returnStatement.type !== ExpressionTypes.ReturnStatement) {
+            throw new Error(`Expected ReturnStatement. Got ${returnStatement.type}`)
+        }
+
+        /**
+         * @param {{name:string,type:string,init:*}} event 
+         */
+        const resolvingVariable = (event) => {
+            const declaration = variableDeclaration.declarations.find((item) => {
+                return item.id &&
+                    item.id.type === 'Identifier' &&
+                    item.id.name === event.name;
+            });
+            if (declaration) {
+                const init = declaration.init;
+                Object.assign(event, {
+                    init
+                });
+            }
+        }
+        try {
+            this.resolvingVariable.subscribe(resolvingVariable);
+            if (returnStatement.argument.type === ExpressionTypes.ObjectExpression) {
+                return this.parseObject(returnStatement.argument);
+            } else if (returnStatement.argument.type === ExpressionTypes.CallExpression) {
+                return this.parseMethod(returnStatement.argument);
+            } else if (returnStatement.argument.type === ExpressionTypes.MemberExpression) {
+                return this.parseCommon(returnStatement.argument);
+            }
+            throw new Error(`The given expression is not yet implemented (${returnStatement.argument.type}).`);
+        }
+        finally {
+            this.resolvingVariable.unsubscribe(resolvingVariable)
+        }
+    }
+
     parseBlock(expr) {
         let self = this;
         // get expression statement
         let bodyExpression = expr.body[0];
+        // an exception while parsing block statement
+        // where object destructuring is being used and represented
+        // by a variable declaration and a return statement
+        // This represtantion is the result of transpiling with @babel/preset-env
+        // and corejs@3
+        // presets: [
+        //     [
+        //         '@babel/preset-env',
+        //         {
+        //             useBuiltIns: 'entry',
+        //             corejs: 3
+        //         }
+        //     ]
+        // ]
+        if (this.isBlockStatementWithVars(expr)) {
+            return this.parseSelectBlockAndVars(expr);
+        }
         if (bodyExpression.type === ExpressionTypes.ExpressionStatement) {
             if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
                 return self.parseSequence(bodyExpression.expression);
@@ -411,6 +528,8 @@ class ClosureParser {
                 return self.parseObject(objectExpression);
             } else if (objectExpression && objectExpression.type === ExpressionTypes.CallExpression) {
                 return self.parseMethod(objectExpression);
+            } else if (objectExpression && objectExpression.type === ExpressionTypes.MemberExpression) {
+                return self.parseCommon(objectExpression);
             }
         }
         throw new Error('The given expression is not yet implemented (' + expr.type + ').');
@@ -851,6 +970,10 @@ class ClosureParser {
         const namedParam0 = this.namedParams && this.namedParams[0];
         if (namedParam0.type === 'ObjectPattern') {
             return this.parseMember(expr);
+        }
+        this.resolvingVariable.emit(expr);
+        if (expr.init) {
+            return this.parseCommon(expr.init);
         }
         throw new Error('Identifier cannot be found or is inaccessible. Consider passing parameters if they are used inside method.');
     }

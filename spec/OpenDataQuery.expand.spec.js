@@ -1,4 +1,4 @@
-import { OpenDataQuery, any } from '../src/index';
+import { OpenDataQuery, any, anyOf } from '../src/index';
 import { OpenDataQueryFormatter } from '../src/index';
 
 describe('OpenDataQuery.expand', () => {
@@ -80,5 +80,30 @@ describe('OpenDataQuery.expand', () => {
         let result = formatter.formatSelect(query);
         expect(result.$select).toEqual('id,name,alternateName');
         expect(result.$expand).toEqual('groups($select=id,name;$filter=name eq \'Administrators\')');
+    });
+
+    it('should use anyOf', () => {
+        let query = new OpenDataQuery().from('Grades')
+            .where((x, examYear, examPeriod) => {
+                return x.courseExam.year == examYear &&
+                    x.courseExam.examPeriod == examPeriod
+            }, {
+                examYear: 2023, 
+                examPeriod: 2
+            })
+            .expand(
+                anyOf((x) => x.courseClass).expand(
+                    anyOf((y) => {y.instructors}).expand(
+                        anyOf((z) => {z.instructor}).select((x) => {x.familyName, x.givenName})
+                        )
+                ),
+                (x) => {x.course}
+            )
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$expand).toEqual(
+            'courseClass($expand=instructors($expand=instructor($select=familyName,givenName))),course'
+            );
     });
 });

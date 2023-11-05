@@ -671,7 +671,7 @@ describe('ClosureParser', () => {
         });
     });
 
-    it('should use floor', async () => {
+    it('should use ceil', async () => {
         const Products = new QueryEntity('ProductData');
         let a = new QueryExpression().select( x => {
             x.name,

@@ -5,12 +5,20 @@ module.exports = {
         [
             '@babel/preset-env',
             {
-                targets: {
-                    node: 'current'
-                }
+                useBuiltIns: 'entry',
+                corejs: 3
             }
         ]
     ],
     plugins: [
+        [
+            '@babel/plugin-transform-runtime',
+            {
+              'absoluteRuntime': false,
+              'corejs': false,
+              'helpers': true,
+              'regenerator': true
+            }
+          ]
     ]
 };
