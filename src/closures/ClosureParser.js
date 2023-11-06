@@ -431,10 +431,20 @@ class ClosureParser {
         return finalResult;
     }
 
-    isBlockStatementWithVars(expr) {
+    isReturnStatementWithVars(expr) {
         if (Array.isArray(expr.body) && expr.body.length == 2) {
             if (expr.body[0].type === ExpressionTypes.VariableDeclaration && 
                 expr.body[1].type === ExpressionTypes.ReturnStatement) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isExpressionStatementWithVars(expr) {
+        if (Array.isArray(expr.body) && expr.body.length == 2) {
+            if (expr.body[0].type === ExpressionTypes.VariableDeclaration && 
+                expr.body[1].type === ExpressionTypes.ExpressionStatement) {
                 return true;
             }
         }
@@ -492,6 +502,56 @@ class ClosureParser {
         }
     }
 
+    parseSelectExpressionAndVars(expr) {
+        if (expr.type !== ExpressionTypes.BlockStatement) {
+            throw new Error(`Expected BlockStatement. Got ${expr.type}`)
+        }
+        /**
+         * @type {{type:string,declarations:{type:string,id:*,init:*}[]}}
+         */
+        const variableDeclaration = expr.body[0];
+        if (variableDeclaration.type !== ExpressionTypes.VariableDeclaration) {
+            throw new Error(`Expected VariableDeclaration. Got ${variableDeclaration.type}`)
+        }
+        /**
+         * @type {{type:string,argument:{type:string,properties:*[]}}}
+         */
+        const expressionStatement = expr.body[1];
+        if (expressionStatement.type !== ExpressionTypes.ExpressionStatement) {
+            throw new Error(`Expected ExpressionStatement. Got ${expressionStatement.type}`)
+        }
+
+        /**
+         * @param {{name:string,type:string,init:*}} event 
+         */
+        const resolvingVariable = (event) => {
+            const declaration = variableDeclaration.declarations.find((item) => {
+                return item.id &&
+                    item.id.type === 'Identifier' &&
+                    item.id.name === event.name;
+            });
+            if (declaration) {
+                const init = declaration.init;
+                Object.assign(event, {
+                    init
+                });
+            }
+        }
+        try {
+            this.resolvingVariable.subscribe(resolvingVariable);
+            if (expressionStatement.expression && expressionStatement.expression.type === 'SequenceExpression') {
+                return this.parseSequence(expressionStatement.expression);
+            }
+            else if (expressionStatement.expression && expressionStatement.expression.type === 'MemberExpression') {
+                return this.parseMember(expressionStatement.expression);
+            }
+            throw new Error(`The given expression is not yet implemented (${expr.type}).`);
+        }
+        finally {
+            this.resolvingVariable.unsubscribe(resolvingVariable)
+        }
+    }
+
     parseBlock(expr) {
         let self = this;
         // get expression statement
@@ -510,8 +570,11 @@ class ClosureParser {
         //         }
         //     ]
         // ]
-        if (this.isBlockStatementWithVars(expr)) {
+        if (this.isReturnStatementWithVars(expr)) {
             return this.parseSelectBlockAndVars(expr);
+        }
+        if (this.isExpressionStatementWithVars(expr)) {
+            return this.parseSelectExpressionAndVars(expr);
         }
         if (bodyExpression.type === ExpressionTypes.ExpressionStatement) {
             if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
@@ -722,6 +785,12 @@ class ClosureParser {
             }
             else {
                 let value;
+                // resolving variable
+                this.resolvingVariable.emit(expr.object);
+                if (expr.object.init) {
+                    // reset object
+                    expr.object = expr.object.init;
+                }
                 if (expr.object.object == null) {
                     //evaluate object member value e.g. item.title or item.status.id
                     value = memberExpressionToString(expr);
@@ -731,6 +800,10 @@ class ClosureParser {
                 let object1 = expr;
                 let fullyQualifiedMember =  '';
                 while (object1.object != null) {
+                    this.resolvingVariable.emit(object1.object);
+                    if (object1.object.init) {
+                        object1.object = object1.object.init;
+                    }
                     if (object1.object && object1.object.property) {
                         fullyQualifiedMember += object1.object.property.name + '.';
                     }
@@ -876,7 +949,10 @@ class ClosureParser {
             throw new Error('Invalid or unsupported method expression.');
         }
         let method = expr.callee.property.name;
-        let result = self.parseMember(expr.callee.object, {
+
+        this.resolvingVariable.emit(expr.callee.object);
+        const object = expr.callee.object.init || expr.callee.object;
+        let result = self.parseMember(object, {
             useAlias: false
         });
         let args = [result];
@@ -920,8 +996,13 @@ class ClosureParser {
         let thisName;
         if (name == null) {
             if (expr.callee.object != null) {
-                // find identifier name
-                name = getObjectExpressionIdentifier(expr.callee.object);
+                if (expr.callee.object.type === ExpressionTypes.Identifier) {
+                    this.resolvingVariable.emit(expr.callee.object)
+                    const init = expr.callee.object.init || expr.callee.object;
+                    name = getObjectExpressionIdentifier(init);
+                } else {
+                    name = getObjectExpressionIdentifier(expr.callee.object);
+                }
                 const tryMember = self.isMember(name);
                 if (tryMember) {
                     return self.parseMethodCall(expr);
