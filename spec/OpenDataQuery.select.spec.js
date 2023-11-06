@@ -174,4 +174,56 @@ describe('OpenDataQuery.select', () => {
         expect(result.$top).toEqual(25);
     });
 
+    it('should select with vars', () => {
+        let query = new OpenDataQuery().from('Products');
+        query.select((x) => {
+                const id = x.id;
+                const name = x.name;
+                return {
+                    id,
+                    name
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,name');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should select with vars and method calls', () => {
+        let query = new OpenDataQuery().from('Products');
+        query.select((x) => {
+                const id = x.id;
+                const name = x.name;
+                const price = round(x.price, 2)
+                return {
+                    id,
+                    name,
+                    price
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,name,round(price,2) as price');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should select with destructured vars', () => {
+        let query = new OpenDataQuery().from('Products');
+        query.select((x) => {
+                const {id, name} = x;
+                return {
+                    id,
+                    name
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,name');
+        expect(result.$top).toEqual(25);
+    });
+
 });
