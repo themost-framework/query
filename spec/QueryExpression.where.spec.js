@@ -219,7 +219,7 @@ describe('QueryExpression.where', () => {
         });
     });
 
-    it('should use floor', async () => {
+    it('should use Math.floor', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
             .select(({id, name, category, model, price}) => ({

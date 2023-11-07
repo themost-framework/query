@@ -1,0 +1,216 @@
+{
+    "type": "Program",
+    "body": [
+        {
+            "type": "ExpressionStatement",
+            "expression": {
+                "type": "UnaryExpression",
+                "operator": "void",
+                "argument": {
+                    "type": "FunctionExpression",
+                    "id": null,
+                    "params": [
+                        {
+                            "type": "Identifier",
+                            "name": "_ref23"
+                        }
+                    ],
+                    "body": {
+                        "type": "BlockStatement",
+                        "body": [
+                            {
+                                "type": "VariableDeclaration",
+                                "declarations": [
+                                    {
+                                        "type": "VariableDeclarator",
+                                        "id": {
+                                            "type": "Identifier",
+                                            "name": "id"
+                                        },
+                                        "init": {
+                                            "type": "MemberExpression",
+                                            "computed": false,
+                                            "object": {
+                                                "type": "Identifier",
+                                                "name": "_ref23"
+                                            },
+                                            "property": {
+                                                "type": "Identifier",
+                                                "name": "id"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "VariableDeclarator",
+                                        "id": {
+                                            "type": "Identifier",
+                                            "name": "name"
+                                        },
+                                        "init": {
+                                            "type": "MemberExpression",
+                                            "computed": false,
+                                            "object": {
+                                                "type": "Identifier",
+                                                "name": "_ref23"
+                                            },
+                                            "property": {
+                                                "type": "Identifier",
+                                                "name": "name"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "VariableDeclarator",
+                                        "id": {
+                                            "type": "Identifier",
+                                            "name": "category"
+                                        },
+                                        "init": {
+                                            "type": "MemberExpression",
+                                            "computed": false,
+                                            "object": {
+                                                "type": "Identifier",
+                                                "name": "_ref23"
+                                            },
+                                            "property": {
+                                                "type": "Identifier",
+                                                "name": "category"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "VariableDeclarator",
+                                        "id": {
+                                            "type": "Identifier",
+                                            "name": "model"
+                                        },
+                                        "init": {
+                                            "type": "MemberExpression",
+                                            "computed": false,
+                                            "object": {
+                                                "type": "Identifier",
+                                                "name": "_ref23"
+                                            },
+                                            "property": {
+                                                "type": "Identifier",
+                                                "name": "model"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "VariableDeclarator",
+                                        "id": {
+                                            "type": "Identifier",
+                                            "name": "price"
+                                        },
+                                        "init": {
+                                            "type": "MemberExpression",
+                                            "computed": false,
+                                            "object": {
+                                                "type": "Identifier",
+                                                "name": "_ref23"
+                                            },
+                                            "property": {
+                                                "type": "Identifier",
+                                                "name": "price"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "kind": "var"
+                            },
+                            {
+                                "type": "ReturnStatement",
+                                "argument": {
+                                    "type": "ObjectExpression",
+                                    "properties": [
+                                        {
+                                            "type": "Property",
+                                            "key": {
+                                                "type": "Identifier",
+                                                "name": "id"
+                                            },
+                                            "computed": false,
+                                            "value": {
+                                                "type": "Identifier",
+                                                "name": "id"
+                                            },
+                                            "kind": "init",
+                                            "method": false,
+                                            "shorthand": false
+                                        },
+                                        {
+                                            "type": "Property",
+                                            "key": {
+                                                "type": "Identifier",
+                                                "name": "name"
+                                            },
+                                            "computed": false,
+                                            "value": {
+                                                "type": "Identifier",
+                                                "name": "name"
+                                            },
+                                            "kind": "init",
+                                            "method": false,
+                                            "shorthand": false
+                                        },
+                                        {
+                                            "type": "Property",
+                                            "key": {
+                                                "type": "Identifier",
+                                                "name": "category"
+                                            },
+                                            "computed": false,
+                                            "value": {
+                                                "type": "Identifier",
+                                                "name": "category"
+                                            },
+                                            "kind": "init",
+                                            "method": false,
+                                            "shorthand": false
+                                        },
+                                        {
+                                            "type": "Property",
+                                            "key": {
+                                                "type": "Identifier",
+                                                "name": "model"
+                                            },
+                                            "computed": false,
+                                            "value": {
+                                                "type": "Identifier",
+                                                "name": "model"
+                                            },
+                                            "kind": "init",
+                                            "method": false,
+                                            "shorthand": false
+                                        },
+                                        {
+                                            "type": "Property",
+                                            "key": {
+                                                "type": "Identifier",
+                                                "name": "price"
+                                            },
+                                            "computed": false,
+                                            "value": {
+                                                "type": "Identifier",
+                                                "name": "price"
+                                            },
+                                            "kind": "init",
+                                            "method": false,
+                                            "shorthand": false
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "generator": false,
+                    "expression": false,
+                    "async": false
+                },
+                "prefix": true
+            }
+        }
+    ],
+    "sourceType": "script"
+}

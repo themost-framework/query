@@ -8,3 +8,5 @@ export declare class OpenDataQuery extends QueryExpression {
 }
 
 export function any<T>(expr:string | ((value: T) => any)): OpenDataQuery;
+
+export function anyOf<T>(expr:string | ((value: T) => any)): OpenDataQuery;

@@ -121,4 +121,125 @@ describe('OpenDataQuery.select', () => {
         expect(result.$select).toEqual('id,customer/familyName as customer,customer/address/streetAddress as streetAddress,orderedItem/name as orderedItem,orderDate');
         expect(result.$top).toEqual(25);
     });
+
+    it('should select with return statement', () => {
+        let query = new OpenDataQuery().from('Orders');
+        query.select((x) => {
+                return {
+                    id: x.id,
+                    customer: x.customer.familyName,
+                    streetAddress: x.customer.address.streetAddress,
+                    orderedItem: x.orderedItem.name,
+                    orderDate: x.orderDate
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,customer/familyName as customer,customer/address/streetAddress as streetAddress,orderedItem/name as orderedItem,orderDate');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should select with function', () => {
+        let query = new OpenDataQuery().from('Orders');
+        query.select(function(x) {
+                return {
+                    id: x.id,
+                    customer: x.customer.familyName,
+                    streetAddress: x.customer.address.streetAddress,
+                    orderedItem: x.orderedItem.name,
+                    orderDate: x.orderDate
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,customer/familyName as customer,customer/address/streetAddress as streetAddress,orderedItem/name as orderedItem,orderDate');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should select which returns object', () => {
+        let query = new OpenDataQuery().from('Orders');
+        query.select((x) => ({
+                    id: x.id,
+                    customer: x.customer.familyName,
+                    streetAddress: x.customer.address.streetAddress,
+                    orderedItem: x.orderedItem.name,
+                    orderDate: x.orderDate
+            })).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,customer/familyName as customer,customer/address/streetAddress as streetAddress,orderedItem/name as orderedItem,orderDate');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should select with vars', () => {
+        let query = new OpenDataQuery().from('Products');
+        query.select((x) => {
+                const id = x.id;
+                const name = x.name;
+                return {
+                    id,
+                    name
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,name');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should select with vars and method calls', () => {
+        let query = new OpenDataQuery().from('Products');
+        query.select((x) => {
+                const id = x.id;
+                const name = x.name;
+                const price = round(x.price, 2)
+                return {
+                    id,
+                    name,
+                    price
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,name,round(price,2) as price');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should select with destructured vars', () => {
+        let query = new OpenDataQuery().from('Products');
+        query.select((x) => {
+                const {id, name: productName} = x;
+                return {
+                    id,
+                    productName
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,name as productName');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should select with destructured nested vars', () => {
+        let query = new OpenDataQuery().from('Orders');
+        query.select((x) => {
+                const {id, orderedItem: { name: productName }} = x;
+                return {
+                    id,
+                    productName
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,orderedItem/name as productName');
+        expect(result.$top).toEqual(25);
+    });
+
 });

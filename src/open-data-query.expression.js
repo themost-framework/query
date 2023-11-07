@@ -65,7 +65,12 @@ function any(expr) {
     return result;
 }
 
+function anyOf(expr) {
+    return any(expr)
+}
+
 export {
     any,
+    anyOf,
     OpenDataQuery
 }

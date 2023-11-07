@@ -1,7 +1,9 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
-import { LiteralExpression, ObjectExpression, Operators, SequenceExpression, 
+import {
+    LiteralExpression, ObjectExpression, Operators, SequenceExpression,
     MemberExpression, ArithmeticExpression, LogicalExpression,
-    AggregateComparisonExpression, MethodCallExpression, ComparisonExpression } from '../expressions';
+    AggregateComparisonExpression, MethodCallExpression, ComparisonExpression
+} from '../expressions';
 const isComparisonOperator = ComparisonExpression.isComparisonOperator;
 const isArithmeticOperator = ArithmeticExpression.isArithmeticOperator;
 import { instanceOf } from '../instance-of';
@@ -11,26 +13,62 @@ import { DateMethodParser } from './DateMethodParser';
 import { StringMethodParser } from './StringMethodParser';
 import { MathMethodParser } from './MathMethodParser';
 import { FallbackMethodParser } from './FallbackMethodParser';
-import {SyncSeriesEventEmitter} from '@themost/events';
+import { SyncSeriesEventEmitter } from '@themost/events';
 
 let ExpressionTypes = {
-    LogicalExpression : 'LogicalExpression',
+    LogicalExpression: 'LogicalExpression',
     BinaryExpression: 'BinaryExpression',
     MemberExpression: 'MemberExpression',
     MethodExpression: 'MethodExpression',
     Identifier: 'Identifier',
     Literal: 'Literal',
     Program: 'Program',
-    ExpressionStatement : 'ExpressionStatement',
-    UnaryExpression:'UnaryExpression',
-    FunctionExpression:'FunctionExpression',
-    BlockStatement:'BlockStatement',
-    ReturnStatement:'ReturnStatement',
-    CallExpression:'CallExpression',
-    ObjectExpression:'ObjectExpression',
-    SequenceExpression:'SequenceExpression',
-    ConditionalExpression: 'ConditionalExpression'
+    ExpressionStatement: 'ExpressionStatement',
+    UnaryExpression: 'UnaryExpression',
+    FunctionExpression: 'FunctionExpression',
+    BlockStatement: 'BlockStatement',
+    ReturnStatement: 'ReturnStatement',
+    CallExpression: 'CallExpression',
+    ObjectExpression: 'ObjectExpression',
+    SequenceExpression: 'SequenceExpression',
+    ConditionalExpression: 'ConditionalExpression',
+    VariableDeclaration: 'VariableDeclaration'
 };
+
+/**
+ * @param {*} objectPattern
+ * @param {*} parentObject
+ * @param {Array=} results
+ * @returns {Array}
+ */
+function objectPatternToVariableDeclarators(objectPattern, parentObject, results) {
+    let variables = results || [];
+    for (const property of objectPattern.properties) {
+        if (property.value.type === 'Identifier') {
+            variables.push({
+                'type': 'VariableDeclarator',
+                'id': {
+                    'type': 'Identifier',
+                    'name': property.value.name
+                },
+                'init': {
+                    'type': 'MemberExpression',
+                    'computed': false,
+                    'object': parentObject,
+                    'property': property.key
+                }
+            })
+        } else if (property.value.type === 'ObjectPattern') {
+            objectPatternToVariableDeclarators(property.value, {
+                'type': 'MemberExpression',
+                'computed': false,
+                'property': property.key,
+                'object': parentObject
+            }, variables);
+        }
+    }
+    return variables
+}
 
 // noinspection JSCommentMatchesSignature
 /**
@@ -64,7 +102,7 @@ function round(n, precision) {
  */
 function min() {
     let args = Array.from(arguments);
-    let sortAsc = function(a, b) {
+    let sortAsc = function (a, b) {
         if (a < b) {
             return -1;
         }
@@ -89,7 +127,7 @@ function min() {
  */
 function max() {
     let args = Array.from(arguments);
-    let sortDesc = function(a, b) {
+    let sortDesc = function (a, b) {
         if (a < b) {
             return 1;
         }
@@ -114,7 +152,7 @@ function max() {
  */
 function sum() {
 
-    let reducer = function(accumulator, currentValue) {
+    let reducer = function (accumulator, currentValue) {
         return accumulator + currentValue;
     }
     let args = Array.from(arguments);
@@ -132,7 +170,7 @@ function sum() {
  * @param {string|*} value
  * @returns {number}
  */
- function length(value) {
+function length(value) {
     return value.length;
 }
 
@@ -143,7 +181,7 @@ function sum() {
  */
 function mean() {
 
-    let reducer = function(accumulator, currentValue) {
+    let reducer = function (accumulator, currentValue) {
         return accumulator + currentValue;
     }
     let args = Array.from(arguments);
@@ -173,13 +211,14 @@ function avg() {
 
 function getObjectExpressionIdentifier(object) {
     let object1 = object;
-    while(object1.object != null) {
+    while (object1.object != null) {
         object1 = object1.object;
     }
     return object1.name;
 }
 
 class ClosureParser {
+
     constructor() {
         /**
          * @type Array
@@ -198,6 +237,7 @@ class ClosureParser {
         this.resolvingMember = new SyncSeriesEventEmitter();
         this.resolvingMethod = new SyncSeriesEventEmitter();
         this.resolvingJoinMember = new SyncSeriesEventEmitter();
+        this.resolvingVariable = new SyncSeriesEventEmitter();
     }
 
     /**
@@ -289,6 +329,9 @@ class ClosureParser {
         }
         if (fnExpr.body.type === ExpressionTypes.BinaryExpression) {
             return this.parseCommon(fnExpr.body).exprOf();
+        }
+        if (fnExpr.body.type === ExpressionTypes.BlockStatement) {
+            return this.parseBlock(fnExpr.body).exprOf();
         }
         //validate expression e.g. return [EXPRESSION];
         if (fnExpr.body.body[0].type !== ExpressionTypes.ReturnStatement) {
@@ -392,28 +435,83 @@ class ClosureParser {
         });
         return finalResult;
     }
+
     parseBlock(expr) {
         let self = this;
-        // get expression statement
-        let bodyExpression = expr.body[0];
-        if (bodyExpression.type === ExpressionTypes.ExpressionStatement) {
-            if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
-                return self.parseSequence(bodyExpression.expression);
+
+        /**
+         * get variable declarations
+         * @type {*[]}
+         */
+        const variableDeclarations = expr.body.filter((item) => item.type === ExpressionTypes.VariableDeclaration);
+        const bodyExpression = expr.body.find((item) => {
+            return item.type === ExpressionTypes.ReturnStatement ||
+                item.type === ExpressionTypes.ExpressionStatement;
+        });
+        if (bodyExpression == null) {
+            throw new Error('Invalid BlockStatement expression. Expected ReturnStatement or ExpressionStatement.')
+        }
+        const resolvingVariable = (event) => {
+            let declaration;
+            for (const variableDeclaration of variableDeclarations) {
+                for (const item of variableDeclaration.declarations) {
+                    if (item.id && item.id.type === 'Identifier' && item.id.name === event.name) {
+                        declaration = item;
+                        break;
+                    }
+                    if (item.id && item.id.type === 'ObjectPattern') {
+                        // convert to variable declarations
+                        const variables = objectPatternToVariableDeclarators(item.id, item.init);
+                        const variable = variables.find((variable) => {
+                            return variable.id.type === 'Identifier' && variable.id.name === event.name
+                        });
+                        if (variable) {
+                            declaration = {
+                                init: variable.init
+                            };
+                            break;
+                        }
+                    }
+                }
+                if (declaration) {
+                    break;
+                }
             }
-            else if (bodyExpression.expression && bodyExpression.expression.type === 'MemberExpression') {
-                return self.parseMember(bodyExpression.expression);
+            if (declaration) {
+                const init = declaration.init;
+                Object.assign(event, {
+                    init
+                });
             }
         }
-        else if (bodyExpression.type === ExpressionTypes.ReturnStatement) {
-            // get return statement
-            let objectExpression = bodyExpression.argument;
-            if (objectExpression && objectExpression.type === ExpressionTypes.ObjectExpression) {
-                return self.parseObject(objectExpression);
-            } else if (objectExpression && objectExpression.type === ExpressionTypes.CallExpression) {
-                return self.parseMethod(objectExpression);
+        try {
+            this.resolvingVariable.subscribe(resolvingVariable);
+            if (bodyExpression.type === ExpressionTypes.ExpressionStatement) {
+                if (bodyExpression.expression && bodyExpression.expression.type === 'SequenceExpression') {
+                    return self.parseSequence(bodyExpression.expression);
+                }
+                else if (bodyExpression.expression && bodyExpression.expression.type === 'MemberExpression') {
+                    return self.parseMember(bodyExpression.expression);
+                }
             }
+            else if (bodyExpression.type === ExpressionTypes.ReturnStatement) {
+                // get return statement
+                let argExpr = bodyExpression.argument;
+                if (argExpr && argExpr.type === ExpressionTypes.ObjectExpression) {
+                    return self.parseObject(argExpr);
+                } else if (argExpr && argExpr.type === ExpressionTypes.CallExpression) {
+                    return self.parseMethod(argExpr);
+                } else if (argExpr && (argExpr.type === ExpressionTypes.MemberExpression ||
+                    argExpr.type === ExpressionTypes.BinaryExpression ||
+                    argExpr.type === ExpressionTypes.LogicalExpression)) {
+                    return self.parseCommon(argExpr);
+                }
+                throw new Error(`Invalid ReturnStatement argument. Got ${argExpr.type}.`)
+            }
+        } finally {
+            this.resolvingVariable.unsubscribe(resolvingVariable);
         }
-        throw new Error('The given expression is not yet implemented (' + expr.type + ').');
+        
     }
     parseLogical(expr) {
         let self = this;
@@ -489,7 +587,7 @@ class ClosureParser {
 
     tryUnpackedProperty(properties, name, qualifiedMember) {
         let index = 0;
-        while(index < properties.length) {
+        while (index < properties.length) {
             const prop = properties[index];
             if (prop.value && prop.value.type === 'ObjectPattern') {
                 const newQualifiedMember = {
@@ -531,11 +629,11 @@ class ClosureParser {
         if (self.namedParams.length === 0) {
             throw new Error('Invalid or missing closure parameter');
         }
-        const  namedParam0 = self.namedParams[0];
+        const namedParam0 = self.namedParams[0];
         if (namedParam0.type === 'ObjectPattern') {
             // validate param which is an object destructuring expression
             let property = namedParam0.properties.find((x) => {
-                return x.type === 'Property' && x.value != null && x.value.type === 'Identifier' &&  x.value.name === name;
+                return x.type === 'Property' && x.value != null && x.value.type === 'Identifier' && x.value.name === name;
             });
             if (property) {
                 if (property.key.name !== property.value.name) {
@@ -596,13 +694,19 @@ class ClosureParser {
                 // if event.object is not null
                 if (event.object != null) {
                     // concat member expression e.g. new MemberExpression(address.id)
-                    return new MemberExpression(event.object + '.' +  event.member);
+                    return new MemberExpression(event.object + '.' + event.member);
                 }
                 // otherwise, use only member e.g. ew MemberExpression(id)
                 return new MemberExpression(event.member);
             }
             else {
                 let value;
+                // resolving variable
+                this.resolvingVariable.emit(expr.object);
+                if (expr.object.init) {
+                    // reset object
+                    expr.object = expr.object.init;
+                }
                 if (expr.object.object == null) {
                     //evaluate object member value e.g. item.title or item.status.id
                     value = memberExpressionToString(expr);
@@ -610,8 +714,12 @@ class ClosureParser {
                 }
                 // find identifier name
                 let object1 = expr;
-                let fullyQualifiedMember =  '';
+                let fullyQualifiedMember = '';
                 while (object1.object != null) {
+                    this.resolvingVariable.emit(object1.object);
+                    if (object1.object.init) {
+                        object1.object = object1.object.init;
+                    }
                     if (object1.object && object1.object.property) {
                         fullyQualifiedMember += object1.object.property.name + '.';
                     }
@@ -650,7 +758,7 @@ class ClosureParser {
             if (namedParam0.type === 'ObjectPattern') {
                 //
                 let property = namedParam0.properties.find((x) => {
-                    return x.type === 'Property' && x.value != null && x.value.type === 'Identifier' &&  x.value.name === expr.name;
+                    return x.type === 'Property' && x.value != null && x.value.type === 'Identifier' && x.value.name === expr.name;
                 });
                 if (property) {
                     let member = property.value.name;
@@ -689,7 +797,7 @@ class ClosureParser {
                      */
                     const tryFindUnpackedProperty = (properties, name, qualifiedMember) => {
                         let index = 0;
-                        while(index < properties.length) {
+                        while (index < properties.length) {
                             const prop = properties[index];
                             if (prop.value && prop.value.type === 'ObjectPattern') {
                                 /**
@@ -741,7 +849,7 @@ class ClosureParser {
                         self.resolvingJoinMember.emit(memberEvent);
                         return new MemberExpression(memberEvent.fullyQualifiedMember);
                     }
-                    
+
                 }
             }
             throw new Error('Invalid member expression.');
@@ -757,7 +865,10 @@ class ClosureParser {
             throw new Error('Invalid or unsupported method expression.');
         }
         let method = expr.callee.property.name;
-        let result = self.parseMember(expr.callee.object, {
+
+        this.resolvingVariable.emit(expr.callee.object);
+        const object = expr.callee.object.init || expr.callee.object;
+        let result = self.parseMember(object, {
             useAlias: false
         });
         let args = [result];
@@ -801,8 +912,13 @@ class ClosureParser {
         let thisName;
         if (name == null) {
             if (expr.callee.object != null) {
-                // find identifier name
-                name = getObjectExpressionIdentifier(expr.callee.object);
+                if (expr.callee.object.type === ExpressionTypes.Identifier) {
+                    this.resolvingVariable.emit(expr.callee.object)
+                    const init = expr.callee.object.init || expr.callee.object;
+                    name = getObjectExpressionIdentifier(init);
+                } else {
+                    name = getObjectExpressionIdentifier(expr.callee.object);
+                }
                 const tryMember = self.isMember(name);
                 if (tryMember) {
                     return self.parseMethodCall(expr);
@@ -851,6 +967,10 @@ class ClosureParser {
         const namedParam0 = this.namedParams && this.namedParams[0];
         if (namedParam0.type === 'ObjectPattern') {
             return this.parseMember(expr);
+        }
+        this.resolvingVariable.emit(expr);
+        if (expr.init) {
+            return this.parseCommon(expr.init);
         }
         throw new Error('Identifier cannot be found or is inaccessible. Consider passing parameters if they are used inside method.');
     }
