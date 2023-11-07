@@ -26,6 +26,7 @@ spec
 
 # babel
 babel.config.js
+babel.config.corejs.js
 rollup.config.js
 
 # typescript
