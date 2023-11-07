@@ -213,16 +213,32 @@ describe('OpenDataQuery.select', () => {
     it('should select with destructured vars', () => {
         let query = new OpenDataQuery().from('Products');
         query.select((x) => {
-                const {id, name} = x;
+                const {id, name: productName} = x;
                 return {
                     id,
-                    name
+                    productName
                 }
             }).take(25);
         expect(query).toBeTruthy();
         const formatter = new OpenDataQueryFormatter();
         let result = formatter.formatSelect(query);
-        expect(result.$select).toEqual('id,name');
+        expect(result.$select).toEqual('id,name as productName');
+        expect(result.$top).toEqual(25);
+    });
+
+    it('should select with destructured nested vars', () => {
+        let query = new OpenDataQuery().from('Orders');
+        query.select((x) => {
+                const {id, orderedItem: { name: productName }} = x;
+                return {
+                    id,
+                    productName
+                }
+            }).take(25);
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,orderedItem/name as productName');
         expect(result.$top).toEqual(25);
     });
 

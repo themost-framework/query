@@ -35,6 +35,41 @@ let ExpressionTypes = {
     VariableDeclaration: 'VariableDeclaration'
 };
 
+/**
+ * @param {*} objectPattern
+ * @param {*} parentObject
+ * @param {Array=} results
+ * @returns {Array}
+ */
+function objectPatternToVariableDeclarators(objectPattern, parentObject, results) {
+    let variables = results || [];
+    for (const property of objectPattern.properties) {
+        if (property.value.type === 'Identifier') {
+            variables.push({
+                'type': 'VariableDeclarator',
+                'id': {
+                    'type': 'Identifier',
+                    'name': property.value.name
+                },
+                'init': {
+                    'type': 'MemberExpression',
+                    'computed': false,
+                    'object': parentObject,
+                    'property': property.key
+                }
+            })
+        } else if (property.value.type === 'ObjectPattern') {
+            objectPatternToVariableDeclarators(property.value, {
+                'type': 'MemberExpression',
+                'computed': false,
+                'property': property.key,
+                'object': parentObject
+            }, variables);
+        }
+    }
+    return variables
+}
+
 // noinspection JSCommentMatchesSignature
 /**
  * @param {...*} args
@@ -419,11 +454,25 @@ class ClosureParser {
         const resolvingVariable = (event) => {
             let declaration;
             for (const variableDeclaration of variableDeclarations) {
-                declaration = variableDeclaration.declarations.find((item) => {
-                    return item.id &&
-                        item.id.type === 'Identifier' &&
-                        item.id.name === event.name;
-                });
+                for (const item of variableDeclaration.declarations) {
+                    if (item.id && item.id.type === 'Identifier' && item.id.name === event.name) {
+                        declaration = item;
+                        break;
+                    }
+                    if (item.id && item.id.type === 'ObjectPattern') {
+                        // convert to variable declarations
+                        const variables = objectPatternToVariableDeclarators(item.id, item.init);
+                        const variable = variables.find((variable) => {
+                            return variable.id.type === 'Identifier' && variable.id.name === event.name
+                        });
+                        if (variable) {
+                            declaration = {
+                                init: variable.init
+                            };
+                            break;
+                        }
+                    }
+                }
                 if (declaration) {
                     break;
                 }
