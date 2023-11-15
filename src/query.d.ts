@@ -54,9 +54,12 @@ export declare class QueryExpression {
     where(expr: string | any): this;
     injectWhere(where: any): void;
     delete(entity: string): this;
+    delete(entity: QueryEntity): this;
     insert(obj: any): this;
     into(entity: string): this;
+    into(entity: QueryEntity): this;
     update(entity: string): this;
+    update(entity: QueryEntity): this;
     set(obj: any): this;
     select<T>(expr: QueryFunc<T>, params?: any): this;
     select<T,J>(expr: QueryJoinFunc<T, J>, params?: any): this;
