@@ -297,13 +297,23 @@ class QueryExpression {
     }
     /**
      * Initializes a "delete" query and sets the entity name that is going to be used in this query.
-     * @param entity {string}
+     * @param entity {string|QueryEntity}
      * @returns {QueryExpression}
      */
     delete(entity) {
-        if (isNil(entity))
-            return this;
-        this.$delete = entity.valueOf();
+        if (entity == null) {
+            throw new Error('Entity cannot be empty at this context');
+        }
+        // get collection name (which can be string or QueryEntity)
+        let name;
+        if (instanceOf(entity, QueryEntity)) {
+            name = entity.name;
+        } else if (typeof entity === 'string') {
+            name = entity;
+        } else {
+            throw new TypeError(`Expected string or an instance of QueryEntity class. Got ${typeof entity}`)
+        }
+        this.$delete = name;
         //delete other properties (if any)
         delete this.$insert;
         delete this.$select;
@@ -330,35 +340,59 @@ class QueryExpression {
             throw new Error('Invalid argument. Object must be an object or an array of objects');
         }
     }
+    /**
+     * @param {string|QueryEntity} entity
+     */
     into(entity) {
-        if (isNil(entity))
-            return this;
+        if (entity == null) {
+            throw new Error('Entity cannot be empty at this context');
+        }
+        // get collection name (which can be string or QueryEntity)
+        let name;
+        if (instanceOf(entity, QueryEntity)) {
+            name = entity.name;
+        } else if (typeof entity === 'string') {
+            name = entity;
+        } else {
+            throw new TypeError(`Expected string or an instance of QueryEntity class. Got ${typeof entity}`)
+        }
         if (isNil(this.$insert))
             return this;
+        // get current property of $insert
         let prop = Object.key(this.$insert);
         if (isNil(prop))
             return this;
-        if (prop === entity)
+        if (prop === name)
             return this;
         let value = this.$insert[prop];
         if (isNil(value))
             return this;
-        this.$insert[entity] = value;
+        // set object to insert
+        this.$insert[name] = value;
+        // remove unused property
         delete this.$insert[prop];
         return this;
     }
     /**
      * Initializes an update query and sets the entity name that is going to be used in this query.
-     * @param {string} entity
+     * @param {string|QueryEntity} entity
      * @returns {QueryExpression}
      */
     update(entity) {
-        if (isNil(entity))
-            return this;
-        if (typeof entity !== 'string')
-            throw new Error('Invalid argument type. Update entity argument must be a string.');
+        if (entity == null) {
+            throw new Error('Entity cannot be empty at this context');
+        }
+        // get collection name (which can be string or QueryEntity)
+        let name;
+        if (instanceOf(entity, QueryEntity)) {
+            name = entity.name;
+        } else if (typeof entity === 'string') {
+            name = entity;
+        } else {
+            throw new TypeError(`Expected string or an instance of QueryEntity class. Got ${typeof entity}`)
+        }
         this.$update = {};
-        this.$update[entity] = {};
+        this.$update[name] = {};
         //delete other properties (if any)
         delete this.$delete;
         delete this.$select;
