@@ -97,7 +97,7 @@ class OpenDataQueryFormatter extends SqlFormatter {
                 const s1 = args[index];
                 str = sprintf('concat(%s,%s)', self.escape(s0), self.escape(s1));
             } else {
-                str = sprintf('concat(%s,%s)', self.escape(s0), str);
+                str = sprintf('concat(%s,%s)', str, self.escape(s0));
             }
             index += 1;
         }

@@ -242,4 +242,21 @@ describe('OpenDataQuery.select', () => {
         expect(result.$top).toEqual(25);
     });
 
+    it('should format $concat', () => {
+       let query = new OpenDataQuery()
+            .select((x) => {
+                return {
+                    id: x.id,
+                    familyName: x.familyName,
+                    givenName: x.givenName,
+                    name: x.givenName.concat(' ', x.familyName),
+                  };
+            })
+            .from('People');
+        expect(query).toBeTruthy();
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result.$select).toEqual('id,familyName,givenName,concat(concat(givenName,\' \'),familyName) as name');
+    });
+
 });
