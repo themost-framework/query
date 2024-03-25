@@ -1,4 +1,4 @@
-import { QueryField } from '../index';
+import { QueryField, QueryValueRef } from '../index';
 import { QueryEntity, QueryExpression } from '../index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 
@@ -127,6 +127,36 @@ describe('SqlFormatter', () => {
         results.forEach((item) => {
             expect(item.date1).toBeTruthy();
         });
+    });
+
+    it('should use fixed select query', async () => {
+        const Products = new QueryEntity('ProductData');
+        let query = new QueryExpression()
+            .select(
+                {
+                    'id': {
+                        '$value': 100
+                    }
+                },
+                {
+                    'name': {
+                        '$value': 'Test Product'
+                    }
+                },
+                {
+                    'category': {
+                        '$value': 'Laptops'
+                    }
+                }
+            )
+            .from(Products)
+            .where((x) => {
+                return x.category === 'Laptops';
+            })
+            .take(25);
+        query.$fixed = true;
+        let results = await db.executeAsync(query);
+        expect(results.length).toBeTruthy();
     });
 
 });
