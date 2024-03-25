@@ -2661,12 +2661,12 @@ function QueryFieldRef(entity, name) {
  * @param {*} value
  * @constructor
  */
-function QueryValuedRef(value) {
+function QueryValueRef(value) {
     this.$value = value;
 }
 if (typeof exports !== 'undefined') {
     module.exports.QueryFieldRef = QueryFieldRef;
-    module.exports.QueryValuedRef = QueryValuedRef;
+    module.exports.QueryValueRef = QueryValueRef;
     module.exports.QueryExpression = QueryExpression;
     module.exports.QueryField = QueryField;
     module.exports.QueryEntity = QueryEntity;
