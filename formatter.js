@@ -944,8 +944,8 @@ SqlFormatter.prototype.formatSelect = function(obj)
     }
     //add basic SELECT statement
     if (obj.$fixed) {
-        var sqlFixedSelect = $this.formatFixedSelect(obj);
-        sql = `SELECT ${escapedEntity}.* FROM (${sqlFixedSelect}) ${escapedEntity}`;
+        var sqlFixedSelect = this.formatFixedSelect(obj);
+        sql = `SELECT ${escapedEntity}.${this.escapeName('*')} FROM (${sqlFixedSelect}) ${escapedEntity}`;
     }
     else {
         sql = sql.concat(obj.$distinct ? 'SELECT DISTINCT ' : 'SELECT ', _.map(fields, function(x) {
