@@ -986,8 +986,16 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+        return this.validator.escape(str, this.settings.nameFormat);
     }
+
+    /**
+     * @returns {ObjectNameValidator}
+     */
+    get validator() {
+        return ObjectNameValidator.validator;
+    }
+
     /**
      * @param obj {QueryField}
      * @param format {string}

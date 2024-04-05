@@ -10,6 +10,7 @@ export * from './closures/PrototypeMethodParser';
 export * from './closures/MathMethodParser';
 export * from './closures/DateMethodParser';
 export * from './closures/StringMethodParser';
+export * from './object-name.validator';
 export * from './open-data-query.expression';
 export * from './open-data-query.formatter';
 
