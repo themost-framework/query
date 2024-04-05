@@ -1,4 +1,5 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
+import { ObjectNameValidator } from './object-name.validator';
 import {QueryExpression, QueryField, QueryValueRef} from "./query";
 
 export declare interface FormatterSettings {
@@ -10,6 +11,7 @@ export declare interface FormatterSettings {
 export declare class SqlFormatter {
     provider: any;
     settings: FormatterSettings;
+    get validator(): ObjectNameValidator;
 
     escape(value: any,unquoted?: boolean): string | any;
     escapeConstant(value: any,unquoted?: boolean): string | any;
