@@ -82,6 +82,7 @@ export declare class SqlFormatter {
     formatUpdate(query: QueryExpression | any): any;
     formatDelete(query: QueryExpression | any): any;
     escapeName(name: string): any;
+    escapeEntity(name: string): any;
     formatFieldEx(obj: any, format: string): any;
     format(obj: any, s?: string): any;
 
