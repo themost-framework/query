@@ -1,3 +1,5 @@
+import {SyncSeriesEventEmitter} from '@themost/events';
+
 export declare class ObjectNameValidator {
 
     static Patterns: {
@@ -12,6 +14,8 @@ export declare class ObjectNameValidator {
     static readonly validator: ObjectNameValidator;
 
     static use(validator: ObjectNameValidator): void;
+    
+    validating: SyncSeriesEventEmitter<{ name: string, qualified?: boolean, valid?: boolean }>
 
     constructor(pattern?: string);
 
@@ -20,6 +24,8 @@ export declare class ObjectNameValidator {
     qualifiedPattern: RegExp;
 
     test(name: string, qualified?: boolean, throwError?: boolean): boolean;
+
+    exec(name: string, qualified?: boolean): boolean;
 
     escape(name: string, format?: string): string;
 }

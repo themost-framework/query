@@ -3,17 +3,8 @@ import {SqlFormatter, QueryExpression, ObjectNameValidator, QueryEntity, QueryFi
 const TRIM_QUALIFIED_NAME_REGEXP = /^(\w+)((\.(\w+))+)/;
 const TRIM_SAME_ALIAS_REGEXP = /^(.*)\sAS\s(.*)$/;
 
-class SimpleObjectNameValidator extends ObjectNameValidator {
-    constructor() {
-        super();
-    }
-    test(name, qualified, throwError) {
-        return super.test(name, true, throwError);
-    }
-}
-
 class SimpleSqlFormatter extends SqlFormatter {
-    _validator = new SimpleObjectNameValidator();
+    // _validator = new SimpleObjectNameValidator();
     constructor(options) {
         super();
         this.settings = Object.assign({
@@ -21,9 +12,9 @@ class SimpleSqlFormatter extends SqlFormatter {
             forceAlias: false
         }, options);
     }
-    get validator() {
-        return this._validator;
-    }
+    // get validator() {
+    //     return this._validator;
+    // }
 
     /**
      * @param {*} name
@@ -66,11 +57,16 @@ class SimpleSqlFormatter extends SqlFormatter {
 
 
 describe('SimpleQueryFormatter', () => {
+    const onValidateName = (event) => {
+        // validate database object name by allowing qualified names e.g. dbo.Products
+        event.valid = ObjectNameValidator.validator.test(event.name, true);
+    };
     beforeAll(() => {
-        ObjectNameValidator.use(new SimpleObjectNameValidator());
+        ObjectNameValidator.validator.validating.subscribe(onValidateName);
     });
     afterAll(() => {
-        ObjectNameValidator.use(new ObjectNameValidator());
+        //
+        ObjectNameValidator.validator.validating.unsubscribe(onValidateName);
     });
     it('should create a simple select expression', () => {
         const query = new QueryExpression().select('id', 'name', 'category').from('ProductData');

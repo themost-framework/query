@@ -1638,7 +1638,7 @@ class QueryField {
         if (fromEntity == null) {
             throw new Error('Invalid argument. Expected a valid instance of query entity or string.');
         }
-        ObjectNameValidator.validator.test(fromEntity, false);
+        ObjectNameValidator.validator.exec(fromEntity, false);
         // get property
         if (this.$name != null) {
             if (typeof this.$name === 'string') {
@@ -1789,7 +1789,7 @@ class QueryField {
         }
         if (typeof alias !== 'string')
             throw new Error('Invalid argument. Expected string');
-        ObjectNameValidator.validator.test(alias, false);
+        ObjectNameValidator.validator.exec(alias, false);
         //get first property
         let prop = Object.key(this);
         if (isNil(prop))

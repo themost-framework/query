@@ -986,7 +986,7 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        return this.validator.escape(str, this.settings.nameFormat);
+        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
     }
 
     escapeEntity(name) {
@@ -997,14 +997,7 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        return this.validator.escape(str, this.settings.nameFormat);
-    }
-
-    /**
-     * @returns {ObjectNameValidator}
-     */
-    get validator() {
-        return ObjectNameValidator.validator;
+        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
     }
 
     /**

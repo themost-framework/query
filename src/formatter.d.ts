@@ -11,12 +11,10 @@ export declare interface FormatterSettings {
 export declare class SqlFormatter {
     provider: any;
     settings: FormatterSettings;
-    get validator(): ObjectNameValidator;
-
+    
     escape(value: any,unquoted?: boolean): string | any;
     escapeConstant(value: any,unquoted?: boolean): string | any;
     
-
     $or(...arg:any[]): string;
     $and(...arg:any[]): string;
     $not(arg:any): string;
