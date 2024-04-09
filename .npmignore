@@ -34,3 +34,6 @@ tsconfig.json
 
 # gitpod
 .gitpod.yml
+
+# codacy
+.codacy.yml

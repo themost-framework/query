@@ -699,15 +699,15 @@ class SqlFormatter {
             let entityRef = obj.$ref[entity];
             //escape entity ref
             if (instanceOf(entityRef, QueryExpression)) {
-                escapedEntity = '(' + this.format(entityRef) + ') ' + $this.escapeName(entity);
+                escapedEntity = '(' + this.format(entityRef) + ') ' + $this.escapeEntity(entity);
             }
             else {
-                escapedEntity = entityRef.$as ? $this.escapeName(entityRef.name) + getAliasKeyword.bind($this)() + $this.escapeName(entityRef.$as) : $this.escapeName(entityRef.name);
+                escapedEntity = entityRef.$as ? $this.escapeEntity(entityRef.name) + getAliasKeyword.bind($this)() + $this.escapeName(entityRef.$as) : $this.escapeEntity(entityRef.name);
             }
         }
         else {
             //escape entity name
-            escapedEntity = $this.escapeName(entity);
+            escapedEntity = $this.escapeEntity(entity);
         }
         //add basic SELECT statement
         if (Object.prototype.hasOwnProperty.call(obj, '$fixed') && obj.$fixed === true) {
@@ -737,7 +737,7 @@ class SqlFormatter {
                 else {
                     //get join table name
                     table = Object.key(x.$entity);
-                    sql = sql.concat(' ' + joinType + ' JOIN ').concat($this.escapeName(table));
+                    sql = sql.concat(' ' + joinType + ' JOIN ').concat($this.escapeEntity(table));
                     //add alias
                     if (x.$entity.$as)
                         sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$as));
@@ -920,7 +920,7 @@ class SqlFormatter {
         for (let prop in obj1)
             if (Object.prototype.hasOwnProperty.call(obj1, prop))
                 props.push(prop);
-        sql = sql.concat('INSERT INTO ', self.escapeName(entity), '(', map(props, function (x) { return self.escapeName(x); }).join(', '), ') VALUES (',
+        sql = sql.concat('INSERT INTO ', self.escapeEntity(entity), '(', map(props, function (x) { return self.escapeName(x); }).join(', '), ') VALUES (',
             map(props, function (x) {
                 let value = obj1[x];
                 return self.escape(value !== null ? value : null);
@@ -945,7 +945,7 @@ class SqlFormatter {
             if (Object.prototype.hasOwnProperty.call(obj1, prop))
                 props.push(prop);
         //add basic INSERT statement
-        sql = sql.concat('UPDATE ', self.escapeName(entity), ' SET ',
+        sql = sql.concat('UPDATE ', self.escapeEntity(entity), ' SET ',
             map(props, function (x) {
                 let value = obj1[x];
                 return self.escapeName(x).concat('=', self.escape(value !== null ? value : null));
@@ -967,7 +967,7 @@ class SqlFormatter {
         //get entity name
         let entity = expr.$delete;
         //add basic INSERT statement
-        sql = sql.concat('DELETE FROM ', this.escapeName(entity));
+        sql = sql.concat('DELETE FROM ', this.escapeEntity(entity));
         if (expr.$where != null) {
             sql = sql.concat(' WHERE ', this.formatWhere(expr.$where));
         }
@@ -986,14 +986,18 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        return this.validator.escape(str, this.settings.nameFormat);
+        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
     }
 
-    /**
-     * @returns {ObjectNameValidator}
-     */
-    get validator() {
-        return ObjectNameValidator.validator;
+    escapeEntity(name) {
+        if (typeof name !== 'string') {
+            throw new Error('Invalid entity expression. Expected string.');
+        }
+        let str = name;
+        if (isNameReference(str)) {
+            str = trimNameReference(name);
+        }
+        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
     }
 
     /**

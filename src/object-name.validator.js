@@ -1,5 +1,4 @@
-/*eslint-env es6 */
-// eslint-disable-next-line no-unused-vars
+import {SyncSeriesEventEmitter} from '@themost/events';
 
 class InvalidObjectNameError extends Error {
     /**
@@ -29,6 +28,8 @@ class ObjectNameValidator {
          * @type {RegExp}
          */
         this.qualifiedPattern = new RegExp(`^\\*$|^${this.pattern.source}((\\.)${this.pattern.source})*(\\.\\*)?$`);
+
+        this.validating = new SyncSeriesEventEmitter();
     }
     /**
      * @param {string} name - A string which defines a query field name or an alias
@@ -53,6 +54,36 @@ class ObjectNameValidator {
         }
         return valid;
     }
+
+    /**
+     * @param {string} name
+     * @param {boolean=} qualified
+     * @returns {boolean}
+     */
+    exec(name, qualified) {
+        let valid = undefined;
+        // validating event allow third party subscribers to validate object names
+        // and return a boolean value which indicates whether the object name is valid or not
+        const validatingEvent = {
+            name,
+            qualified,
+            valid
+        };
+        // raise validating event
+        this.validating.emit(validatingEvent);
+        // if valid property is boolean and has been set
+        if (typeof validatingEvent.valid === 'boolean') {
+            // throw error if name is invalid
+            if (validatingEvent.valid === false) {
+                throw new InvalidObjectNameError();
+            }
+            // otherwise, return the result
+            return validatingEvent.valid;
+        }
+        // this a fallback mechanism where the validating event has not been handled
+        return this.test(name, qualified);
+    }
+
     /**
      * Escapes the given base on the format provided
      * @param {string} name - The object name
@@ -60,7 +91,7 @@ class ObjectNameValidator {
      */
     escape(name, format) {
         // validate qualified object name
-        this.test(name);
+        this.exec(name);
         const pattern = new RegExp(this.pattern.source, 'g');
         return name.replace(pattern, format || '$1');
     }
