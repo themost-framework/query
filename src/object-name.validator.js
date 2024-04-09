@@ -1,6 +1,3 @@
-/*eslint-env es6 */
-// eslint-disable-next-line no-unused-vars
-
 import {SyncSeriesEventEmitter} from '@themost/events';
 
 class InvalidObjectNameError extends Error {
