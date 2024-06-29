@@ -14,6 +14,7 @@ import { StringMethodParser } from './StringMethodParser';
 import { MathMethodParser } from './MathMethodParser';
 import { FallbackMethodParser } from './FallbackMethodParser';
 import { SyncSeriesEventEmitter } from '@themost/events';
+import { isObjectDeep } from '../is-object';
 
 let ExpressionTypes = {
     LogicalExpression: 'LogicalExpression',
@@ -94,7 +95,6 @@ function round(n, precision) {
     }
     return Math.round(n);
 }
-
 // noinspection JSCommentMatchesSignature
 /**
  * @param {...*} args
@@ -243,13 +243,16 @@ class ClosureParser {
     /**
      * Parses a javascript expression and returns the equivalent select expression.
      * @param {Function} func The closure expression to parse
-     * @param {*} params An object which represents closure parameters
+     * @param {...*} params An object which represents closure parameters
      */
+    // eslint-disable-next-line no-unused-vars
     parseSelect(func, params) {
         if (func == null) {
             return;
         }
-        this.params = params;
+        const args = Array.from(arguments);
+        // remove first argument 
+        args.splice(0,1);
         if (typeof func !== 'function') {
             throw new Error('Select closure must a function.');
         }
@@ -259,6 +262,8 @@ class ClosureParser {
         let funcExpr = expr.body[0].expression.argument;
         //get named parameters
         this.namedParams = funcExpr.params;
+        // parse params
+        this.parseParams(args);
         let res = this.parseCommon(funcExpr.body);
         if (res && res instanceof SequenceExpression) {
             return res.value.map(function (x) {
@@ -303,17 +308,48 @@ class ClosureParser {
         }
         throw new Error('Invalid select closure');
     }
+
+    parseParams(args) {
+        // closure params can be: 
+        // 1. an object which has properties with the same name with the arguments of the given closure
+        // e.g. { p1: 'Peter' } where the closure may be something like (x, p1) => x.givenName === p1
+        // or
+        // 2. a param array where closure arguments should be bound by index
+        // e.g. where((x, p1) => x.givenName === p1, 'Peter')
+        // for backward compatibility issues we will try to create an object with closure params
+        this.params = {};
+        this.namedParams.forEach((namedParam, index) => {
+            // omit the first param because it's the reference of the enumerable object
+            if (index > 0) {
+                // preserve backward compatibility
+                if (args.length === 1 && isObjectDeep(args[0])) {
+                    // get param by name
+                    const [arg0] = args;
+                    if (Object.prototype.hasOwnProperty.call(arg0, namedParam.name)) {
+                        Object.assign(this.params, {
+                            [namedParam.name]: arg0[namedParam.name]
+                        })
+                    }
+                } else {
+                    // get param by index
+                    Object.assign(this.params, {
+                        [namedParam.name]: args[index - 1]
+                    })
+                }
+            }
+        });
+    }
     /**
      * Parses a javascript expression and returns the equivalent QueryExpression instance.
      * @param {Function} func The closure expression to parse
-     * @param {*} params An object which represents closure parameters
+     * @param {...*} params An object which represents closure parameters
      */
+    // eslint-disable-next-line no-unused-vars
     parseFilter(func, params) {
         let self = this;
         if (func == null) {
             return;
         }
-        this.params = params;
         //convert the given function to javascript expression
         let expr = parse('void(' + func.toString() + ')');
         //get FunctionExpression
@@ -321,8 +357,11 @@ class ClosureParser {
         if (fnExpr == null) {
             throw new Error('Invalid closure statement. Closure expression cannot be found.');
         }
-        //get named parameters
+        // get named parameters
         self.namedParams = fnExpr.params;
+        const args = Array.from(arguments);
+        args.splice(0, 1);
+        this.parseParams(args);
         //validate expression e.g. return [EXPRESSION];
         if (fnExpr.body.type === ExpressionTypes.MemberExpression) {
             return this.parseMember(fnExpr.body);
@@ -960,9 +999,16 @@ class ClosureParser {
             }
         }
     }
+
     parseIdentifier(expr) {
         if (this.params && Object.prototype.hasOwnProperty.call(this.params, expr.name)) {
             return new LiteralExpression(this.params[expr.name]);
+        }
+        const paramIndex = this.namedParams.findIndex(
+            (param) => param.type === 'Identifier' && param.name === expr.name
+            );
+        if (paramIndex > 0) {
+            return new LiteralExpression(this.params[paramIndex - 1]);
         }
         const namedParam0 = this.namedParams && this.namedParams[0];
         if (namedParam0.type === 'ObjectPattern') {
