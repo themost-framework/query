@@ -1,8 +1,8 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 import {SyncSeriesEventEmitter} from '@themost/events';
 
-export type SelectClosure = (x: any) => any;
-export type FilterClosure = (x: any) => any;
+export type SelectClosure = (x: any, ...params: any[]) => any;
+export type FilterClosure = (x: any, ...params: any[]) => any;
 
 export declare function count(...args: any): number;
 export declare function round(n: any, precision?: number): number;
@@ -18,8 +18,8 @@ export declare function length(value: any): any;
  */
 export declare class ClosureParser {
     static binaryToExpressionOperator(binaryOperator: string): string;
-    parseSelect(func: SelectClosure, params?: any): any;
-    parseFilter(func: FilterClosure, params?: any): any;
+    parseSelect(func: SelectClosure, ...params: any[]): any;
+    parseFilter(func: FilterClosure, ...params: any[]): any;
     parseCommon(expr: any): any;
     parseLogical(expr: any): any;
     parseBinary(expr: any): any;

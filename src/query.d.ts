@@ -50,7 +50,7 @@ export declare class QueryExpression {
     hasFields(): boolean;
     hasPaging(): boolean;
     distinct(value: any): this;
-    where<T>(expr: (value: T, ...param: any[]) => any, params?: any): this;
+    where<T>(expr: (value: T, ...param: any[]) => any, ...params: any[]): this;
     where(expr: string | any): this;
     injectWhere(where: any): void;
     delete(entity: string): this;
@@ -61,8 +61,8 @@ export declare class QueryExpression {
     update(entity: string): this;
     update(entity: QueryEntity): this;
     set(obj: any): this;
-    select<T>(expr: QueryFunc<T>, params?: any): this;
-    select<T,J>(expr: QueryJoinFunc<T, J>, params?: any): this;
+    select<T>(expr: QueryFunc<T>, ...params: any[]): this;
+    select<T,J>(expr: QueryJoinFunc<T, J>, ...params: any[]): this;
     select(...expr: (string | any)[]): this;
     count(alias: string): this;
     from(entity: string): this;
@@ -74,27 +74,27 @@ export declare class QueryExpression {
     rightJoin(entity: any, props?: any, alias?: any): this;
     rightJoin(entity: QueryEntity): this;
     with(obj: any): this;
-    with<T,J>(expr: (value: T, otherValue: J, ...param: any[]) => any, params?: any): this;
+    with<T,J>(expr: (value: T, otherValue: J, ...param: any[]) => any, ...params: any[]): this;
     orderBy(expr: string | any): this;
-    orderBy<T>(expr: QueryFunc<T>, params?: any): this;
+    orderBy<T>(expr: QueryFunc<T>, ...params: any[]): this;
     orderByDescending(expr: string | any): this;
-    orderByDescending<T>(expr: QueryFunc<T>, params?: any): this;
+    orderByDescending<T>(expr: QueryFunc<T>, ...params: any[]): this;
     thenBy(expr: string | any): this;
     thenBy<T>(expr: QueryFunc<T>, params?: any): this;
     thenByDescending(expr: string | any): this;
     thenByDescending<T>(expr: (value: T) => any): this;
     groupBy(...expr: (string | any)[]): this;
     groupBy<T>(arg1: QueryFunc<T>, params?: any): this;
-    groupBy<T>(arg1: QueryFunc<T>, arg2: QueryFunc<T>, params?: any): this;
-    groupBy<T>(arg1: QueryFunc<T>, arg2: QueryFunc<T>, arg3: QueryFunc<T>, params?: any): this;
+    groupBy<T>(arg1: QueryFunc<T>, arg2: QueryFunc<T>, ...params: any[]): this;
+    groupBy<T>(arg1: QueryFunc<T>, arg2: QueryFunc<T>, arg3: QueryFunc<T>, ...params: any[]): this;
     groupBy<T>(arg1: QueryFunc<T>, arg2: QueryFunc<T>, arg3: QueryFunc<T>,
-               arg4: QueryFunc<T>, params?: any): this;
+               arg4: QueryFunc<T>, ...params: any[]): this;
     groupBy<T>(arg1: QueryFunc<T>, arg2: QueryFunc<T>, arg3: QueryFunc<T>,
-               arg4: QueryFunc<T>, arg5: QueryFunc<T>, params?: any): this;
+               arg4: QueryFunc<T>, arg5: QueryFunc<T>, ...params: any[]): this;
     groupBy<T>(arg1: QueryFunc<T>, arg2: QueryFunc<T>, arg3: QueryFunc<T>,
-               arg4: QueryFunc<T>, arg5: QueryFunc<T>, arg6: QueryFunc<T>, params?: any): this;
+               arg4: QueryFunc<T>, arg5: QueryFunc<T>, arg6: QueryFunc<T>, ...params: any[]): this;
     groupBy<T>(arg1: QueryFunc<T>, arg2: QueryFunc<T>, arg3: QueryFunc<T>,
-               arg4: QueryFunc<T>, arg5: QueryFunc<T>, arg6: QueryFunc<T> , arg7: QueryFunc<T>, params?: any): this;
+               arg4: QueryFunc<T>, arg5: QueryFunc<T>, arg6: QueryFunc<T> , arg7: QueryFunc<T>, ...params: any[]): this;
     or(field: any): this;
     and(field: any): this;
     equal(value: any): this;

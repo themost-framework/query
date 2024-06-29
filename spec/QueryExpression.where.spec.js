@@ -499,4 +499,23 @@ describe('QueryExpression.where', () => {
         expect(results.length).toBe(1);
     });
 
+
+    it('should use param array', async () => {
+        const People = new QueryEntity('PersonData');
+        const emailAddress = 'cameron.ball@example.com';
+        let query = new QueryExpression()
+            .select(({ id, familyName: lastName, givenName: firstName, email, dateCreated }) => {
+                return { id, lastName, firstName, email, dateCreated }
+            })
+            .from(People)
+            .where((x, value) => {
+                return x.email === value;
+            }, emailAddress)
+            .take(1);
+        let results = await db.executeAsync(query);
+        expect(results.length).toBe(1);
+        expect(results[0].email).toEqual('cameron.ball@example.com');
+        expect(results[0].firstName).toEqual('Cameron');
+    });
+
 });

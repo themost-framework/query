@@ -260,14 +260,15 @@ class QueryExpression {
 
     /**
      * @param {*} expr
-     * @param {*=} params
+     * @param {...*} params
      * @returns {QueryExpression}
      */
+    // eslint-disable-next-line no-unused-vars
     where(expr, params) {
         if (typeof expr === 'function') {
             // parse closure
             const closureParser = this.getClosureParser();
-            this.$where = closureParser.parseFilter(expr, params);
+            this.$where = closureParser.parseFilter.apply(closureParser, Array.from(arguments))
             return this;
         }
         if (isNil(expr))

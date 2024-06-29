@@ -66,7 +66,7 @@ describe('ClosureParser', () => {
             familyName,
             givenName
         })
-        .from(People).where( x => {
+        .from(People).where( (x, identifier) => {
             return x.id === identifier;
         }, {
             identifier
@@ -216,7 +216,7 @@ describe('ClosureParser', () => {
             x.name,
             x.price
         })
-        .from(Products).where( x => {
+        .from(Products).where( (x, maximumPrice) => {
             return x.price < maximumPrice;
         }, {
              maximumPrice
@@ -225,6 +225,19 @@ describe('ClosureParser', () => {
         expect(result.length).toBeTruthy();
         result.forEach( x => {
             expect(x.price).toBeLessThan(maximumPrice);
+        });
+
+        a = new QueryExpression().select( x => {
+            x.name,
+            x.price
+        })
+        .from(Products).where((x, maximumPrice, category) => {
+            return x.price < maximumPrice && x.category === category;
+        }, 1000, 'Desktops');
+        result = await db.executeAsync(a);
+        expect(result.length).toBeTruthy();
+        result.forEach( x => {
+            expect(x.price).toBeLessThan(1000);
         });
     });
 
