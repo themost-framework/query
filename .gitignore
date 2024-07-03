@@ -106,6 +106,7 @@ dist
 .devcontainer
 .theia
 .DS_Store
+spec/db/test.db
 
 # TernJS port file
 .tern-port

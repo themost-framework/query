@@ -9,10 +9,7 @@ describe('SqlFormatter', () => {
      */
     let db;
     beforeAll(() => {
-        db = new MemoryAdapter({
-            name: 'local',
-            database: './spec/db/local.db'
-        });
+        db = new MemoryAdapter();
     });
     afterAll((done) => {
         if (db) {
