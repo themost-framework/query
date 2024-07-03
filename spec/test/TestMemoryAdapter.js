@@ -1,12 +1,16 @@
 import { SqliteAdapter } from '@themost/sqlite';
-
+import { copyFileSync } from 'fs';
 /**
  *
  */
 class MemoryAdapter extends SqliteAdapter {
 
-    constructor(options) {
-        super(options);
+    constructor() {
+        copyFileSync('./spec/db/local.db', './spec/db/test.db');
+        super({
+            name: 'local',
+            database: './spec/db/test.db'
+        });
     }
 
 }
