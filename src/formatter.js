@@ -2,7 +2,7 @@
 import { SqlUtils } from './utils';
 import { sprintf } from 'sprintf-js';
 import { isNil, isString, isFunction, map, forEach, isObject } from 'lodash';
-import { QueryExpression, QueryField } from './query';
+import { QueryEntity, QueryExpression, QueryField } from './query';
 import { instanceOf } from './instance-of';
 import './polyfills';
 import { ObjectNameValidator } from './object-name.validator';
@@ -718,7 +718,44 @@ class SqlFormatter {
                 return $this.format(x, '%f');
             }).join(', '), ' FROM ', escapedEntity);
         }
-
+        /**
+         * @type {Array<QueryEntity|QueryExpression>}
+         */
+        const additionalSelect = obj.$additionalSelect;
+        if (Array.isArray(additionalSelect) && additionalSelect.length) {
+            const aliasKeyword = getAliasKeyword.bind($this)();
+           const additionalSelectSql = additionalSelect.map((item) => {
+                let sqlSelect = '';
+                let sqlAlias = null;
+                if (instanceOf(item, QueryEntity)) {
+                    /**
+                     * @type {QueryEntity}
+                     */
+                    const queryEntity = item;
+                    sqlSelect = this.escapeEntity(queryEntity.name);
+                    // get alias
+                    sqlAlias = queryEntity.$alias;
+                }  else if (typeof item === 'string') {
+                    sqlSelect = this.escapeEntity(item)
+                } else {
+                    /**
+                     * @type {QueryExpression}
+                     */
+                    const queryExpression = item;
+                    // get alias
+                    sqlAlias = queryExpression.$alias;
+                    sqlSelect = '(' + this.format(queryExpression) + ')';
+                }
+                if (sqlAlias) {
+                    if (aliasKeyword) {
+                        sqlSelect += aliasKeyword;
+                    }
+                    sqlSelect += sqlAlias;
+                }
+                return sqlSelect;
+            });
+            sql += ', ' + additionalSelectSql.join(', ');
+        }
 
         //add join if any
         if (obj.$expand !== null) {

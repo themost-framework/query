@@ -325,7 +325,13 @@ class ClosureParser {
                 if (args.length === 1 && isObjectDeep(args[0])) {
                     // get param by name
                     const [arg0] = args;
-                    if (Object.prototype.hasOwnProperty.call(arg0, namedParam.name)) {
+                    // check if argument is an instance of query expression or query entity
+                    if (instanceOf(arg0, function QueryExpression() {}) || instanceOf(arg0, function QueryEntity() {})) {
+                        // set param for further processing (define joined members)
+                        Object.assign(this.params, {
+                            [namedParam.name]: arg0
+                        })
+                    } else if (Object.prototype.hasOwnProperty.call(arg0, namedParam.name)) {
                         Object.assign(this.params, {
                             [namedParam.name]: arg0[namedParam.name]
                         })
@@ -727,6 +733,22 @@ class ClosureParser {
                     // resolve member
                     self.resolvingMember.emit(event);
                 } else {
+                    // try to get params
+                    const param = self.params[namedParam.name];
+                    if (instanceOf(param, function QueryExpression() {})) {
+                        const entityAlias = param.$alias;
+                        // get alias
+                        if (entityAlias == null) {
+                            throw new Error('A query expression must have an alias when used as a closure parameter.');
+                        }
+                        event.fullyQualifiedMember = event.member = entityAlias + '.' + event.member;
+                    } else if (instanceOf(param, function QueryEntity() {})) {
+                        const entityAlias = param.$as || param.name;
+                        if (entityAlias == null) {
+                            throw new Error('A query entity must have an alias when used as a closure parameter.');
+                        }
+                        event.fullyQualifiedMember = event.member = entityAlias + '.' + event.member;
+                    }
                     // otherwise resolve member of joined collection
                     self.resolvingJoinMember.emit(event);
                 }

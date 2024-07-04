@@ -32,6 +32,7 @@ export declare class QueryExpression {
         $div: string | '$div'
     }
 
+    $additionalSelect?: ( QueryEntity | QueryExpression | string)[];
     $select?: any;
     $delete?: any;
     $update?: any;
@@ -67,6 +68,8 @@ export declare class QueryExpression {
     count(alias: string): this;
     from(entity: string): this;
     from(entity: QueryEntity): this;
+    from(entity: QueryExpression): this;
+    from(entity: QueryEntity, ...additionalEntity: (string | QueryEntity | QueryExpression)[]): this;
     join(entity: any, props?: any, alias?: any): this;
     join(entity: QueryEntity): this;
     leftJoin(entity: any, props?: any, alias?: any): this;
