@@ -123,4 +123,32 @@ describe('QueryExpression.from', () => {
         }
     });
 
+    it('should use multiple "from" expressions with full object destructuring', async () => {
+        const orders = new QueryEntity('OrderData');
+        const people = new QueryEntity('PersonData');
+        const q = new QueryExpression().select(
+            ({id, customer}, {familyName, givenName}) => {
+                return {
+                    id,
+                    customer,
+                    familyName,
+                    givenName
+                }
+            }, people // pass additional entity as query parameter
+        ).from(orders, people) // add multiple entities
+        .where(
+            ({customer}, {id}) => {
+                return customer === id;
+            }, people // pass additional entity as query parameter
+        ).orderBy(
+            ({customer}) => customer
+        );
+        expect(Array.isArray(q.$additionalSelect)).toBeTruthy();
+        const items = await db.executeAsync(q);
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            expect(item.familyName).toBeTruthy();
+        }
+    });
+
 });
