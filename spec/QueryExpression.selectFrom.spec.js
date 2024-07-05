@@ -97,30 +97,30 @@ describe('QueryExpression.from', () => {
         }
     });
 
-    // it('should use multiple "from" expressions with object destructuring', async () => {
-    //     const orders = new QueryEntity('OrderData');
-    //     const people = new QueryEntity('PersonData');
-    //     const q = new QueryExpression().select(
-    //         (x, {familyName, givenName}) => {
-    //             return {
-    //                 id: x.id,
-    //                 customer: x.customer,
-    //                 familyName: familyName,
-    //                 givenName: givenName
-    //             }
-    //         }, people // pass additional entity as query parameter
-    //     ).from(orders, people) // add multiple entities
-    //     .where(
-    //         (x, {id}) => {
-    //             return x.customer === id;
-    //         }, people // pass additional entity as query parameter
-    //     );
-    //     expect(Array.isArray(q.$additionalSelect)).toBeTruthy();
-    //     const items = await db.executeAsync(q);
-    //     for (let i = 0; i < items.length; i++) {
-    //         const item = items[i];
-    //         expect(item.familyName).toBeTruthy();
-    //     }
-    // });
+    it('should use multiple "from" expressions with object destructuring', async () => {
+        const orders = new QueryEntity('OrderData');
+        const people = new QueryEntity('PersonData');
+        const q = new QueryExpression().select(
+            ({id, customer}, {familyName, givenName}) => {
+                return {
+                    id,
+                    customer,
+                    familyName,
+                    givenName
+                }
+            }, people // pass additional entity as query parameter
+        ).from(orders, people) // add multiple entities
+        .where(
+            (x, {id}) => {
+                return x.customer === id;
+            }, people // pass additional entity as query parameter
+        );
+        expect(Array.isArray(q.$additionalSelect)).toBeTruthy();
+        const items = await db.executeAsync(q);
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            expect(item.familyName).toBeTruthy();
+        }
+    });
 
 });

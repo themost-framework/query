@@ -216,6 +216,55 @@ function getObjectExpressionIdentifier(object) {
     }
     return object1.name;
 }
+/**
+ * @param {{target: ClosureParser, member: string, object?: string, fullyQualifiedMember: string}} event
+ */
+function onResolvingAdditionalMember(event) {
+    /**
+     * @type {ClosureParser}
+     */
+    const target = event.target;
+    // eslint-disable-next-line no-unused-vars
+    const { params, namedParams } = target;
+    if (namedParams.length === 1) {
+        // do nothing and exit
+        return;
+    }
+    for (let index = 0; index < namedParams.length; index++) {
+        const namedParam = namedParams[index];
+        if (namedParam.type === 'ObjectPattern') {
+            const intermediateResult = {
+                name: '',
+                alias: null
+            }
+            /**
+             * @type {{name: string, alias: string}=}
+             */
+            const result = target.tryUnpackedProperty(namedParam.properties, event.member, intermediateResult);
+            if (result) {
+                // get param by name
+                const name = `param${index}`;
+                if (Object.prototype.hasOwnProperty.call(target.params, name)) {
+                    const param = target.params[name];
+                    if (instanceOf(param, function QueryExpression() {})) {
+                        const entityAlias = param.$alias;
+                        // get alias
+                        if (entityAlias == null) {
+                            throw new Error('A query expression must have an alias when used as a closure parameter.');
+                        }
+                        event.object = entityAlias;
+                    } else if (instanceOf(param, function QueryEntity() {})) {
+                        const entityAlias = param.$as || param.name;
+                        if (entityAlias == null) {
+                            throw new Error('A query entity must have an alias when used as a closure parameter.');
+                        }
+                        event.object = entityAlias;
+                    }
+                }
+            }
+        }
+    }
+}
 
 class ClosureParser {
 
@@ -238,6 +287,9 @@ class ClosureParser {
         this.resolvingMethod = new SyncSeriesEventEmitter();
         this.resolvingJoinMember = new SyncSeriesEventEmitter();
         this.resolvingVariable = new SyncSeriesEventEmitter();
+
+        this.resolvingJoinMember.subscribe(onResolvingAdditionalMember); 
+
     }
 
     /**
@@ -319,6 +371,8 @@ class ClosureParser {
         // for backward compatibility issues we will try to create an object with closure params
         this.params = {};
         this.namedParams.forEach((namedParam, index) => {
+            // format param name even if it's not provided
+            const name = namedParam.name || `param${index}`;
             // omit the first param because it's the reference of the enumerable object
             if (index > 0) {
                 // preserve backward compatibility
@@ -329,17 +383,17 @@ class ClosureParser {
                     if (instanceOf(arg0, function QueryExpression() {}) || instanceOf(arg0, function QueryEntity() {})) {
                         // set param for further processing (define joined members)
                         Object.assign(this.params, {
-                            [namedParam.name]: arg0
+                            [name]: arg0
                         })
                     } else if (Object.prototype.hasOwnProperty.call(arg0, namedParam.name)) {
                         Object.assign(this.params, {
-                            [namedParam.name]: arg0[namedParam.name]
+                            [name]: arg0[namedParam.name]
                         })
                     }
                 } else {
                     // get param by index
                     Object.assign(this.params, {
-                        [namedParam.name]: args[index - 1]
+                        [name]: args[index - 1]
                     })
                 }
             }
@@ -792,6 +846,8 @@ class ClosureParser {
                 if (object1.name === namedParam.name) {
                     //get closure parameter expression e.g. x.customer.name
                     let property = expr.property.name;
+                    fullyQualifiedMember = fullyQualifiedMember.split('.').reverse().filter((x) => x.length > 0).join('.');
+                    fullyQualifiedMember += '.';
                     fullyQualifiedMember += property;
                     const object = expr.object.property.name;
                     const event = {
@@ -816,101 +872,103 @@ class ClosureParser {
             namedParam0 = self.namedParams[0];
             let alias;
             // support object destructing param
+            let property;
             if (namedParam0.type === 'ObjectPattern') {
-                //
-                let property = namedParam0.properties.find((x) => {
+                property = namedParam0.properties.find((x) => {
                     return x.type === 'Property' && x.value != null && x.value.type === 'Identifier' && x.value.name === expr.name;
                 });
-                if (property) {
-                    let member = property.value.name;
-                    if (property.key.name !== property.value.name) {
-                        member = property.key.name;
-                        alias = property.value.name;
+            }
+            if (property) {
+                let member = property.value.name;
+                if (property.key.name !== property.value.name) {
+                    member = property.key.name;
+                    alias = property.value.name;
+                }
+                const memberEvent = {
+                    target: this,
+                    member: member
+                }
+                if (options && options.useAlias === false) {
+                    alias = null;
+                }
+                self.resolvingMember.emit(memberEvent);
+                return new MemberExpression(memberEvent.member);
+            } else {
+                let findQualifiedMember;
+                // try to find nested property
+                /**
+                 * @param {Array<any>} properties 
+                 * @param {string} name
+                 * @param {{name:string, alias:string}} qualifiedMember
+                 * @returns {*}
+                 */
+                const tryFindUnpackedProperty = (properties, name, qualifiedMember) => {
+                    let index = 0;
+                    while (index < properties.length) {
+                        const prop = properties[index];
+                        if (prop.value && prop.value.type === 'ObjectPattern') {
+                            /**
+                             * @type {{name: string, alias: string}}
+                             */
+                            const newQualifiedMember = {
+                                name: '',
+                                alias: null
+                            }
+                            const prop1 = tryFindUnpackedProperty(prop.value.properties, name, newQualifiedMember);
+                            if (prop1) {
+                                qualifiedMember.name += '.';
+                                qualifiedMember.name += prop.key.name;
+                                qualifiedMember.name += newQualifiedMember.name;
+                                if (newQualifiedMember.alias) {
+                                    qualifiedMember.alias = newQualifiedMember.alias;
+                                }
+                                return prop1;
+                            }
+                        } else if (prop.value && prop.value.type === 'Identifier') {
+                            if (prop.value.name === name) {
+                                qualifiedMember.name += '.';
+                                if (prop.key.name !== prop.value.name) {
+                                    qualifiedMember.name += prop.key.name;
+                                    qualifiedMember.alias = prop.value.name;
+                                } else {
+                                    qualifiedMember.name += name;
+                                }
+                                return prop;
+                            }
+                        }
+                        index += 1;
                     }
+                };
+                findQualifiedMember = {
+                    name: '',
+                    alias: null
+                };
+
+                for (let index = 0; index < this.namedParams.length; index++) {
+                    const namedParam = this.namedParams[index];
+                    if (namedParam.type === 'ObjectPattern') {
+                        property = tryFindUnpackedProperty(namedParam.properties, expr.name, findQualifiedMember);
+                        if (property) {
+                            break;
+                        }
+                    }
+                }
+
+                if (property) {
+                    const memberPath = findQualifiedMember.name.substring(1).split('.');
+                    // eslint-disable-next-line no-unused-vars
+                    alias = findQualifiedMember.alias;
                     const memberEvent = {
                         target: this,
-                        member: member
+                        member: memberPath[memberPath.length - 1],
+                        fullyQualifiedMember: memberPath.join('.')
                     }
-                    if (options && options.useAlias === false) {
-                        alias = null;
+                    self.resolvingJoinMember.emit(memberEvent);
+                    if (memberEvent.object != null) {
+                        // concat member expression e.g. new MemberExpression(address.id)
+                        return new MemberExpression(memberEvent.object + '.' + memberEvent.member);
                     }
-                    self.resolvingMember.emit(memberEvent);
-                    return new MemberExpression(memberEvent.member);
-                    // if (alias == null) {
-                    //     return new MemberExpression(memberEvent.member);
-                    // } else {
-                    //     const memberWithAlias = new ObjectExpression();
-                    //     Object.defineProperty(memberWithAlias, alias, {
-                    //         configurable: true,
-                    //         enumerable: true,
-                    //         value: new MemberExpression(memberEvent.member)
-                    //     });
-                    //     return memberWithAlias;
-                    // }
-                } else {
-                    let qualifiedMember1;
-                    // try to find nested property
-                    /**
-                     * @param {Array<any>} properties 
-                     * @param {string} name
-                     * @param {{name:string, alias:string}} qualifiedMember
-                     * @returns {*}
-                     */
-                    const tryFindUnpackedProperty = (properties, name, qualifiedMember) => {
-                        let index = 0;
-                        while (index < properties.length) {
-                            const prop = properties[index];
-                            if (prop.value && prop.value.type === 'ObjectPattern') {
-                                /**
-                                 * @type {{name: string, alias: string}}
-                                 */
-                                const newQualifiedMember = {
-                                    name: '',
-                                    alias: null
-                                }
-                                const prop1 = tryFindUnpackedProperty(prop.value.properties, name, newQualifiedMember);
-                                if (prop1) {
-                                    qualifiedMember.name += '.';
-                                    qualifiedMember.name += prop.key.name;
-                                    qualifiedMember.name += newQualifiedMember.name;
-                                    if (newQualifiedMember.alias) {
-                                        qualifiedMember.alias = newQualifiedMember.alias;
-                                    }
-                                    return prop1;
-                                }
-                            } else if (prop.value && prop.value.type === 'Identifier') {
-                                if (prop.value.name === name) {
-                                    qualifiedMember.name += '.';
-                                    if (prop.key.name !== prop.value.name) {
-                                        qualifiedMember.name += prop.key.name;
-                                        qualifiedMember.alias = prop.value.name;
-                                    } else {
-                                        qualifiedMember.name += name;
-                                    }
-                                    return prop;
-                                }
-                            }
-                            index += 1;
-                        }
-                    };
-                    qualifiedMember1 = {
-                        name: '',
-                        alias: null
-                    };
-                    property = tryFindUnpackedProperty(namedParam0.properties, expr.name, qualifiedMember1);
-                    if (property) {
-                        const memberPath = qualifiedMember1.name.substring(1).split('.');
-                        // eslint-disable-next-line no-unused-vars
-                        alias = qualifiedMember1.alias;
-                        const memberEvent = {
-                            target: this,
-                            member: memberPath[memberPath.length - 1],
-                            fullyQualifiedMember: memberPath.join('.')
-                        }
-                        self.resolvingJoinMember.emit(memberEvent);
-                        return new MemberExpression(memberEvent.fullyQualifiedMember);
-                    }
-
+                    return new MemberExpression(memberEvent.fullyQualifiedMember);
                 }
             }
             throw new Error('Invalid member expression.');
@@ -1032,10 +1090,23 @@ class ClosureParser {
         if (paramIndex > 0) {
             return new LiteralExpression(this.params[paramIndex - 1]);
         }
-        const namedParam0 = this.namedParams && this.namedParams[0];
-        if (namedParam0.type === 'ObjectPattern') {
-            return this.parseMember(expr);
+        const findQualifiedMember = {
+            name: '',
+            alias: null
+        };
+        for (let index = 0; index < this.namedParams.length; index++) {
+            const namedParam = this.namedParams[index];
+            if (namedParam.type === 'ObjectPattern') {
+                const property = this.tryUnpackedProperty(namedParam.properties, expr.name, findQualifiedMember);
+                if (property) {
+                    return this.parseMember(expr);
+                }
+            }
         }
+        // const namedParam0 = this.namedParams && this.namedParams[0];
+        // if (namedParam0.type === 'ObjectPattern') {
+        //     return this.parseMember(expr);
+        // }
         this.resolvingVariable.emit(expr);
         if (expr.init) {
             return this.parseCommon(expr.init);
