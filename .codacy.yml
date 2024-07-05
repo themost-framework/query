@@ -1,10 +1,11 @@
 engines:
   duplication:
+    enabled: true
     exclude_paths:
       - "docs/**"
-      - "spec/**/*"
+      - "spec/**"
 exclude_paths:
   - "docs/**"
-  - "spec/**/*"
-  - ".github/**/*"
+  - "spec/**"
+  - ".github/**"
   - "babel.config.js"

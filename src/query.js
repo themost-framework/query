@@ -551,6 +551,7 @@ class QueryExpression {
     /**
      * Sets the entity of a select query expression
      * @param entity {string|QueryEntity|*} A string that represents the entity name
+     * @param additionalEntity {...{string|QueryEntity|QueryExpression}}
      * @returns {QueryExpression}
      */
     from(entity) {
@@ -597,6 +598,18 @@ class QueryExpression {
         delete this.$delete;
         delete this.$insert;
         delete this.$update;
+        // add additional entities
+        if (arguments.length > 1) {
+            this.$additionalSelect = [];
+            for (let i = 1; i < arguments.length; i++) {
+                const additionalEntity = arguments[i];
+                if (typeof additionalEntity === 'string') {
+                    this.$additionalSelect.push(new QueryEntity(additionalEntity));
+                } else {
+                    this.$additionalSelect.push(additionalEntity);
+                }
+            }
+        }
         //and return this object
         return this;
     }
