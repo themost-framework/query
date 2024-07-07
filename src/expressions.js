@@ -1,6 +1,22 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
-class ArithmeticExpression {
+
+import { AbstractMethodError } from "@themost/common";
+
+/**
+ * @abstract
+ */
+class Expression {
+    constructor() {
+        //
+    }
+    exprOf() {
+        throw new AbstractMethodError();
+    }
+}
+
+class ArithmeticExpression extends Expression {
     constructor(p0, operator, p1) {
+        super();
         this.left = p0;
         this.operator = operator || '$add';
         this.right = p1;
@@ -37,8 +53,9 @@ class ArithmeticExpression {
 ArithmeticExpression.OperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod|\$bit)$/g;
 
 
-class MemberExpression {
+class MemberExpression extends Expression {
     constructor(name) {
+        super();
         this.name = name;
     }
     exprOf() {
@@ -48,8 +65,9 @@ class MemberExpression {
     }
 }
 
-class LogicalExpression {
+class LogicalExpression extends Expression {
     constructor(operator, args) {
+        super();
         this.operator = operator || '$and';
         this.args = args || [];
     }
@@ -83,8 +101,9 @@ class LogicalExpression {
 
 LogicalExpression.OperatorRegEx = /^(\$and|\$or|\$not|\$nor)$/g;
 
-class LiteralExpression {
+class LiteralExpression extends Expression {
     constructor(value) {
+        super();
         this.value = value;
     }
     exprOf() {
@@ -94,8 +113,9 @@ class LiteralExpression {
     }
 }
 
-class ComparisonExpression {
+class ComparisonExpression extends Expression {
     constructor(left, op, right) {
+        super();
         this.left = left;
         this.operator = op || '$eq';
         this.right = right;
@@ -124,8 +144,9 @@ class ComparisonExpression {
 
 ComparisonExpression.OperatorRegEx = /^(\$eq|\$ne|\$lte|\$lt|\$gte|\$gt|\$in|\$nin)$/g;
 
-class MethodCallExpression {
+class MethodCallExpression extends Expression {
     constructor(name, args) {
+        super();
         /**
          * Gets or sets the name of this method
          * @type {String}
@@ -199,8 +220,9 @@ const Operators = {
     BitAnd: '$bit',
 };
 
-class SequenceExpression {
+class SequenceExpression extends Expression {
     constructor() {
+        super();
         this.value = [];
     }
     exprOf() {
@@ -229,9 +251,9 @@ class SequenceExpression {
     }
 }
 
-class ObjectExpression {
+class ObjectExpression extends Expression {
     constructor() {
-        //
+        super();
     }
     exprOf() {
         let finalResult = {};
@@ -310,8 +332,9 @@ class AggregateComparisonExpression extends ComparisonExpression {
 }
 
 
-class SelectAnyExpression {
+class SelectAnyExpression extends Expression {
     constructor(expr, alias) {
+        super();
         this.expression = expr;
         this.as = alias;
     }
@@ -350,8 +373,9 @@ class AnyExpressionFormatter {
     }
 }
 
-class OrderByAnyExpression {
+class OrderByAnyExpression extends Expression {
     constructor(expr, direction) {
+        super();
         this.expression = expr;
         this.direction = direction || 'asc';
     }
@@ -403,6 +427,7 @@ class SwitchExpression extends MethodCallExpression {
 
 export {
     Operators,
+    Expression,
     ArithmeticExpression,
     MemberExpression,
     MethodCallExpression,
