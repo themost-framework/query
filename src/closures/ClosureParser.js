@@ -2,7 +2,8 @@
 import {
     LiteralExpression, ObjectExpression, Operators, SequenceExpression,
     MemberExpression, ArithmeticExpression, LogicalExpression,
-    AggregateComparisonExpression, MethodCallExpression, ComparisonExpression
+    AggregateComparisonExpression, MethodCallExpression, ComparisonExpression,
+    Expression
 } from '../expressions';
 const isComparisonOperator = ComparisonExpression.isComparisonOperator;
 const isArithmeticOperator = ArithmeticExpression.isArithmeticOperator;
@@ -806,6 +807,10 @@ class ClosureParser {
                     // otherwise resolve member of joined collection
                     self.resolvingJoinMember.emit(event);
                 }
+                // #handle-event-member
+                if (event.member instanceof Expression) {
+                    return event.member;
+                }
                 // if event.object is not null
                 if (event.object != null) {
                     // concat member expression e.g. new MemberExpression(address.id)
@@ -857,6 +862,10 @@ class ClosureParser {
                         fullyQualifiedMember: fullyQualifiedMember
                     };
                     this.resolvingJoinMember.emit(event);
+                    // #handle-event-member
+                    if (event.member instanceof Expression) {
+                        return event.member;
+                    }
                     return new MemberExpression(event.object + '.' + event.member);
                 }
                 else {
@@ -892,6 +901,10 @@ class ClosureParser {
                     alias = null;
                 }
                 self.resolvingMember.emit(memberEvent);
+                // #handle-event-member
+                if (memberEvent.member instanceof Expression) {
+                    return memberEvent.member;
+                }
                 return new MemberExpression(memberEvent.member);
             } else {
                 let findQualifiedMember;
@@ -964,6 +977,10 @@ class ClosureParser {
                         fullyQualifiedMember: memberPath.join('.')
                     }
                     self.resolvingJoinMember.emit(memberEvent);
+                    // #handle-event-member
+                    if (memberEvent.member instanceof Expression) {
+                        return memberEvent.member;
+                    }
                     if (memberEvent.object != null) {
                         // concat member expression e.g. new MemberExpression(address.id)
                         return new MemberExpression(memberEvent.object + '.' + memberEvent.member);

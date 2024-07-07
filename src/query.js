@@ -6,6 +6,7 @@ import './polyfills';
 import {ObjectNameValidator} from './object-name.validator';
 import {SyncSeriesEventEmitter} from '@themost/events';
 import { instanceOf } from './instance-of';
+import { Expression } from './expressions';
 
 class QueryParameter {
     constructor() {
@@ -78,12 +79,18 @@ class QueryExpression {
         this.resolvingMethod = new SyncSeriesEventEmitter();
 
         this.resolvingMember.subscribe((event) => {
+            if (event.member instanceof Expression) {
+                return;
+            }
             if (this.$collection) {
                 event.member = this.$collection.concat('.', event.member);
             }
         });
 
         this.resolvingJoinMember.subscribe((event) => {
+            if (event.member instanceof Expression) {
+                return;
+            }
             if (this.$joinCollection != null && event.object == null) {
                 event.object = this.$joinCollection;
             }
