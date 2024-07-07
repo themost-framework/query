@@ -1,5 +1,6 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 import {SyncSeriesEventEmitter} from '@themost/events';
+import { Expression } from '../expressions';
 
 export type SelectClosure = (x: any, ...params: any[]) => any;
 export type FilterClosure = (x: any, ...params: any[]) => any;
@@ -28,7 +29,7 @@ export declare class ClosureParser {
     parseMethod(expr: any): any;
     parseIdentifier(expr: any): any;
     parseLiteral(expr: any): any;
-    resolvingMember: SyncSeriesEventEmitter<{ target: any, member: string }>;
-    resolvingJoinMember: SyncSeriesEventEmitter<{ target: any, object: string, member: string, fullyQualifiedMember?: string }>;
+    resolvingMember: SyncSeriesEventEmitter<{ target: any, member: string | Expression }>;
+    resolvingJoinMember: SyncSeriesEventEmitter<{ target: any, object: string, member: string | Expression, fullyQualifiedMember?: string }>;
     resolvingMethod: SyncSeriesEventEmitter<{ target: any, method: string }>;
 }

@@ -4,6 +4,11 @@ export declare interface ExpressionBase {
     source?: string;
 }
 
+export declare abstract class Expression implements ExpressionBase {
+    exprOf(): any;
+    source?: string;
+}
+
 export declare interface SelectExpressionBase extends ExpressionBase {
     as?: string;
 }
@@ -28,7 +33,7 @@ export declare const Operators: {
     BitAnd: string
 }
 
-export declare class ArithmeticExpression implements ExpressionBase {
+export declare class ArithmeticExpression extends Expression {
 
     static isArithmeticOperator(op: string): boolean;
 
@@ -36,12 +41,12 @@ export declare class ArithmeticExpression implements ExpressionBase {
     exprOf(): any;
 }
 
-export declare class MemberExpression implements ExpressionBase {
+export declare class MemberExpression extends Expression {
     constructor(name: string);
     exprOf(): any;
 }
 
-export declare class LogicalExpression implements ExpressionBase {
+export declare class LogicalExpression extends Expression {
 
     static isLogicalOperator(op: string): boolean;
 
@@ -49,29 +54,29 @@ export declare class LogicalExpression implements ExpressionBase {
     exprOf(): any;
 }
 
-export declare class LiteralExpression implements ExpressionBase {
+export declare class LiteralExpression extends Expression {
     constructor(value: any);
     exprOf(): any;
 }
 
-export declare class ComparisonExpression implements ExpressionBase {
+export declare class ComparisonExpression extends Expression {
 
     static isComparisonOperator(op: string): boolean;
     constructor(left: any, operator: string, right:any);
     exprOf(): any;
 }
 
-export declare class MethodCallExpression implements ExpressionBase {
+export declare class MethodCallExpression extends Expression {
     constructor(name: string, args: Array<any>);
     exprOf(): any;
 }
 
-export declare class SequenceExpression implements ExpressionBase {
+export declare class SequenceExpression extends Expression {
     constructor();
     exprOf(): any;
 }
 
-export declare class ObjectExpression implements ExpressionBase {
+export declare class ObjectExpression extends Expression {
     constructor();
     exprOf(): any;
 }
