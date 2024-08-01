@@ -3,10 +3,10 @@ import {SqlFormatter, QueryExpression, QueryField, ObjectNameValidator} from '..
 describe('ObjectNameValidator', () => {
    it('should validate name', () => {
        const validator = new ObjectNameValidator();
-       expect(validator.test('field 1', true, false)).toBeFalse();
-       expect(validator.test('space2/**/comment', true, false)).toBeFalse();
-       expect(validator.test('char%20encode', true, false)).toBeFalse();
-       expect(validator.test('field1', true, false)).toBeTrue();
+       expect(validator.test('field 1', true, false)).toBeFalsy();
+       expect(validator.test('space2/**/comment', true, false)).toBeFalsy();
+       expect(validator.test('char%20encode', true, false)).toBeFalsy();
+       expect(validator.test('field1', true, false)).toBeTruthy();
    });
 
     it('should escape name', () => {
@@ -40,12 +40,12 @@ describe('ObjectNameValidator', () => {
     it('should combine regex', () => {
         const regex1 = new RegExp('(\\w+)');
         const regex2 = new RegExp(`^${regex1.source}((\\.)${regex1.source})*$`);
-        expect(regex2.test('field1')).toBeTrue();
-        expect(regex2.test('Table1.field1')).toBeTrue();
-        expect(regex2.test('schema1.Table1.field1')).toBeTrue();
-        expect(regex2.test('Table1.fie%20ld1')).toBeFalse();
-        expect(regex2.test('Tab--le1')).toBeFalse();
-        expect(regex2.test('schema1.Tab%20le1.field1')).toBeFalse();
+        expect(regex2.test('field1')).toBeTruthy();
+        expect(regex2.test('Table1.field1')).toBeTruthy();
+        expect(regex2.test('schema1.Table1.field1')).toBeTruthy();
+        expect(regex2.test('Table1.fie%20ld1')).toBeFalsy();
+        expect(regex2.test('Tab--le1')).toBeFalsy();
+        expect(regex2.test('schema1.Tab%20le1.field1')).toBeFalsy();
     });
 
     it('should escape object name', () => {
@@ -54,10 +54,10 @@ describe('ObjectNameValidator', () => {
     });
 
     it('should escape column alias', () => {
-        expect(ObjectNameValidator.validator.test('Table1.field1', false, false)).toBeFalse();
-        expect(ObjectNameValidator.validator.test('Table1.field2', false, false)).toBeFalse();
-        expect(ObjectNameValidator.validator.test('field2', false)).toBeTrue();
-        expect(ObjectNameValidator.validator.test('field3', false)).toBeTrue();
+        expect(ObjectNameValidator.validator.test('Table1.field1', false, false)).toBeFalsy();
+        expect(ObjectNameValidator.validator.test('Table1.field2', false, false)).toBeFalsy();
+        expect(ObjectNameValidator.validator.test('field2', false)).toBeTruthy();
+        expect(ObjectNameValidator.validator.test('field3', false)).toBeTruthy();
     });
 
     it('should escape object name with schema', () => {

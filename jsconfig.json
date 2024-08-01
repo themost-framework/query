@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@themost/query": [
+        "src/index"
+      ]
+    }
+  }
+}
