@@ -37,3 +37,8 @@ tsconfig.json
 
 # codacy
 .codacy.yml
+
+# jest
+jest.config.js
+jest.setup.js
+jsconfig.json
