@@ -128,7 +128,7 @@ function escape(val, stringifyObjects, timeZone) {
         if (stringifyObjects) {
             val = val.toString();
         } else {
-            return objectToValues(val, timeZone);
+            return `'${JSON.stringify(val)}'`;
         }
     }
     val = val.replace(STR_ESCAPE_REGEXP, function(s) {

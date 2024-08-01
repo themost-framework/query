@@ -1,16 +1,60 @@
-import { SqliteAdapter } from '@themost/sqlite';
-import { copyFileSync } from 'fs';
-/**
- *
- */
-class MemoryAdapter extends SqliteAdapter {
 
-    constructor() {
-        copyFileSync('./spec/db/local.db', './spec/db/test.db');
-        super({
+import { SqliteAdapter } from '@themost/sqlite';
+import path from 'path';
+import os from 'os';
+import fs from 'fs';
+
+class MemoryAdapter extends SqliteAdapter {
+    /**
+     *
+     * @param {*=} options
+     */
+    constructor(options) {
+        super(options || {
             name: 'local',
-            database: './spec/db/test.db'
+            database: './spec/db/local.db'
         });
+    }
+
+    /**
+     * @param {{ name: string, database: string }} options
+     * @returns {Promise<MemoryAdapter>}
+     */
+    static create(options) {
+        const { name, database: source } = options;
+        const sourcePath = path.resolve(process.cwd(), source);
+        const { base } = path.parse(sourcePath);
+        const destPath = path.resolve(os.tmpdir(), base);
+        return new Promise((resolve, reject) => {
+            void fs.copyFile(sourcePath, destPath, (err) => {
+                if (err) {
+                    return reject(err);
+                }
+                const test = true;
+                const database = destPath;
+                resolve(new MemoryAdapter({
+                    name,
+                    test,
+                    database
+                }));
+            });
+        });
+    }
+
+    static drop(adapter) {
+        return new Promise((resolve, reject) => {
+            if (adapter?.options?.test) {
+                void fs.unlink(adapter.options.database, (err) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve();
+                });
+            } else {
+                return resolve();
+            }
+        });
+
     }
 
 }
