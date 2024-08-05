@@ -1,7 +1,5 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 
-import { AbstractMethodError } from "@themost/common";
-
 /**
  * @abstract
  */
@@ -9,8 +7,12 @@ class Expression {
     constructor() {
         //
     }
+
+    /**
+     * @returns {*}
+     */
     exprOf() {
-        throw new AbstractMethodError();
+        throw new Error('Class does not implement inherited abstract method.');
     }
 }
 

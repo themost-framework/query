@@ -129,7 +129,7 @@ describe('QueryExpression.where', () => {
                 }
             })
             .from(Products) 
-            .where(({name: productName}) => { // use object destructuting with name
+            .where(({name: productName}) => { // use object destructuring with name
                 return productName.indexOf('Intel') >= 0;
             });
         results = await db.executeAsync(query);
