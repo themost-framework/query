@@ -7,6 +7,10 @@ class Expression {
     constructor() {
         //
     }
+
+    /**
+     * @returns {*}
+     */
     exprOf() {
         throw new Error('Class does not implement inherited abstract method.');
     }
