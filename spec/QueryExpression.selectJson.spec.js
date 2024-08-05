@@ -1,11 +1,10 @@
 // noinspection SpellCheckingInspection
 
-import {MemberExpression, MethodCallExpression, SqlUtils} from '../src/index';
+import {MemberExpression, MethodCallExpression} from '../src/index';
 import { QueryEntity, QueryExpression } from '../src/index';
 import { SqliteFormatter } from '@themost/sqlite';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 import { MemoryFormatter } from './test/TestMemoryFormatter';
-import { isObjectDeep } from './is-object';
 import SimpleOrderSchema from './test/config/models/SimpleOrder.json';
 
 if (typeof SqliteFormatter.prototype.$jsonGet !== 'function') {
@@ -242,6 +241,35 @@ describe('SqlFormatter', () => {
         for (const result of results) {
             expect(result).toBeTruthy();
             expect(result.releaseYear).toBeTruthy();
+        }
+    });
+
+    it('should select json object', async () => {
+        await createSimpleOrders(db);
+        const Orders = new QueryEntity('SimpleOrders');
+        const query = new QueryExpression();
+        query.resolvingJoinMember.subscribe(onResolvingJsonMember);
+        query.select((x) => {
+            // noinspection JSUnresolvedReference
+            return {
+                id: x.id,
+                customer: x.customer,
+                orderedItem: x.orderedItem
+            }
+        })
+            .from(Orders);
+        const formatter = new MemoryFormatter();
+        const sql = formatter.format(query);
+        /**
+         * @type {Array<{id: number, customer: string, releaseYear: number}>}
+         */
+        const results = await db.executeAsync(sql, []);
+        expect(results).toBeTruthy();
+        for (const result of results) {
+            if (typeof result.customer === 'string') {
+                const customer = JSON.parse(result.customer);
+                expect(customer).toBeTruthy();
+            }
         }
     });
 
