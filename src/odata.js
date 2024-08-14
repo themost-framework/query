@@ -8,7 +8,7 @@ import {
     ComparisonExpression,
     MethodCallExpression,
     MemberExpression,
-    SwitchExpression
+    SwitchExpression, Expression
 } from './expressions';
 import { SelectAnyExpression, AnyExpressionFormatter } from './expressions';
 import { OrderByAnyExpression } from './expressions';
@@ -796,6 +796,9 @@ class OpenDataParser {
                 }
                 //search for multiple nested member expression (e.g. a/b/c)
                 self.resolveMember(identifier, function (err, member) {
+                    if (member instanceof Expression) {
+                        return callback(null, member);
+                    }
                     callback.call(self, err, new MemberExpression(member));
                 });
             }
