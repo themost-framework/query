@@ -8,6 +8,12 @@ import './polyfills';
 import { ObjectNameValidator } from './object-name.validator';
 import { isNameReference, trimNameReference } from './name-reference';
 
+class AbstractMethodError extends Error {
+    constructor() {
+        super('Abstract method error')
+    }
+}
+
 const ALIAS_KEYWORD = ' AS ';
 const DEFAULT_COUNT_ALIAS = '__count__';
 /**
@@ -1362,6 +1368,31 @@ class SqlFormatter {
         sql += this.formatWhere(arg);
         sql += ')';
         return sql;
+    }
+
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+    $toString(arg) {
+        throw new AbstractMethodError();
+    }
+
+    $toDouble(arg) {
+        throw new AbstractMethodError();
+    }
+
+    $toDecimal(arg) {
+        throw new AbstractMethodError();
+    }
+
+    $toInt(arg) {
+        throw new AbstractMethodError();
+    }
+
+    $toLong(arg) {
+        throw new AbstractMethodError();
     }
 }
 
