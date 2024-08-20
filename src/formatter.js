@@ -1375,6 +1375,7 @@ class SqlFormatter {
      * @param {*} arg 
      * @returns {string}
      */
+    /* eslint-disable-next-line no-unused-vars */
     $toString(arg) {
         throw new AbstractMethodError();
     }
