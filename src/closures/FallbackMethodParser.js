@@ -74,6 +74,12 @@ class FallbackMethodParser {
     static now() {
         return new SimpleMethodCallExpression('now', []);
     }
+    static parseInt(args) {
+        return new SimpleMethodCallExpression('toInt', args);
+    }
+    static parseFloat(args) {
+        return new SimpleMethodCallExpression('toDouble', args);
+    }
 }
 
 export {

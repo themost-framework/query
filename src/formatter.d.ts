@@ -68,6 +68,11 @@ export declare class SqlFormatter {
     $switch(expr: {
         branches: {case: any, then: any}[], defaultValue?: any
     }): string | any;
+    $toString(arg0:any): string | any;
+    $toInt(arg0:any): string | any;
+    $toDouble(arg0:any): string | any;
+    $toLong(arg0:any): string | any;
+    $toDecimal(arg0:any): string | any;
     formatWhere(where: any): any;
     formatCount(query: QueryExpression | any): any;
     formatFixedSelect(query: QueryExpression | any): any;

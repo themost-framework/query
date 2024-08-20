@@ -8,6 +8,12 @@ import './polyfills';
 import { ObjectNameValidator } from './object-name.validator';
 import { isNameReference, trimNameReference } from './name-reference';
 
+class AbstractMethodError extends Error {
+    constructor() {
+        super('Abstract method error')
+    }
+}
+
 const ALIAS_KEYWORD = ' AS ';
 const DEFAULT_COUNT_ALIAS = '__count__';
 /**
@@ -1362,6 +1368,55 @@ class SqlFormatter {
         sql += this.formatWhere(arg);
         sql += ')';
         return sql;
+    }
+
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+    /* eslint-disable-next-line no-unused-vars */
+    $toString(arg) {
+        throw new AbstractMethodError();
+    }
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+     /* eslint-disable-next-line no-unused-vars */
+    $toDouble(arg) {
+        throw new AbstractMethodError();
+    }
+
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+     /* eslint-disable-next-line no-unused-vars */
+    $toDecimal(arg) {
+        throw new AbstractMethodError();
+    }
+
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+     /* eslint-disable-next-line no-unused-vars */
+    $toInt(arg) {
+        throw new AbstractMethodError();
+    }
+
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+     /* eslint-disable-next-line no-unused-vars */
+    $toLong(arg) {
+        throw new AbstractMethodError();
     }
 }
 
