@@ -1378,19 +1378,42 @@ class SqlFormatter {
     $toString(arg) {
         throw new AbstractMethodError();
     }
-
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+     /* eslint-disable-next-line no-unused-vars */
     $toDouble(arg) {
         throw new AbstractMethodError();
     }
 
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+     /* eslint-disable-next-line no-unused-vars */
     $toDecimal(arg) {
         throw new AbstractMethodError();
     }
 
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+     /* eslint-disable-next-line no-unused-vars */
     $toInt(arg) {
         throw new AbstractMethodError();
     }
 
+    /**
+     * @abstract
+     * @param {*} arg 
+     * @returns {string}
+     */
+     /* eslint-disable-next-line no-unused-vars */
     $toLong(arg) {
         throw new AbstractMethodError();
     }
