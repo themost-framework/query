@@ -129,7 +129,7 @@ class SqlFormatter {
      * @returns {*} - The equivalent SQL string value
      */
     escape(value, unquoted) {
-        if (isNil(value))
+        if (value == null)
             return SqlUtils.escape(null);
 
         if (typeof value === 'object') {
