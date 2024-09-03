@@ -4,8 +4,9 @@
 name: Publish
 
 on:
-  release:
-    types: [released]
+  push:
+    tags:
+      - '([0-9]+.[0-9]+.[0-9]+)'
 
 jobs:
   build:
