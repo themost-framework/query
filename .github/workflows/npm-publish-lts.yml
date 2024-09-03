@@ -3,7 +3,7 @@ name: publish lts
 on:
   push:
     tags:
-      - '*-lts'
+      - '([0-9]+.[0-9]+.[0-9]+)-lts'
 
 jobs:
   test:
