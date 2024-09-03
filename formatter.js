@@ -145,7 +145,7 @@ SqlFormatter.prototype.isLogical = function(obj) {
  */
 SqlFormatter.prototype.escape = function(value,unquoted)
 {
-    if (_.isNil(value))
+    if (value == null)
         return SqlUtils.escape(null);
 
     if (typeof value === 'object')
@@ -155,6 +155,10 @@ SqlFormatter.prototype.escape = function(value,unquoted)
             return SqlUtils.escape(value);
         if (Object.prototype.hasOwnProperty.call(value, '$name')) {
             return this.escapeName(value.$name);
+        } else if (Object.prototype.hasOwnProperty.call(value, '$value')) {
+            return this.escape(value.$value);
+        } else if (Object.prototype.hasOwnProperty.call(value, '$literal')) {
+            return this.escape(value.$literal);
         } else {
             //check if value is a known expression e.g. { $length:"name" }
             var keys = _.keys(value),
