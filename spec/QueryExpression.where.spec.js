@@ -1,4 +1,4 @@
-import { QueryEntity, QueryExpression } from '../index';
+import { QueryEntity, QueryExpression, QueryField, SqlFormatter } from '../index';
 // eslint-disable-next-line no-unused-vars
 import { round, max, min, count, avg } from '../closures/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
@@ -55,6 +55,23 @@ describe('QueryExpression.where', () => {
         let results = await db.executeAsync(query);
         expect(results.length).toBe(1);
         expect(results[0].email).toBe('cameron.ball@example.com');
+    });
+
+    it('should use method call in comparison', async () => {
+        const query = new QueryExpression()
+            .where(
+                new QueryField({
+                    description: {
+                        $concat: [
+                            new QueryField('givenName'),
+                            ' ',
+                            new QueryField('familyName'),
+                        ]
+                    }
+                })
+            ).equal('Cameron Ball');
+        const sql = new SqlFormatter().formatWhere(query.$where);
+        expect(sql).toEqual('CONCAT(givenName, \' \', familyName) = \'Cameron Ball\'');
     });
 
     it('should use not equal', async () => {
