@@ -1048,7 +1048,7 @@ QueryExpression.prototype.equal = function(value)
 {
     var p0 = this.prop();
     if (p0) {
-        var comparison = value;
+        var comparison = Array.isArray(value) ? { $in: value } : { $eq: value };
         //apply aggregation if any
         if (typeof this[aggregate] === 'object') {
             comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], value);
@@ -1078,7 +1078,7 @@ QueryExpression.prototype.notEqual = function(value)
 {
     var p0 = this.prop();
     if (p0) {
-        var comparison = { $ne:value };
+        var comparison = Array.isArray(value) ? { $nin: value } : { $ne: value };
         if (typeof this[aggregate] === 'object') {
             comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate],{ $ne:value });
             delete this[aggregate];
@@ -2189,6 +2189,16 @@ QueryFieldComparer.prototype.compareWith = function(comparison) {
     }
     //get aggregate function
     var aggr = Object.key(this), name;
+    if (aggr.startsWith('$') && Array.isArray(this[aggr])) {
+        // get operator
+        let op = Object.key(comparison);
+        // and create a new expression
+        expr[op] = [
+          this,
+          comparison[op]
+        ];
+        return expr;
+      }
     if (_.isArray(this[aggr])) {
         //get first element (the field name)
         name = QueryField.prototype.nameOf.call(this[aggr][0]);

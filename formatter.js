@@ -459,15 +459,19 @@ SqlFormatter.prototype.$trim = function(p0)
 };
 
 
+// noinspection JSCommentMatchesSignature
 /**
- * Implements concat(a,b) expression formatter.
- * @param {*} p0
- * @param {*} p1
+ * Implements concat(a,b,...) expression formatter.
+ * @param {...*} p0
  * @returns {string}
  */
-SqlFormatter.prototype.$concat = function(p0, p1)
+SqlFormatter.prototype.$concat = function()
 {
-    return sprintf('CONCAT(%s,%s)', this.escape(p0),  this.escape(p1));
+    let args = Array.from(arguments);
+        let self = this;
+        return sprintf('CONCAT(%s)', args.map(function (arg) {
+            return self.escape(arg);
+        }).join(', '));
 };
 
 
