@@ -1,7 +1,8 @@
-import { QueryEntity, QueryExpression } from '../src/index';
+import { QueryEntity, QueryExpression, QueryField } from '../src/index';
 // eslint-disable-next-line no-unused-vars
 import { round, max, min, count, avg } from '../src/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
+import { SqlFormatter } from '../src/index';
 
 /**
  * @interface Thing
@@ -34,6 +35,49 @@ describe('QueryExpression.where', () => {
         }
         return done();
     });
+
+    it('should use method call in comparison', async () => {
+        let query = new QueryExpression()
+            .where(
+                (x) => x.givenName.concat(' ', x.familyName) === 'Cameron Ball'
+            );
+        let sql = new SqlFormatter().formatWhere(query.$where);
+        expect(sql).toEqual('CONCAT(givenName, \' \', familyName) = \'Cameron Ball\'');
+        
+        query = new QueryExpression()
+            .where(
+                new QueryField({
+                    description: {
+                        $concat: [
+                            new QueryField('givenName'),
+                            ' ',
+                            new QueryField('familyName'),
+                        ]
+                    }
+                })
+            ).equal('Cameron Ball');
+        sql = new SqlFormatter().formatWhere(query.$where);
+        expect(sql).toEqual('CONCAT(givenName, \' \', familyName) = \'Cameron Ball\'');
+    });
+
+    it('should use not in condition', async () => {
+        let query = new QueryExpression()
+            .where(
+                new QueryField('givenName')
+            ).notEqual(['Cameron', 'Peter', 'Tom']);
+        const sql = new SqlFormatter().formatWhere(query.$where);
+        expect(sql).toEqual('(NOT givenName IN (\'Cameron\', \'Peter\', \'Tom\'))');
+    });
+
+    it('should use in condition', async () => {
+        let query = new QueryExpression()
+            .where(
+                new QueryField('givenName')
+            ).equal(['Cameron', 'Peter', 'Tom']);
+        const sql = new SqlFormatter().formatWhere(query.$where);
+        expect(sql).toEqual('(givenName IN (\'Cameron\', \'Peter\', \'Tom\'))');
+    });
+
     it('should use equal ', async () => {
         const People = new QueryEntity('PersonData');
         let query = new QueryExpression()
