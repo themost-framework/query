@@ -74,6 +74,24 @@ describe('QueryExpression.where', () => {
         expect(sql).toEqual('CONCAT(givenName, \' \', familyName) = \'Cameron Ball\'');
     });
 
+    it('should use not in condition', async () => {
+        let query = new QueryExpression()
+            .where(
+                new QueryField('givenName')
+            ).notEqual(['Cameron', 'Peter', 'Tom']);
+        const sql = new SqlFormatter().formatWhere(query.$where);
+        expect(sql).toEqual('(NOT givenName IN (\'Cameron\', \'Peter\', \'Tom\'))');
+    });
+
+    it('should use in condition', async () => {
+        let query = new QueryExpression()
+            .where(
+                new QueryField('givenName')
+            ).equal(['Cameron', 'Peter', 'Tom']);
+        const sql = new SqlFormatter().formatWhere(query.$where);
+        expect(sql).toEqual('(givenName IN (\'Cameron\', \'Peter\', \'Tom\'))');
+    });
+
     it('should use not equal', async () => {
         const Products = new QueryEntity('ProductData');
         let query = new QueryExpression()
