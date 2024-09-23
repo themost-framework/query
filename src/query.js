@@ -990,7 +990,7 @@ class QueryExpression {
     equal(value) {
         let p0 = this.prop();
         if (p0) {
-            let comparison = value;
+            let comparison = Array.isArray(value) ? { $in: value } : { $eq: value };
             //apply aggregation if any
             if (typeof this[aggregate] === 'object') {
                 comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], value);
@@ -1014,7 +1014,7 @@ class QueryExpression {
     notEqual(value) {
         let p0 = this.prop();
         if (p0) {
-            let comparison = { $ne: value };
+            let comparison = Array.isArray(value) ? { $nin: value } : { $ne: value };
             if (typeof this[aggregate] === 'object') {
                 comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], { $ne: value });
                 delete this[aggregate];
