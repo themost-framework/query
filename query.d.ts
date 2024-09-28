@@ -25,6 +25,7 @@ export declare class QueryExpression {
     injectWhere(where: any);
     delete(entity: string): QueryExpression;
     insert(obj: any): QueryExpression;
+    insert(expr: QueryExpression): QueryExpression;
     into(entity: string): QueryExpression;
     update(entity: string): QueryExpression;
     set(obj: any): QueryExpression;

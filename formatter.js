@@ -3,10 +3,10 @@ var SqlUtils = require('./utils').SqlUtils;
 var sprintf = require('sprintf-js').sprintf;
 var _ = require('lodash');
 var query = require('./query');
-var QueryExpression = query.QueryExpression;
-var QueryField = query.QueryField;
+var { Args } = require('@themost/common');
+const { QueryExpression, QueryField } = require('./query');
 var instanceOf = require('./instance-of').instanceOf;
-var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator
+var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator;
 
 if (typeof Object.key !== 'function') {
     /**
@@ -1162,12 +1162,16 @@ SqlFormatter.prototype.formatGroupBy = function(obj)
 SqlFormatter.prototype.formatInsert = function(obj)
 {
     var self= this, sql = '';
-    if (_.isNil(obj.$insert))
+    if (obj.$insert == null) {
         throw new Error('Insert expression cannot be empty at this context.');
-    //get entity name
+    }
+    // get entity name
     var entity = Object.key(obj.$insert);
-    //get entity fields
+    // get entity fields
     var obj1 = obj.$insert[entity];
+    if (obj1 instanceof QueryExpression) {
+        return self.formatInsertInto(obj);
+    }
     var props = [];
     for(var prop in obj1)
         if (Object.prototype.hasOwnProperty.call(obj1, prop))
@@ -1180,6 +1184,56 @@ SqlFormatter.prototype.formatInsert = function(obj)
         }).join(', ') ,')');
     return sql;
 };
+/**
+ * @protected
+ * @param {QueryExpression} expr 
+ * @returns {string}
+ */
+SqlFormatter.prototype.formatInsertInto = function(expr) {
+    var self= this
+    var sql = '';
+    if (expr.$insert == null) {
+        throw new Error('Insert expression cannot be empty at this context.');
+    }
+    //get entity name
+    var entity = Object.key(expr.$insert);
+    var insertExpr = expr.$insert[entity];
+    Args.check(insertExpr instanceof QueryExpression, new Error('Invalid insert expression. Expected a valid query expression.'));
+    const select = insertExpr.$select;
+    Args.check(select != null, new Error('Invalid insert expression. Expected a valid select expression.'));
+    sql = 'INSERT INTO ' + self.escapeName(entity);
+    // get fields
+    var fields = [];
+    var FormatterCtor = Object.getPrototypeOf(self).constructor;
+    /**
+     * @type {SqlFormatter}
+     */
+    var formatter = new FormatterCtor();
+    var forceAlias = formatter.settings.forceAlias;
+    formatter.settings.forceAlias = false;
+    for (var key in select) {
+        if (Object.prototype.hasOwnProperty.call(select, key)) {
+            var selectFields = select[key];
+            fields = selectFields.map(function(selectField) {
+                if (selectField instanceof QueryField) {
+                    return selectField.as() || selectField.getName();
+                }
+                var field = new QueryField(selectField);
+                return field.as() || field.getName();
+            });
+            break;
+        }
+    }
+    formatter.settings.forceAlias = forceAlias;
+    if (fields.length === 0) {
+        throw new Error('Invalid insert into expression. Fields cannot be empty.');
+    }
+    sql += ' ';
+    sql += '(' + fields.join(', ') + ')';
+    sql += ' ' + formatter.format(insertExpr);
+    return sql;
+
+}
 
 /**
  * Formats an update query to the equivalent SQL statement

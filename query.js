@@ -429,9 +429,11 @@ QueryExpression.prototype.delete = function(entity)
  */
 QueryExpression.prototype.insert = function(obj)
 {
-    if (_.isNil(obj))
-        return this;
+    Args.check(obj != null, new Error('Invalid argument. Insert object cannot be empty.'));
     if (_.isArray(obj) || _.isObject(obj)) {
+        if (obj instanceof QueryExpression) {
+            Args.check(obj.$select != null, new Error('Invalid query expression. An insert into query must be a valid select expression.'));
+        }
         this.$insert = { table1: obj };
         //delete other properties (if any)
         delete this.$delete;

@@ -67,16 +67,17 @@ export declare class SqlFormatter {
         branches: {case: any, then: any}[], defaultValue?: any
     }): string | any;
 
-    formatCount(query: QueryExpression|Object): string;
-    formatFixedSelect(query: QueryExpression|Object): string;
-    formatSelect(query: QueryExpression|Object): string;
-    formatLimitSelect(query: QueryExpression|Object): string;
+    formatCount(query: QueryExpression|any): string;
+    formatFixedSelect(query: QueryExpression|any): string;
+    formatSelect(query: QueryExpression|any): string;
+    formatLimitSelect(query: QueryExpression|any): string;
     formatField(obj: any): string;
     formatOrder(obj: any): string;
     formatGroupBy(obj: any): string;
-    formatInsert(query: QueryExpression|Object): string;
-    formatUpdate(query: QueryExpression|Object): string;
-    formatDelete(query: QueryExpression|Object): string;
+    formatInsert(query: QueryExpression|any): string;
+    protected formatInsertInto(query: QueryExpression): string;
+    formatUpdate(query: QueryExpression|any): string;
+    formatDelete(query: QueryExpression|any): string;
     escapeName(name: string): string;
     formatFieldEx(obj: any, format: string);
     format(obj: any, s?: string);
