@@ -82,6 +82,7 @@ export declare class SqlFormatter {
     formatOrder(obj: any): any;
     formatGroupBy(obj: any): any;
     formatInsert(query: QueryExpression | any): any;
+    protected formatInsertInto(query: QueryExpression): any;
     formatUpdate(query: QueryExpression | any): any;
     formatDelete(query: QueryExpression | any): any;
     escapeName(name: string): any;

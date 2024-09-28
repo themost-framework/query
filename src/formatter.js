@@ -953,12 +953,16 @@ class SqlFormatter {
      */
     formatInsert(obj) {
         let self = this, sql = '';
-        if (isNil(obj.$insert))
+        if (obj.$insert == null){
             throw new Error('Insert expression cannot be empty at this context.');
+        }
         //get entity name
         let entity = Object.key(obj.$insert);
         //get entity fields
         let obj1 = obj.$insert[entity];
+        if (obj1 instanceof QueryExpression) {
+            return self.formatInsertInto(obj);
+        }
         let props = [];
         for (let prop in obj1)
             if (Object.prototype.hasOwnProperty.call(obj1, prop))
@@ -970,6 +974,63 @@ class SqlFormatter {
             }).join(', '), ')');
         return sql;
     }
+
+    /**
+     * Formats an insert into table(field1, field2, ..)) select from query to the equivalent SQL statement
+     * @param {QueryExpression} expr 
+     * @returns {string}
+     */
+    formatInsertInto(expr) {
+        if (expr.$insert == null) {
+            throw new Error('Insert expression cannot be empty at this context.');
+        }
+        //get entity name
+        const entity = Object.key(expr.$insert);
+        const insertExpr = expr.$insert[entity];
+        if (insertExpr instanceof QueryExpression === false) {
+            throw new Error('Invalid insert expression. Expected a valid query expression.')
+        }
+        const select = insertExpr.$select;
+        if (select == null) {
+            throw new Error('Invalid insert expression. Expected a valid select expression.');
+        }
+        let sql = 'INSERT INTO ' + this.escapeName(entity);
+        // get fields
+        let fields = [];
+        const FormatterCtor = Object.getPrototypeOf(this).constructor;
+        /**
+         * @type {SqlFormatter}
+         */
+        const formatter = new FormatterCtor();
+        for (var key in select) {
+            if (Object.prototype.hasOwnProperty.call(select, key)) {
+                var selectFields = select[key];
+                fields = selectFields.map(function(selectField) {
+                    let name;
+                    if (selectField instanceof QueryField) {
+                        name = selectField.as() || selectField.getName();
+                    } else {
+                        var field = new QueryField(selectField);
+                        name = field.as() || field.getName();
+                    }
+                    if (name == null) {
+                        throw new Error('Invalid select field. Expected a valid field name.');
+                    }
+                    const qualified = name.split('.');
+                    return formatter.escapeName(qualified[qualified.length - 1]);
+                });
+                break;
+            }
+        }
+        if (fields.length === 0) {
+            throw new Error('Invalid insert into expression. Fields cannot be empty.');
+        }
+        sql += ' ';
+        sql += '(' + fields.join(', ') + ')';
+        sql += ' ' + formatter.format(insertExpr);
+        return sql;
+    }
+
     /**
      * Formats an update query to the equivalent SQL statement
      * @param obj {QueryExpression|*}
