@@ -1219,6 +1219,7 @@ SqlFormatter.prototype.formatInsertInto = function(expr) {
                     var field = new QueryField(selectField);
                     name = field.as() || field.getName();
                 }
+                Args.check(name != null, new Error('Invalid select field. Expected a valid field name.'));
                 var qualified = name.split('.');
                 return formatter.escapeName(qualified[qualified.length - 1]);
             });
