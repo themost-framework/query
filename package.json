@@ -1,6 +1,6 @@
 {
   "name": "@themost/query",
-  "version": "2.5.25",
+  "version": "2.5.26",
   "description": "MOST Web Framework Codename Blueshift - Query Module",
   "main": "index.js",
   "scripts": {
