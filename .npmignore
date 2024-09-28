@@ -3,9 +3,11 @@ node_modules
 .DS_Store
 
 # test
+coverage
 .nyc_output
 .nycrc.json
 spec
+jest.config.js
 
 # eslint
 .eslintrc
@@ -19,6 +21,7 @@ babel.config.js
 .vscode
 .theia
 .DS_Store
+.github
 jsconfig.json
 
 # rollup

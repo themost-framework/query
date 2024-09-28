@@ -486,6 +486,90 @@ OpenDataParser.prototype.parseOrderBySequenceAsync = function(str) {
     });
 };
 
+/**
+ * @param {{$select?:string,$filter?:string,$orderBy?:string,$groupBy?:string,$top:number,$skip:number}} queryOptions 
+ * @param {function(Error,*)} callback 
+ */
+OpenDataParser.prototype.parseQueryOptions = function(queryOptions, callback) {
+    const self = this;
+    series([
+        function(cb) {
+            self.parse(queryOptions.$filter, cb);
+        },
+        function(cb) {
+            self.parseSelectSequence(queryOptions.$select, function(err, result) {
+                if (err) {
+                    return cb(err);
+                }
+                if (result) {
+                    try {
+                        return cb(null, new AnyExpressionFormatter().formatMany(result));
+                    } catch (error) {
+                        return cb(error);
+                    }
+                }
+                return cb();
+            });
+        },
+        function(cb) {
+            self.parseOrderBySequence(queryOptions.$orderBy, function(err, result) {
+                if (err) {
+                    return cb(err);
+                }
+                if (result) {
+                    try {
+                        return cb(null, new AnyExpressionFormatter().formatMany(result));
+                    } catch (error) {
+                        return cb(error);
+                    }
+                }
+                return cb();
+            });
+        },
+        function(cb) {
+            self.parseGroupBySequence(queryOptions.$groupBy, function(err, result) {
+                if (err) {
+                    return cb(err);
+                }
+                if (result) {
+                    try {
+                        return cb(null, new AnyExpressionFormatter().formatMany(result));
+                    } catch (error) {
+                        return cb(error);
+                    }
+                }
+                return cb();
+            });
+        }
+    ], function(err, results) {
+        if (err) {
+            return callback(err);
+        }
+        return callback(null, {
+            $where: results[0],
+            $select: results[1],
+            $order: results[2],
+            $group: results[3]
+        });
+    });
+}
+
+/**
+ * @param {{$select?:string,$filter?:string,$orderBy?:string,$groupBy?:string,$top:any,$skip:any,$levels?:any}} queryOptions 
+ * @returns {Promise<*>}
+ */
+OpenDataParser.prototype.parseQueryOptionsAsync = function(queryOptions) {
+    const self = this;
+    return new Promise(function(resolve, reject) {
+        void self.parseQueryOptions(queryOptions, function(err, results) {
+            if (err) {
+                return reject(err);
+            }
+            return resolve(results);
+        });
+    });
+}
+
 
 
 /**

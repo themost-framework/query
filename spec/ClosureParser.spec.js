@@ -343,7 +343,7 @@ describe('ClosureParser', () => {
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.name.startsWith('Apple')).toBeTrue();
+            expect(x.name.startsWith('Apple')).toBeTruthy();
         });
 
         a = new QueryExpression().select( x => {
@@ -354,7 +354,7 @@ describe('ClosureParser', () => {
         result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.name.startsWith('Apple')).toBeFalse();
+            expect(x.name.startsWith('Apple')).toBeFalsy();
         });
 
     });
@@ -369,7 +369,7 @@ describe('ClosureParser', () => {
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.name.endsWith('iPad')).toBeTrue();
+            expect(x.name.endsWith('iPad')).toBeTruthy();
         });
 
         a = new QueryExpression().select( x => {
@@ -380,7 +380,7 @@ describe('ClosureParser', () => {
         result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.name.endsWith('iPad')).toBeFalse();
+            expect(x.name.endsWith('iPad')).toBeFalsy();
         });
 
     });
@@ -475,7 +475,7 @@ describe('ClosureParser', () => {
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
-            expect(x.name.includes('Apple')).toBeTrue();
+            expect(x.name.includes('Apple')).toBeTruthy();
         });
     });
 
@@ -756,9 +756,9 @@ describe('ClosureParser', () => {
         expect(results.length).toBeTruthy();
         results.forEach( (x, index) => {
             if (index > 0) {
-                expect(x.familyName).toBeGreaterThanOrEqual(results[index-1].familyName);
+                expect(x.familyName >= results[index-1].familyName).toBeTruthy();
                 if (x.familyName === results[index-1].familyName) {
-                    expect(x.givenName).toBeGreaterThanOrEqual(results[index-1].givenName);
+                    expect(x.givenName >= results[index-1].givenName).toBeTruthy();
                 }
             }
         });
@@ -777,9 +777,9 @@ describe('ClosureParser', () => {
         expect(results.length).toBeTruthy();
         results.forEach( (x, index) => {
             if (index > 0) {
-                expect(x.familyName).toBeLessThanOrEqual(results[index-1].familyName);
+                expect(x.familyName <= results[index-1].familyName).toBeTruthy();
                 if (x.familyName === results[index-1].familyName) {
-                    expect(x.givenName).toBeLessThanOrEqual(results[index-1].givenName);
+                    expect(x.givenName <= results[index-1].givenName).toBeTruthy();
                 }
             }
         });

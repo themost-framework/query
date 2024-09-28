@@ -1,5 +1,5 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
-import {MemberExpression, MethodCallExpression} from "./expressions";
+import {MemberExpression, MethodCallExpression, ExpressionBase, OrderByAnyExpression} from "./expressions";
 
 export declare interface TokenType {
     Literal : string;
@@ -136,6 +136,58 @@ export declare class OpenDataParser {
     skipDigits(current: any);
     parseNumeric(): LiteralToken;
     parseSign(): Token;
+    parseSelectSequence(str: string, callback: (err?: Error, res?: Array<ExpressionBase>) => void): void;
+    parseSelectSequenceAsync(str: string): Promise<Array<ExpressionBase>>;
+    parseGroupBySequence(str: string, callback: (err?: Error, res?: Array<ExpressionBase>) => void): void;
+    parseGroupBySequenceAsync(str: string): Promise<Array<ExpressionBase>>;
+    parseOrderBySequence(str: string, callback: (err?: Error, res?: Array<OrderByAnyExpression>) => void): void;
+    parseOrderBySequenceAsync(str: string): Promise<Array<OrderByAnyExpression>>;
+    parseExpandSequence(str: string): Array<{
+        name: string, options: {
+            $select?: string,
+            $filter?: string,
+            $expand?: string,
+            $groupBy?: string,
+            $orderBy?: string,
+            $levels?: any;
+            $top?: any;
+            $skip?: any;
+        }
+    }>;
+    parseExpandSequenceAsync(str: string): Promise<Array<{
+        name: string, options: {
+            $select?: string,
+            $filter?: string,
+            $expand?: string,
+            $groupBy?: string,
+            $orderBy?: string,
+            $levels?: any;
+            $top?: any;
+            $skip?: any;
+        }
+    }>>;
+
+    parseQueryOptions(queryOptions: {
+        $select?: string,
+        $filter?: string,
+        $expand?: string,
+        $groupBy?: string,
+        $orderBy?: string,
+        $levels?: any;
+        $top?: any;
+        $skip?: any;
+    }, callback: (err?: Error, res?: any) => void): void;
+
+    parseQueryOptionsAsync(queryOptions: {
+        $select?: string,
+        $filter?: string,
+        $expand?: string,
+        $groupBy?: string,
+        $orderBy?: string,
+        $levels?: any;
+        $top?: any;
+        $skip?: any;
+    }): Promise<any>;
 
 
 }
