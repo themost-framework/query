@@ -1190,8 +1190,7 @@ SqlFormatter.prototype.formatInsert = function(obj)
  * @returns {string}
  */
 SqlFormatter.prototype.formatInsertInto = function(expr) {
-    var self= this
-    var sql = '';
+    var self= this;
     if (expr.$insert == null) {
         throw new Error('Insert expression cannot be empty at this context.');
     }
@@ -1201,7 +1200,7 @@ SqlFormatter.prototype.formatInsertInto = function(expr) {
     Args.check(insertExpr instanceof QueryExpression, new Error('Invalid insert expression. Expected a valid query expression.'));
     const select = insertExpr.$select;
     Args.check(select != null, new Error('Invalid insert expression. Expected a valid select expression.'));
-    sql = 'INSERT INTO ' + self.escapeName(entity);
+    var sql = 'INSERT INTO ' + self.escapeName(entity);
     // get fields
     var fields = [];
     var FormatterCtor = Object.getPrototypeOf(self).constructor;
@@ -1209,22 +1208,23 @@ SqlFormatter.prototype.formatInsertInto = function(expr) {
      * @type {SqlFormatter}
      */
     var formatter = new FormatterCtor();
-    var forceAlias = formatter.settings.forceAlias;
-    formatter.settings.forceAlias = false;
     for (var key in select) {
         if (Object.prototype.hasOwnProperty.call(select, key)) {
             var selectFields = select[key];
             fields = selectFields.map(function(selectField) {
+                var name;
                 if (selectField instanceof QueryField) {
-                    return selectField.as() || selectField.getName();
+                    name = selectField.as() || selectField.getName();
+                } else {
+                    var field = new QueryField(selectField);
+                    name = field.as() || field.getName();
                 }
-                var field = new QueryField(selectField);
-                return field.as() || field.getName();
+                var qualified = name.split('.');
+                return formatter.escapeName(qualified[qualified.length - 1]);
             });
             break;
         }
     }
-    formatter.settings.forceAlias = forceAlias;
     if (fields.length === 0) {
         throw new Error('Invalid insert into expression. Fields cannot be empty.');
     }
