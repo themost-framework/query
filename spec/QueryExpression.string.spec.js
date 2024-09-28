@@ -187,7 +187,7 @@ describe('QueryExpression.where', () => {
         let results = await db.executeAsync(query);
         expect(results.length).toBeTruthy();
         results.forEach((item) => {
-            expect(item.priceText).toBeInstanceOf(String);
+            expect(typeof item.priceText).toEqual('string');
             expect(item.priceText).toEqual(item.price.toString());
         });
     });
