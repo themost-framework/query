@@ -66,4 +66,31 @@ describe('ObjectNameValidator', () => {
         expect(validator.escape('dbo.Table1', '`$1`')).toBe('`dbo`.`Table1`');
     });
 
+    it('should use patterns', () => {
+        const validator = new ObjectNameValidator(ObjectNameValidator.Patterns.Greek);
+        expect(validator.escape('Πίνακας.Πεδίο', '`$1`')).toBe('`Πίνακας`.`Πεδίο`');
+        expect(() => {
+            return validator.escape('Πεδ;ίο');
+        }).toThrowError('Invalid database object name.');
+        expect(validator.escape('Πεδ_ίο', '`$1`')).toEqual('`Πεδ_ίο`');
+    });
+
+    it('should use double quotes', () => {
+        let validator = new ObjectNameValidator(ObjectNameValidator.Patterns.Greek);
+        expect(validator.escape('"Πίνακας"."Πεδίο"', '`$1`')).toBe('`"Πίνακας"`.`"Πεδίο"`');
+        expect(validator.escape('"Ονομασία Πεδίου"', '`$1`')).toBe('`"Ονομασία Πεδίου"`');
+        expect(() => {
+            return validator.escape('"Ονομασία; Πεδίου"');
+        }).toThrow('Invalid database object name.');
+        expect(() => {
+            return validator.escape('"Ονομα"σία; Πεδίου"');
+        }).toThrow('Invalid database object name.');
+        validator = new ObjectNameValidator();
+        expect(validator.escape('"Table"."Field"', '`$1`')).toBe('`"Table"`.`"Field"`');
+        expect(() => {
+            return validator.escape('"Ta%ble"."Field"');
+        }).toThrow('Invalid database object name.');
+        expect(validator.escape('"Table"."Field Title"', '`$1`')).toBe('`"Table"`.`"Field Title"`');
+    });
+
 });
