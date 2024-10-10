@@ -4,6 +4,8 @@
   "browser": true,
   "node": true
 },
+  "plugins": [
+  ],
   "extends": [
       "eslint:recommended"
   ],
@@ -28,6 +30,9 @@
       "quotes": [
           "warn",
           "single"
-      ]
+      ],
+      "node/no-missing-import": ["error", {
+        "allowModules": ["@themost/query"]
+      }]
   }
 }
