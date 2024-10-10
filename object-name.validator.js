@@ -87,12 +87,12 @@ class ObjectNameValidator {
 
 
 ObjectNameValidator.Patterns = {
-    Default: '([a-zA-Z0-9_]+)',
-    Latin: '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u005F]+)',
-    LatinExtended: '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u00A0-\u024F\u005F]+)',
-    Greek: '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u0386-\u03CE\u005F]+)',
-    Cyrillic: '([\u0030-\u0039\u0041-\u007A\u0061-\u007A\u0400-\u04FF\u005F]+)',
-    Hebrew: '([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u05D0-\u05F2\u005F]+)'
+    Default: '(([a-zA-Z0-9_]+)|("[\\sa-zA-Z0-9_]+"))',
+    Latin: '(([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u005F]+)|("[\\s\u0030-\u0039\u0041-\u005A\u0061-\u007A\u005F]+"))',
+    LatinExtended: '(([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u00A0-\u024F\u005F]+)|("[\\s\u0030-\u0039\u0041-\u005A\u0061-\u007A\u00A0-\u024F\u005F]+"))',
+    Greek: '(([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u0386-\u03CE\u005F]+)|("[\\s\u0030-\u0039\u0041-\u005A\u0061-\u007A\u0386-\u03CE\u005F]+"))',
+    Cyrillic: '(([\u0030-\u0039\u0041-\u007A\u0061-\u007A\u0400-\u04FF\u005F]+)|("[\\s\u0030-\u0039\u0041-\u007A\u0061-\u007A\u0400-\u04FF\u005F]+"))',
+    Hebrew: '(([\u0030-\u0039\u0041-\u005A\u0061-\u007A\u05D0-\u05F2\u005F]+)|("[\\s\u0030-\u0039\u0041-\u005A\u0061-\u007A\u05D0-\u05F2\u005F]+"))'
 }
 // use default object name validator
 ObjectNameValidator.use(new ObjectNameValidator());
