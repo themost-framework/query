@@ -210,7 +210,7 @@ OpenDataParser.prototype.atStart = function() {
 
 OpenDataParser.prototype.parseSelectSequence = function(str, callback) {
     return this.parseSelectSequenceAsync(str).then(function(results) {
-        return callback(results);
+        return callback(null, results);
     }).catch(function(err) {
         return callback(err);
     });
@@ -417,11 +417,8 @@ OpenDataParser.prototype.parseExpandItem = function() {
 }
 
 OpenDataParser.prototype.parseOrderBySequence = function(str, callback) {
-    callback = callback || function () {
-        //
-    };
     return this.parseOrderBySequenceAsync(str).then(function(results) {
-        return callback(results);
+        return callback(null, results);
     }).catch(function(err) {
         return callback(err);
     });
