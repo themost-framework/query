@@ -6,6 +6,7 @@ var _expressions = require("./expressions");
 var _query = require("./query");
 var _utils = require("./utils");
 var _validator = require("./object-name.validator");
+var { SimpleOpenDataParser } = require("./simple-open-data-parser");
 
 module.exports.SqlFormatter = _formatter.SqlFormatter;
 
@@ -57,3 +58,5 @@ module.exports.SqlUtils = _utils.SqlUtils;
 
 module.exports.ObjectNameValidator = _validator.ObjectNameValidator;
 module.exports.InvalidObjectNameError = _validator.InvalidObjectNameError;
+
+module.exports.SimpleOpenDataParser = SimpleOpenDataParser;

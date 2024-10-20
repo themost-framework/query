@@ -6,3 +6,4 @@ export * from "./expressions";
 export * from "./query";
 export * from "./utils";
 export * from "./object-name.validator";
+export * from "./simple-open-data-parser";

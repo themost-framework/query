@@ -6,6 +6,9 @@
   "scripts": {
     "test": "jest"
   },
+  "engines": {
+        "node": ">=14"
+  },
   "peerDependencies": {
     "@themost/common": "^2.5.0"
   },

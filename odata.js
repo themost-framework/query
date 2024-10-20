@@ -3,12 +3,12 @@ var _ = require("lodash");
 var {trim} = require('lodash');
 var {LangUtils} = require("@themost/common");
 var {sprintf} = require('sprintf-js');
-var {SwitchExpression, SelectAnyExpression, OrderByAnyExpression, isLogicalOperator,
+var {SwitchExpression, SelectAnyExpression, OrderByAnyExpression, AnyExpressionFormatter, isLogicalOperator,
     createLogicalExpression, isArithmeticOperator, createArithmeticExpression,
     isArithmeticExpression, isLogicalExpression, isComparisonOperator,
     createMemberExpression,
     createComparisonExpression, isMethodCallExpression, isMemberExpression} = require('./expressions');
-var {whilst} = require('async');
+var {whilst, series} = require('async');
 const { MethodCallExpression } = require('./expressions');
 /**
  * @class
