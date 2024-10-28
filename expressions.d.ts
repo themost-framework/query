@@ -4,6 +4,11 @@ export declare interface ExpressionBase {
     exprOf(): any;
 }
 
+export declare abstract class Expression extends Expression {
+    exprOf(): any;
+    source?: string;
+}
+
 export declare class Operators {
     static Not : string;
     static Mul : string;
@@ -24,32 +29,32 @@ export declare class Operators {
     static BitAnd : string;
 }
 
-export declare class ArithmeticExpression implements ExpressionBase {
+export declare class ArithmeticExpression extends Expression {
     constructor(left: any, operator: string, right:any);
     exprOf(): any;
 }
 
-export declare class MemberExpression implements ExpressionBase {
+export declare class MemberExpression extends Expression {
     constructor(name: string);
     exprOf(): any;
 }
 
-export declare class LogicalExpression implements ExpressionBase {
+export declare class LogicalExpression extends Expression {
     constructor(operator: string, args: Array<any>);
     exprOf(): any;
 }
 
-export declare class LiteralExpression implements ExpressionBase {
+export declare class LiteralExpression extends Expression {
     constructor(value: any);
     exprOf(): any;
 }
 
-export declare class ComparisonExpression implements ExpressionBase {
+export declare class ComparisonExpression extends Expression {
     constructor(left: any, operator: string, right:any);
     exprOf(): any;
 }
 
-export declare class MethodCallExpression implements ExpressionBase {
+export declare class MethodCallExpression extends Expression {
     constructor(name: string, args: Array<any>);
     exprOf(): any;
 }
@@ -59,12 +64,12 @@ export declare class SwitchExpression extends MethodCallExpression {
     exprOf(): any;
 }
 
-export declare class SequenceExpression implements ExpressionBase {
+export declare class SequenceExpression extends Expression {
     constructor();
     exprOf(): any;
 }
 
-export declare class ObjectExpression implements ExpressionBase {
+export declare class ObjectExpression extends Expression {
     constructor();
     exprOf(): any;
 }
