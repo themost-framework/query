@@ -141,7 +141,7 @@ class SimpleOpenDataParser extends OpenDataParser {
 
     /**
      * @protected
-     * @returns {ExpressionBase|undefined}
+     * @returns {Expression|undefined}
      */
     parseMethodCallSync() {
         if (this.tokens.length === 0)  {

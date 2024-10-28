@@ -27,6 +27,7 @@ export declare interface OperatorType {
 }
 
 export declare class Token {
+    syntax: string;
     constructor(tokenType: string);
     
     static TokenType: TokenType;
@@ -108,7 +109,7 @@ export declare class OpenDataParser {
 
     parse(str: string, callback: (err?: Error, res?: any) => void);
     parseAsync(str: string): Promise<any>;
-    getOperator(token: string): string;
+    getOperator(token: Token | IdentifierToken | SyntaxToken | LiteralToken): string;
     moveNext();
     expect();
     expectAny();

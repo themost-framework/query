@@ -36,7 +36,7 @@ function OpenDataParser() {
     this.tokens = [];
     /**
      * Gets current token
-     * @type {Token}
+     * @type {Token | IdentifierToken | LiteralToken | SyntaxToken}
      */
     this.currentToken = undefined;
     /**
@@ -84,7 +84,7 @@ OpenDataParser.create = function() {
 
 /**
  * Gets the logical or arithmetic operator of the given token
- * @param token
+ * @param {Token | IdentifierToken} token
  */
 OpenDataParser.prototype.getOperator = function(token) {
     if (token.type===Token.TokenType.Identifier) {
@@ -485,7 +485,7 @@ OpenDataParser.prototype.parseOrderBySequenceAsync = function(str) {
 
 /**
  * @param {{$select?:string,$filter?:string,$orderBy?:string,$groupBy?:string,$top:number,$skip:number}} queryOptions 
- * @param {function(Error,*)} callback 
+ * @param {function(Error,*=)} callback
  */
 OpenDataParser.prototype.parseQueryOptions = function(queryOptions, callback) {
     const self = this;
@@ -588,7 +588,7 @@ OpenDataParser.prototype.parseCommon = function(callback) {
             if (self.atEnd()) {
                 callback.call(self, null, result);
             }
-            //method call exception for [,] or [)] tokens e.g indexOf(Title,'...')
+            //method call exception for "," or "()" tokens e.g indexOf(Title,'...')
             else if ((self.currentToken.syntax===SyntaxToken.Comma.syntax) ||
                 (self.currentToken.syntax===SyntaxToken.ParenClose.syntax)) {
                 callback.call(self, null, result);
@@ -600,7 +600,7 @@ OpenDataParser.prototype.parseCommon = function(callback) {
                 }
                 else {
                     self.moveNext();
-                    // if current operator is a logical operator ($or, $and etc)
+                    // if current operator is a logical operator ($or, $and etc.)
                     // parse right operand by using parseCommon() method 
                     // important note: the current expression probably is not using parentheses
                     // e.g. (category eq 'Laptops' or category eq 'Desktops') and round(price,2) ge 500 and round(price,2) le 1000
@@ -903,7 +903,7 @@ OpenDataParser.prototype.parseMember = function(callback) {
                 //format identifier
                 identifier += '/' + this.currentToken.identifier;
             }
-            //support member to member comparison (with $it identifier e.g. $it/address/city or $it/category etc)
+            //support member to member comparison (with $it identifier e.g. $it/address/city or $it/category etc.)
             if (/^\$it\//.test(identifier)) {
                 identifier= identifier.replace(/^\$it\//,'');
             }
@@ -1577,6 +1577,7 @@ Token.Operator ={
  */
 function LiteralToken(value, literalType)
 {
+    // noinspection JSUnresolvedReference
     LiteralToken.super_.call(this, Token.TokenType.Literal);
     this.value = value;
     this.literalType = literalType;
@@ -1623,6 +1624,7 @@ LiteralToken.Null = new LiteralToken(null, LiteralToken.LiteralType.Null);
  */
 function IdentifierToken(name)
 {
+    // noinspection JSUnresolvedReference
     IdentifierToken.super_.call(this, Token.TokenType.Identifier);
     this.identifier = name;
 }
@@ -1639,6 +1641,7 @@ IdentifierToken.prototype.valueOf = function() {
  */
 function SyntaxToken(chr)
 {
+    // noinspection JSUnresolvedReference
     SyntaxToken.super_.call(this, Token.TokenType.Syntax);
     this.syntax = chr;
 }
