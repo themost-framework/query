@@ -1,6 +1,21 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 var _ = require('lodash');
-var LangUtils = require("@themost/common").LangUtils;
+var {LangUtils} = require("@themost/common");
+
+/**
+ * @class
+ */
+function Expression() {
+    //
+}
+
+/**
+ * @abstract
+ */
+Expression.prototype.exprOf = function() {
+    throw new Error('Class does not implement inherited abstract method.');
+}
+
 /**
  * @class
  * @param {*=} p0 The left operand
@@ -10,10 +25,13 @@ var LangUtils = require("@themost/common").LangUtils;
  */
 function ArithmeticExpression(p0, oper, p1)
 {
+    // noinspection JSUnresolvedReference
+    ArithmeticExpression.super_.call(this);
     this.left = p0;
     this.operator = oper || '$add';
     this.right = p1;
 }
+LangUtils.inherits(ArithmeticExpression, Expression);
 
 ArithmeticExpression.OperatorRegEx = /^(\$add|\$sub|\$mul|\$div|\$mod)$/g;
 
@@ -41,20 +59,24 @@ ArithmeticExpression.prototype.exprOf = function()
     return result;
 };
 
-
 /**
  * @class
  * @param {String} name The name of the current member
  * @constructor
  */
 function MemberExpression(name) {
+    // noinspection JSUnresolvedReference
+    MemberExpression.super_.call(this);
     this.name = name;
 }
+LangUtils.inherits(MemberExpression, Expression);
+
 MemberExpression.prototype.exprOf = function() {
     return {
         $name: this.name
     };
 };
+
 
 /**
  * @class
@@ -63,9 +85,12 @@ MemberExpression.prototype.exprOf = function() {
  * @param {*} args
  */
 function LogicalExpression(oper, args) {
+    // noinspection JSUnresolvedReference
+    LogicalExpression.super_.call(this);
     this.operator = oper || '$and' ;
     this.args = args || [];
 }
+LangUtils.inherits(LogicalExpression, Expression);
 
 LogicalExpression.OperatorRegEx = /^(\$and|\$or|\$not|\$nor)$/g;
 
@@ -96,13 +121,18 @@ LogicalExpression.prototype.exprOf = function() {
  * @constructor
  */
 function LiteralExpression(value) {
+    // noinspection JSUnresolvedReference
+    LiteralExpression.super_.call(this);
     this.value = value;
 }
+LangUtils.inherits(LiteralExpression, Expression);
+
 LiteralExpression.prototype.exprOf = function() {
     if (typeof this.value === 'undefined')
         return null;
     return this.value;
 };
+
 
 /**
  * @class
@@ -113,6 +143,8 @@ LiteralExpression.prototype.exprOf = function() {
  */
 function ComparisonExpression(left, op, right)
 {
+    // noinspection JSUnresolvedReference
+    ComparisonExpression.super_.call(this);
     this.left = left;
     this.operator = op || '$eq';
     this.right = right;
@@ -136,6 +168,7 @@ ComparisonExpression.prototype.exprOf = function()
     });
     return result;
 };
+LangUtils.inherits(ComparisonExpression, Expression);
 
 /**
  * Creates a method call expression
@@ -143,6 +176,8 @@ ComparisonExpression.prototype.exprOf = function()
  * @constructor
  */
 function MethodCallExpression(name, args) {
+    // noinspection JSUnresolvedReference
+    MethodCallExpression.super_.call(this);
     /**
      * Gets or sets the name of this method
      * @type {String}
@@ -156,6 +191,7 @@ function MethodCallExpression(name, args) {
     if (_.isArray(args))
         this.args = args;
 }
+LangUtils.inherits(MethodCallExpression, Expression);
 /**
  * Converts the current method to the equivalent query expression e.g. { orderDate: { $year: [] } } which is equivalent with year(orderDate)
  * @returns {*}
@@ -202,8 +238,11 @@ Operators.Or = '$or';
 Operators.BitAnd = '$bit';
 
 function SequenceExpression() {
+    // noinspection JSUnresolvedReference
+    SequenceExpression.super_.call(this);
     this.value = [];
 }
+LangUtils.inherits(SequenceExpression, Expression);
 
 SequenceExpression.prototype.exprOf = function() {
     return this.value.reduce(function (previousValue, currentValue, currentIndex) {
@@ -231,8 +270,11 @@ SequenceExpression.prototype.exprOf = function() {
 }
 
 function ObjectExpression() {
-    //
+    // noinspection JSUnresolvedReference
+    ObjectExpression.super_.call(this);
 }
+LangUtils.inherits(ObjectExpression, Expression);
+
 ObjectExpression.prototype.exprOf = function() {
     var finalResult = {};
     var thisArg = this;
@@ -250,10 +292,13 @@ ObjectExpression.prototype.exprOf = function() {
     return finalResult;
 }
 
+
 function SimpleMethodCallExpression(name, args) {
+    // noinspection JSUnresolvedReference
     SimpleMethodCallExpression.super_.call(this, name, args);
 }
 LangUtils.inherits(SimpleMethodCallExpression, MethodCallExpression);
+
 /**
  * Converts the current method to the equivalent query expression e.g. { orderDate: { $year: [] } } which is equivalent with year(orderDate)
  * @returns {*}
@@ -295,6 +340,7 @@ LangUtils.inherits(SimpleMethodCallExpression, MethodCallExpression);
 
 
 function AggregateComparisonExpression(left, op, right) {
+    // noinspection JSUnresolvedReference
     AggregateComparisonExpression.super_.call(this, left, op, right);
 }
 LangUtils.inherits(AggregateComparisonExpression, ComparisonExpression)
@@ -314,6 +360,7 @@ LangUtils.inherits(AggregateComparisonExpression, ComparisonExpression)
 
 
 function SwitchExpression(branches, defaultValue) {
+    // noinspection JSUnresolvedReference
     SwitchExpression.super_.call(this, 'switch', [
         {
             branches: branches,
@@ -336,9 +383,13 @@ SwitchExpression.prototype.exprOf = function() {
 }
 
 function SelectAnyExpression(expr, alias) {
+    // noinspection JSUnresolvedReference
+    SelectAnyExpression.super_.call(this);
     this.expression = expr;
     this.as = alias;
 }
+LangUtils.inherits(SelectAnyExpression, Expression);
+
 SelectAnyExpression.prototype.exprOf = function() {
     if (this.as != null) {
         var res = {};
@@ -352,6 +403,7 @@ SelectAnyExpression.prototype.exprOf = function() {
     }
     throw new Error('Expression alias cannot be empty');
 }
+
 
 function AnyExpressionFormatter() {
     //
@@ -372,9 +424,13 @@ function AnyExpressionFormatter() {
 }
 
 function OrderByAnyExpression(expr, direction) {
+    // noinspection JSUnresolvedReference
+    OrderByAnyExpression.super_.call(this);
     this.expression = expr;
     this.direction = direction || 'asc';
 }
+LangUtils.inherits(OrderByAnyExpression, Expression);
+
 OrderByAnyExpression.prototype.exprOf = function() {
     var res = {};
     Object.defineProperty(res, '$' + (this.direction || 'asc'), {
@@ -386,150 +442,171 @@ OrderByAnyExpression.prototype.exprOf = function() {
     return res;
 }
 
+/**
+ * @param {*=} left The left operand
+ * @param {string=} operator The operator
+ * @param {*=} right The right operand
+ * @returns ArithmeticExpression
+ */
+function createArithmeticExpression(left, operator, right) {
+    return new ArithmeticExpression(left, operator, right);
+}
+
+/**
+ * @param {*=} left The left operand
+ * @param {string=} operator The operator
+ * @param {*=} right The right operand
+ * @returns ComparisonExpression
+ */
+function createComparisonExpression(left, operator, right) {
+    return new ComparisonExpression(left, operator, right);
+}
+
+/**
+ * @param {String=} name A string that represents the member's name
+ * @returns MemberExpression
+ */
+function createMemberExpression(name) {
+    return new MemberExpression(name);
+}
+
+/**
+ * @param {*=} value The literal value
+ * @returns LiteralExpression
+ */
+function createLiteralExpression(value) {
+    return new LiteralExpression(value);
+}
+
+/**
+ * Creates a method call expression of the given name with an array of arguments
+ * @param {String} name
+ * @param {Array} args
+ * @returns {MethodCallExpression}
+ */
+function createMethodCallExpression(name, args) {
+    return new MethodCallExpression(name, args);
+}
+/**
+ * Creates a logical expression
+ * @param {String} operator The logical operator
+ * @param {Array=} args An array that represents the expression's arguments
+ * @returns {LogicalExpression}
+ */
+function createLogicalExpression(operator, args) {
+    return new LogicalExpression(operator, args);
+}
+/**
+ * Gets a boolean value that indicates whether the given object is an ArithmeticExpression instance.
+ * @param obj
+ * @returns boolean
+ */
+function isArithmeticExpression(obj) {
+    return obj instanceof ArithmeticExpression;
+}
+/**
+ * Gets a boolean value that indicates whether the given operator is an arithmetic operator.
+ * @param {String} op
+ */
+function isArithmeticOperator(op) {
+    if (typeof op === 'string')
+        return (op.match(ArithmeticExpression.OperatorRegEx) !== null);
+    return false;
+}
+/**
+ * Gets a boolean value that indicates whether the given operator is an arithmetic operator.
+ * @param {string} op
+ * @returns boolean
+ */
+function isComparisonOperator(op) {
+    if (typeof op === 'string')
+        return (op.match(ComparisonExpression.OperatorRegEx) !== null);
+    return false;
+}
+/**
+ * Gets a boolean value that indicates whether the given operator is a logical operator.
+ * @param {string} op
+ * @returns boolean
+ */
+function isLogicalOperator(op) {
+    if (typeof op === 'string')
+        return (op.match(LogicalExpression.OperatorRegEx) !== null);
+    return false;
+}
+/**
+ * Gets a boolean value that indicates whether the given object is an LogicalExpression instance.
+ * @param {*} obj
+ * @returns boolean
+ */
+function isLogicalExpression(obj) {
+    return obj instanceof LogicalExpression;
+}
+/**
+ * Gets a boolean value that indicates whether the given object is an ComparisonExpression instance.
+ * @param {*} obj
+ * @returns boolean
+ */
+function isComparisonExpression(obj) {
+    return obj instanceof ComparisonExpression;
+}
+/**
+ * Gets a boolean value that indicates whether the given object is an MemberExpression instance.
+ * @param {*} obj
+ * @returns boolean
+ */
+function isMemberExpression(obj) {
+    return obj instanceof MemberExpression;
+}
+/**
+ * Gets a boolean value that indicates whether the given object is an LiteralExpression instance.
+ * @param {*} obj
+ * @returns boolean
+ */
+function isLiteralExpression(obj) {
+    return obj instanceof LiteralExpression;
+}
+/**
+ * Gets a boolean value that indicates whether the given object is an MemberExpression instance.
+ * @param {*} obj
+ * @returns boolean
+ */
+function isMethodCallExpression(obj) {
+    return obj instanceof MethodCallExpression;
+}
+
 if (typeof exports !== 'undefined')
 {
-    module.exports.Operators =  Operators;
-    module.exports.ArithmeticExpression =  ArithmeticExpression;
-    module.exports.MemberExpression =  MemberExpression;
-    module.exports.MethodCallExpression =  MethodCallExpression;
-    module.exports.ComparisonExpression =  ComparisonExpression;
-    module.exports.LiteralExpression =  LiteralExpression;
-    module.exports.LogicalExpression =  LogicalExpression;
-    module.exports.SwitchExpression =  SwitchExpression;
-    module.exports.SequenceExpression =  SequenceExpression;
-    module.exports.ObjectExpression =  ObjectExpression;
-    module.exports.SimpleMethodCallExpression =  SimpleMethodCallExpression;
-    module.exports.AggregateComparisonExpression =  AggregateComparisonExpression;
-    module.exports.AnyExpressionFormatter =  AnyExpressionFormatter;
-    module.exports.SelectAnyExpression =  SelectAnyExpression;
-    module.exports.OrderByAnyExpression =  OrderByAnyExpression;
-
-    /**
-     * @param {*=} left The left operand
-     * @param {string=} operator The operator
-     * @param {*=} right The right operand
-     * @returns ArithmeticExpression
-     */
-    module.exports.createArithmeticExpression = function(left, operator, right) {
-        return new ArithmeticExpression(left, operator, right);
-    };
-    /**
-     * @param {*=} left The left operand
-     * @param {string=} operator The operator
-     * @param {*=} right The right operand
-     * @returns ComparisonExpression
-     */
-    module.exports.createComparisonExpression = function(left, operator, right) {
-        return new ComparisonExpression(left, operator, right);
-    };
-    /**
-     * @param {String=} name A string that represents the member's name
-     * @returns MemberExpression
-     */
-    module.exports.createMemberExpression = function(name) {
-        return new MemberExpression(name);
-    };
-    /**
-     * @param {*=} value The literal value
-     * @returns LiteralExpression
-     */
-    module.exports.createLiteralExpression = function(value) {
-        return new LiteralExpression(value);
-    };
-    /**
-     * Creates a method call expression of the given name with an array of arguments
-     * @param {String} name
-     * @param {Array} args
-     * @returns {MethodCallExpression}
-     */
-    module.exports.createMethodCallExpression = function(name, args) {
-        return new MethodCallExpression(name, args);
-    };
-    /**
-     * Creates a logical expression
-     * @param {String} operator The logical operator
-     * @param {Array=} args An array that represents the expression's arguments
-     * @returns {LogicalExpression}
-     */
-    module.exports.createLogicalExpression = function(operator, args) {
-        return new LogicalExpression(operator, args);
-    };
-    /**
-     * Gets a boolean value that indicates whether or not the given object is an ArithmeticExpression instance.
-     * @param obj
-     * @returns boolean
-     */
-    module.exports.isArithmeticExpression = function(obj) {
-        return obj instanceof ArithmeticExpression;
-    };
-    /**
-     * Gets a boolean value that indicates whether or not the given operator is an arithmetic operator.
-     * @param {String} op
-     */
-    module.exports.isArithmeticOperator = function(op) {
-        if (typeof op === 'string')
-            return (op.match(ArithmeticExpression.OperatorRegEx)!==null);
-        return false;
-    };
-    /**
-     * Gets a boolean value that indicates whether or not the given operator is an arithmetic operator.
-     * @param {string} op
-     * @returns boolean
-     */
-    module.exports.isComparisonOperator = function(op) {
-        if (typeof op === 'string')
-            return (op.match(ComparisonExpression.OperatorRegEx)!==null);
-        return false;
-    };
-    /**
-     * Gets a boolean value that indicates whether or not the given operator is a logical operator.
-     * @param {string} op
-     * @returns boolean
-     */
-    module.exports.isLogicalOperator = function(op) {
-        if (typeof op === 'string')
-            return (op.match(LogicalExpression.OperatorRegEx)!==null);
-        return false;
-    };
-    /**
-     * Gets a boolean value that indicates whether or not the given object is an LogicalExpression instance.
-     * @param {*} obj
-     * @returns boolean
-     */
-    module.exports.isLogicalExpression = function(obj) {
-        return obj instanceof LogicalExpression;
-    };
-    /**
-     * Gets a boolean value that indicates whether or not the given object is an ComparisonExpression instance.
-     * @param {*} obj
-     * @returns boolean
-     */
-    module.exports.isComparisonExpression = function(obj) {
-        return obj instanceof ComparisonExpression;
-    };
-    /**
-     * Gets a boolean value that indicates whether or not the given object is an MemberExpression instance.
-     * @param {*} obj
-     * @returns boolean
-     */
-    module.exports.isMemberExpression = function(obj) {
-        return obj instanceof MemberExpression;
-    };
-    /**
-     * Gets a boolean value that indicates whether or not the given object is an LiteralExpression instance.
-     * @param {*} obj
-     * @returns boolean
-     */
-    module.exports.isLiteralExpression = function(obj) {
-        return obj instanceof LiteralExpression;
-    };
-    /**
-     * Gets a boolean value that indicates whether or not the given object is an MemberExpression instance.
-     * @param {*} obj
-     * @returns boolean
-     */
-    module.exports.isMethodCallExpression = function(obj) {
-        return obj instanceof MethodCallExpression;
+    module.exports = {
+        Expression,
+        Operators,
+        ArithmeticExpression,
+        MemberExpression,
+        MethodCallExpression,
+        ComparisonExpression,
+        LiteralExpression,
+        LogicalExpression,
+        SwitchExpression,
+        SequenceExpression,
+        ObjectExpression,
+        SimpleMethodCallExpression,
+        AggregateComparisonExpression,
+        AnyExpressionFormatter,
+        SelectAnyExpression,
+        OrderByAnyExpression,
+        createArithmeticExpression,
+        createComparisonExpression,
+        createMemberExpression,
+        createLiteralExpression,
+        createMethodCallExpression,
+        createLogicalExpression,
+        isArithmeticExpression,
+        isArithmeticOperator,
+        isComparisonOperator,
+        isLogicalOperator,
+        isLogicalExpression,
+        isComparisonExpression,
+        isMemberExpression,
+        isLiteralExpression,
+        isMethodCallExpression
     }
-
 }

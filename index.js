@@ -44,6 +44,7 @@ module.exports.isLogicalOperator = _expressions.isLogicalOperator;
 module.exports.isMemberExpression = _expressions.isMemberExpression;
 module.exports.isMethodCallExpression = _expressions.isMethodCallExpression;
 module.exports.Operators = _expressions.Operators;
+module.exports.Expression = _expressions.Expression;
 
 module.exports.QueryField = _query.QueryField;
 module.exports.QueryEntity = _query.QueryEntity;
