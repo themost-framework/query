@@ -201,8 +201,6 @@ MethodCallExpression.prototype.exprOf = function() {
     var name = '$'.concat(this.name);
     //set arguments array
     method[name] = [] ;
-    if (this.args.length===0)
-        throw new Error('Unsupported method expression. Method arguments cannot be empty.');
     method[name].push.apply(method[name], this.args.map(function (arg) {
         if (typeof arg.exprOf === 'function') {
             return arg.exprOf();
@@ -306,9 +304,6 @@ LangUtils.inherits(SimpleMethodCallExpression, MethodCallExpression);
  SimpleMethodCallExpression.prototype.exprOf = function() {
     var method = {};
     var name = '$'.concat(this.name);
-    //set arguments array
-    if (this.args.length === 0)
-        throw new Error('Unsupported method expression. Method arguments cannot be empty.');
     if (this.args.length === 1) {
         method[name] = {};
         var arg;

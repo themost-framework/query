@@ -1,10 +1,13 @@
 {
   "name": "@themost/query",
-  "version": "2.5.29",
+  "version": "2.5.30",
   "description": "@themost/query is a query builder for SQL. It includes a wide variety of helper functions for building complex SQL queries under node.js.",
   "main": "index.js",
   "scripts": {
     "test": "jest"
+  },
+  "engines": {
+    "node": ">=14"
   },
   "peerDependencies": {
     "@themost/common": "^2.5.0"
