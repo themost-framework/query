@@ -16,9 +16,12 @@ class OpenDataQueryFormatter extends SqlFormatter {
     }
 
     escapeRight(value) {
+        if (value == null) {
+            return super.escape(value);
+        }
         if (Object.prototype.hasOwnProperty.call(value, '$name'))
             return `$it/${this.escapeName(value.$name)}`;
-        return super.escape(value)
+        return super.escape(value);
     }
 
     $startswith(p0, p1) {

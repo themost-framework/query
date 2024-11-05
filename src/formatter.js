@@ -166,7 +166,14 @@ class SqlFormatter {
                 } else if (keys.length === 1) {
                     // backward compatibility for simple equal expression
                     // e.g. { "category": "Laptops" }
-                    return this.$eq(new QueryField(key0), value[key0]);
+                    const value0 = value[key0];
+                    if (value0 == null) {
+                        return this.$eq(new QueryField(key0), null);
+                    }
+                    if ((typeof value0 === 'object' && Object.prototype.hasOwnProperty.call(value0, '$eq')) === false) {
+                        throw new Error('Invalid right operand. Expected an object with $eq operator.');
+                    }
+                    return this.$eq(new QueryField(key0), value0.$eq);
                 }
             }
         }

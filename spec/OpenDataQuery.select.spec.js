@@ -259,4 +259,14 @@ describe('OpenDataQuery.select', () => {
         expect(result.$select).toEqual('id,familyName,givenName,concat(concat(givenName,\' \'),familyName) as name');
     });
 
+    it('should use simple or statement', () => {
+        const query = new OpenDataQuery().from('Products')
+            .where('category').equal('Laptops').or('category').equal('Desktops')
+            .orderBy('price')
+            .take(10);
+        const formatter = new OpenDataQueryFormatter();
+        let result = formatter.formatSelect(query);
+        expect(result).toBeTruthy();
+    })
+
 });
