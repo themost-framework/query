@@ -7,7 +7,7 @@ var {SwitchExpression, SelectAnyExpression, OrderByAnyExpression, AnyExpressionF
     createLogicalExpression, isArithmeticOperator, createArithmeticExpression,
     isArithmeticExpression, isLogicalExpression, isComparisonOperator,
     createMemberExpression,
-    createComparisonExpression, isMethodCallExpression, isMemberExpression} = require('./expressions');
+    createComparisonExpression, isMethodCallExpression, isMemberExpression, Expression} = require('./expressions');
 var {whilst, series} = require('async');
 const { MethodCallExpression } = require('./expressions');
 /**
@@ -909,7 +909,10 @@ OpenDataParser.prototype.parseMember = function(callback) {
             }
             //search for multiple nested member expression (e.g. a/b/c)
             self.resolveMember(identifier, function(err, member) {
-                callback.call(self, err, createMemberExpression(member));
+                if (member instanceof Expression) {
+                    return callback.call(self, err, member);
+                }
+                return callback.call(self, err, createMemberExpression(member));
             });
         }
     }
