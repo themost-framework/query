@@ -1,6 +1,4 @@
 import { QueryExpression, QueryEntity } from '../index';
-
-// eslint-disable-next-line no-unused-vars
 import { round, min, max, count } from '../closures/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 

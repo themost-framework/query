@@ -1,10 +1,7 @@
-// eslint-disable-next-line no-unused-vars
 import {QueryEntity, QueryExpression, QueryField} from '../index';
-import { QueryValueRef } from '../query';
 import {MemoryAdapter} from './test/TestMemoryAdapter';
 import Ajv from 'ajv';
 
-// eslint-disable-next-line no-unused-vars
 describe('SqlFormatter', () => {
 
     /**

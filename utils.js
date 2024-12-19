@@ -52,7 +52,7 @@ function bufferToString(buffer) {
     var hex = '';
     try {
         hex = buffer.toString('hex');
-    } catch (err) {
+    } catch {
         // node v0.4.x does not support hex / throws unknown encoding error
         for (var i = 0; i < buffer.length; i++) {
             var byte = buffer[i];

@@ -1,4 +1,4 @@
-import { QueryField, QueryValueRef } from '../index';
+import { QueryField } from '../index';
 import { QueryEntity, QueryExpression } from '../index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 

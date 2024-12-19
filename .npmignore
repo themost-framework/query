@@ -12,6 +12,7 @@ jest.config.js
 # eslint
 .eslintrc
 .eslintignore
+eslint.config.mjs
 
 # babel
 babel.config.js
