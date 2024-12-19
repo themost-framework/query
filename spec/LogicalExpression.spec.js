@@ -1,7 +1,5 @@
-// eslint-disable-next-line no-unused-vars
 import {QueryExpression, OpenDataParser} from '../index';
 import {MemoryAdapter} from './test/TestMemoryAdapter';
-// eslint-disable-next-line no-unused-vars
 
 describe('LogicalExpression', () => {
 

@@ -2,7 +2,6 @@
 var SqlUtils = require('./utils').SqlUtils;
 var sprintf = require('sprintf-js').sprintf;
 var _ = require('lodash');
-var query = require('./query');
 var { Args } = require('@themost/common');
 const { QueryExpression, QueryField } = require('./query');
 var instanceOf = require('./instance-of').instanceOf;
@@ -740,6 +739,7 @@ SqlFormatter.prototype.$switch = function(expr) {
  * @param {*=} arg
  * @returns *
  */
+// eslint-disable-next-line no-unused-vars
 SqlFormatter.prototype.$or = function(arg) {
     var args = Array.from(arguments);
     if (args.length < 2) {
@@ -759,6 +759,7 @@ SqlFormatter.prototype.$or = function(arg) {
  * @param {*=} arg
  * @returns *
  */
+ // eslint-disable-next-line no-unused-vars
  SqlFormatter.prototype.$and = function(arg) {
     var args = Array.from(arguments);
     if (args.length < 2) {

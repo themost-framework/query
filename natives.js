@@ -2,7 +2,7 @@
 if (!Object.keys) {
     Object.keys = (function () {
         var hasOwnProperty = Object.prototype.hasOwnProperty,
-            hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+            hasDontEnumBug = !Object.prototype.propertyIsEnumerable.call({toString: null}, 'toString'),
             dontEnums = [
                 'toString',
                 'toLocaleString',
@@ -92,7 +92,7 @@ if (typeof Object.key !== 'function') {
         if (typeof obj === 'undefined' || obj === null)
             return null;
         for(var prop in obj) {
-            if (obj.hasOwnProperty(prop))
+            if (Object.prototype.hasOwnProperty.call(obj, prop))
                 return prop;
         }
         return null;
@@ -109,7 +109,7 @@ if (typeof Object.clear !== 'function') {
             return;
         var arr = [];
         for (var key1 in obj)
-            if (obj.hasOwnProperty(key1)) arr.push(key1);
+            if (Object.prototype.hasOwnProperty.call(obj, key1)) arr.push(key1);
         for (var key2 in arr) {
             delete obj[key2];
         }

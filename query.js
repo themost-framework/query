@@ -7,7 +7,6 @@ var aggregate = Symbol();
 var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator;
 var ClosureParser = require('./closures/index').ClosureParser;
 var SyncSeriesEventEmitter = require('@themost/events').SyncSeriesEventEmitter;
-// eslint-disable-next-line no-unused-vars
 //noinspection JSUnusedLocalSymbols
 require('./natives');
 /**
@@ -552,7 +551,6 @@ QueryExpression.prototype.set = function(obj)
  * console.log('SQL', formatter.formatSelect(q))
  * // SELECT UserBase.id, UserBase.name FROM UserBase
  */
-/* eslint-disable-next-line no-unused-vars */
 QueryExpression.prototype.select = function(field)
 {
 
@@ -937,7 +935,6 @@ QueryExpression.prototype.thenByDescending = function(field) {
  * @param {...*} field
  * @returns {QueryExpression}
  */
-/* eslint-disable-next-line no-unused-vars */
 QueryExpression.prototype.groupBy = function(field) {
 
     var fields = [];

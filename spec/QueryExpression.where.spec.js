@@ -1,5 +1,4 @@
 import { QueryEntity, QueryExpression, QueryField, SqlFormatter } from '../index';
-// eslint-disable-next-line no-unused-vars
 import { round, max, min, count, avg } from '../closures/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 

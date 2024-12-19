@@ -1,5 +1,4 @@
 import { MemoryAdapter } from './test/TestMemoryAdapter';
-import { MemoryFormatter } from './test/TestMemoryFormatter';
 import { QueryExpression, SqlFormatter } from '../index';
 import { executeInTransactionAsync } from './utils';
 import { QueryField } from '../query';

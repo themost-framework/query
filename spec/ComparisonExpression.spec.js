@@ -1,4 +1,3 @@
-/* eslint-disable quotes */
 import { SqlFormatter } from '../index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 
