@@ -39,6 +39,23 @@ describe('Delete Query', () => {
         });
     });
 
+    it('should use delete statement and throw error for wrong usage', async () => {
+        await executeInTransactionAsync(db, async () => {
+            const selectQuery = new QueryExpression().select(
+                'id', 'name', 'price', 'category', 'description'
+            ).from('ProductData').where('name').equal('Nintendo 2DS');
+            let [item] = await db.executeAsync(selectQuery);
+            expect(item).toBeTruthy();
+            let deleteQuery;
+            expect(() => {
+                deleteQuery = new QueryExpression().select(
+                    'id', 'name'
+                ).delete().from('ProductBase').where('id').equal(item.id);
+            }).toThrow('A select expression cannot be overwritten by a delete expression.');
+            expect(deleteQuery).toBeFalsy();
+        });
+    });
+
     it('should use delete statement with query entity', async () => {
         await executeInTransactionAsync(db, async () => {
             const selectQuery = new QueryExpression().select(

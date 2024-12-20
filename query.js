@@ -684,8 +684,14 @@ QueryExpression.prototype.from = function(entity) {
     }
     delete this.$insert;
     delete this.$update;
+    // if delete expression has been defined by using a statement like new QueryExpression().delete().from('Products')
     if (this.$delete instanceof UnknownQueryEntity) {
-        delete this.$select;
+        // validate select statement
+        if (this.$select != null) {
+            // and throw error if it's defined
+            throw new Error('A select expression cannot be overwritten by a delete expression.');
+        }
+        // otherwise, get entity name
         if (this.$ref && this.$ref[name] instanceof QueryEntity) {
             this.$delete = this.$ref[name].name;
         } else {
