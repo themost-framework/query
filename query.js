@@ -64,6 +64,13 @@ function validateAliasExpr(alias) {
 
 /**
  * @class
+ */
+function UnknownQueryEntity() {
+
+}
+
+/**
+ * @class
  * @constructor
  */
 function QueryExpression()
@@ -411,9 +418,7 @@ QueryExpression.prototype.injectWhere = function(where)
  */
 QueryExpression.prototype.delete = function(entity)
 {
-    if (_.isNil(entity))
-        return this;
-    this.$delete = entity.valueOf();
+    this.$delete = entity || new UnknownQueryEntity()
     //delete other properties (if any)
     delete this.$insert;
     delete this.$select;
@@ -677,10 +682,18 @@ QueryExpression.prototype.from = function(entity) {
     else {
         this.privates.entity = name;
     }
-    //delete other properties (if any)
-    delete this.$delete;
     delete this.$insert;
     delete this.$update;
+    if (this.$delete instanceof UnknownQueryEntity) {
+        delete this.$select;
+        if (this.$ref && this.$ref[name] instanceof QueryEntity) {
+            this.$delete = this.$ref[name].name;
+        } else {
+            this.$delete = name;
+        }
+    } else {
+        delete this.$delete;
+    }
     //and return this object
     return this;
 };

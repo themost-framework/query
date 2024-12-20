@@ -1281,8 +1281,10 @@ SqlFormatter.prototype.formatDelete = function(obj)
     var entity = obj.$delete;
     //add basic INSERT statement
     sql = sql.concat('DELETE FROM ', this.escapeName(entity));
-    if (_.isObject(obj.$where))
-        sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
+    if (obj.$where == null) {
+        throw new Error('A delete expression must have a where clause');
+    }
+    sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
     return sql;
 };
 
