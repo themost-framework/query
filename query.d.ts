@@ -23,7 +23,7 @@ export declare class QueryExpression {
     where(field: any): this;
     where<T>(expr: (value: T, ...param: any) => any, params?: any): this;
     injectWhere(where: any);
-    delete(entity: string): QueryExpression;
+    delete(entity?: string | QueryEntity): QueryExpression;
     insert(obj: any): QueryExpression;
     insert(expr: QueryExpression): QueryExpression;
     into(entity: string): QueryExpression;
