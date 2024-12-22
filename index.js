@@ -7,6 +7,18 @@ var _query = require("./query");
 var _utils = require("./utils");
 var _validator = require("./object-name.validator");
 var { SimpleOpenDataParser } = require("./simple-open-data-parser");
+var {
+    any,
+    anyOf,
+    OpenDataQuery
+} = require("./open-data-query.expression");
+var {
+    me,
+    now,
+    today,
+    whoami,
+    OpenDataQueryFormatter
+} = require("./open-data-query.formatter");
 
 module.exports.SqlFormatter = _formatter.SqlFormatter;
 
@@ -61,3 +73,12 @@ module.exports.ObjectNameValidator = _validator.ObjectNameValidator;
 module.exports.InvalidObjectNameError = _validator.InvalidObjectNameError;
 
 module.exports.SimpleOpenDataParser = SimpleOpenDataParser;
+
+module.exports.any = any;
+module.exports.anyOf = anyOf;
+module.exports.OpenDataQuery = OpenDataQuery;
+module.exports.me = me;
+module.exports.now = now;
+module.exports.today = today;
+module.exports.whoami = whoami;
+module.exports.OpenDataQueryFormatter = OpenDataQueryFormatter;
