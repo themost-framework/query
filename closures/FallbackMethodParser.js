@@ -70,6 +70,18 @@ class FallbackMethodParser {
     static parseFloat(args) {
         return new SimpleMethodCallExpression('toDouble', args);
     }
+    static me() {
+        return new SimpleMethodCallExpression('me', []);
+    }
+    static today() {
+        return new SimpleMethodCallExpression('today', []);
+    }
+    static whoami() {
+        return new SimpleMethodCallExpression('whoami', []);
+    }
+    static now() {
+        return new SimpleMethodCallExpression('now', []);
+    }
 }
 
 module.exports = {
