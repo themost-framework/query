@@ -38,9 +38,9 @@ describe('ClosureParser', () => {
             x.familyName,
             x.givenName
         })
-        .from(People).where( x => {
-            return x.id === 355;
-        });
+        .from(People).where( (x, id) => {
+            return x.id === id;
+        }, 355);
         expect(a.$where).toEqual({
                 $eq: [
                     { $name: 'PersonData.id' },
@@ -147,11 +147,9 @@ describe('ClosureParser', () => {
             x.name,
             x.price
         })
-        .from(Products).where( x => {
+        .from(Products).where( (x, maximumPrice) => {
             return x.price < maximumPrice;
-        }, {
-             maximumPrice
-        });
+        }, maximumPrice);
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
         result.forEach( x => {
@@ -167,7 +165,7 @@ describe('ClosureParser', () => {
             x.orderDate
         })
         .from(Orders).where( x => {
-            return x.OrderDate.getFullYear() === 2019;
+            return x.orderDate.getFullYear() === 2019;
         }).take(10);
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
@@ -184,7 +182,7 @@ describe('ClosureParser', () => {
             x.orderDate
         })
         .from(Orders).where( x => {
-            return x.OrderDate.getYear() >= 2019;
+            return x.orderDate.getYear() >= 2019;
         }).take(10);
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
@@ -271,7 +269,7 @@ describe('ClosureParser', () => {
             x.orderDate
         })
         .from(Orders).where( x => {
-            return x.OrderDate.getSeconds() > 50;
+            return x.orderDate.getSeconds() > 50;
         }).take(10);
         let result = await db.executeAsync(a);
         expect(result.length).toBeTruthy();
@@ -765,9 +763,9 @@ describe('ClosureParser', () => {
 
     it('should use then by descending', async () => {
         const People = new QueryEntity('PersonData');
-        let a = new QueryExpression().select( x => {
-            x.familyName,
-            x.givenName
+        let a = new QueryExpression().select( ({familyName, givenName}) => {
+            familyName,
+            givenName
         }).from(People)
             .orderByDescending((x) => x.familyName)
             .thenByDescending((x) => x.givenName).take(50);

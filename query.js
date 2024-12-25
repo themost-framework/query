@@ -9,6 +9,7 @@ var ClosureParser = require('./closures/index').ClosureParser;
 var SyncSeriesEventEmitter = require('@themost/events').SyncSeriesEventEmitter;
 //noinspection JSUnusedLocalSymbols
 require('./natives');
+var {Expression} = require("./expressions");
 /**
  * @class
  * @constructor
@@ -157,8 +158,11 @@ function QueryExpression()
     });
 
     this.resolvingJoinMember.subscribe(function (event) {
-        if (event.target.$joinCollection) {
-            event.member = event.target.$joinCollection.concat('.', event.member);
+        if (event.member instanceof Expression) {
+            return;
+        }
+        if (event.target.$joinCollection != null && event.object == null) {
+            event.object = event.target.$joinCollection;
         }
     });
 }
@@ -523,11 +527,15 @@ QueryExpression.prototype.set = function(obj)
     closureParser.resolvingJoinMember.subscribe(function(event) {
         var newEvent = {
             target: self,
+            object: event.object || self.$joinCollection,
             member: event.member,
             fullyQualifiedMember: event.fullyQualifiedMember
         };
         self.resolvingJoinMember.emit(newEvent);
-        event.member = newEvent.member
+        event.member = newEvent.member;
+        if (event.object !== newEvent.object) {
+            event.object = newEvent.object;
+        }
     });
     closureParser.resolvingMethod.subscribe(function (event) {
         var newEvent = {
@@ -805,6 +813,7 @@ QueryExpression.prototype.with = function(obj) {
         else {
             //get expand object
             var expand = this.$expand;
+            delete this.$joinCollection;
             //and create array of expand objects
             this.$expand = [expand, this.privates.expand];
         }

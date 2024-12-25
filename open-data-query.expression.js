@@ -5,7 +5,6 @@ const { instanceOf } = require('./instance-of');
 class OpenDataQuery extends QueryExpression {
     constructor() {
         super();
-        // eslint-disable-next-line no-unused-vars
         this.resolvingJoinMember.subscribe((event) => {
             const fullyQualifiedMember = event.fullyQualifiedMember.split('.');
             if (fullyQualifiedMember.length > 2) {

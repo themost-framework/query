@@ -68,13 +68,13 @@ export declare class SqlFormatter {
     }): string | any;
 
     formatCount(query: QueryExpression|any): string;
-    formatFixedSelect(query: QueryExpression|any): string;
-    formatSelect(query: QueryExpression|any): string;
-    formatLimitSelect(query: QueryExpression|any): string;
-    formatField(obj: any): string;
-    formatOrder(obj: any): string;
-    formatGroupBy(obj: any): string;
-    formatInsert(query: QueryExpression|any): string;
+    formatFixedSelect(query: QueryExpression|any): string | unknown;
+    formatSelect(query: QueryExpression|any): string | unknown;
+    formatLimitSelect(query: QueryExpression|any): string | unknown;
+    formatField(obj: any): string | unknown;
+    formatOrder(obj: any): string | unknown;
+    formatGroupBy(obj: any): string | unknown;
+    formatInsert(query: QueryExpression|any): string | unknown;
     protected formatInsertInto(query: QueryExpression): string;
     formatUpdate(query: QueryExpression|any): string;
     formatDelete(query: QueryExpression|any): string;

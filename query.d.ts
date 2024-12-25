@@ -33,7 +33,7 @@ export declare class QueryExpression {
     select<T>(expr: (value: T, ...param: any) => any, params?: any): this;
     select<T,J>(expr: (value1: T, value2: J, ...param: any) => any, params?: any): this;
     count(alias: string): QueryExpression;
-    from(alias: string): QueryExpression;
+    from(entity: string | QueryEntity): QueryExpression;
     join(entity: any, props?: any, alias?: any): QueryExpression;
     join(entity: QueryEntity): this;
     leftJoin(entity: any, props?: any, alias?: any): this;
