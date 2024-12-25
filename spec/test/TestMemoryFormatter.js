@@ -265,6 +265,22 @@ class MemoryFormatter extends SqlFormatter {
     $toString(p0) {
         return `CAST(${this.escape(p0)} AS TEXT)`;
     }
+
+    $toDouble(arg) {
+        return `CAST(${this.escape(arg)} AS NUMERIC)`;
+    }
+
+    $toDecimal(arg) {
+        return `CAST(${this.escape(arg)} AS NUMERIC)`;
+    }
+
+    $toInt(arg) {
+        return `CAST(${this.escape(arg)} AS INTEGER)`;
+    }
+
+    $toLong(arg) {
+        return `CAST(${this.escape(arg)} AS INTEGER)`;
+    }
 }
 
 export {
