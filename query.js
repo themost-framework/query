@@ -643,6 +643,7 @@ QueryExpression.prototype.count = function(alias) {
 /**
  * Sets the entity of a select query expression
  * @param entity {string|QueryEntity|*} A string that represents the entity name
+ * * @param additionalEntity {...{string|QueryEntity|QueryExpression}} Additional entities
  * @returns {QueryExpression}
  */
 QueryExpression.prototype.from = function(entity) {
@@ -690,6 +691,17 @@ QueryExpression.prototype.from = function(entity) {
     delete this.$insert;
     delete this.$update;
     //and return this object
+    if (arguments.length > 1) {
+        this.$additionalSelect = [];
+        for (let i = 1; i < arguments.length; i++) {
+            const additionalEntity = arguments[i];
+            if (typeof additionalEntity === 'string') {
+                this.$additionalSelect.push(new QueryEntity(additionalEntity));
+            } else {
+                this.$additionalSelect.push(additionalEntity);
+            }
+        }
+    }
     return this;
 };
 
