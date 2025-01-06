@@ -3,7 +3,7 @@ var SqlUtils = require('./utils').SqlUtils;
 var sprintf = require('sprintf-js').sprintf;
 var _ = require('lodash');
 var { Args } = require('@themost/common');
-const { QueryExpression, QueryField } = require('./query');
+const { QueryExpression, QueryField, QueryEntity } = require('./query');
 var instanceOf = require('./instance-of').instanceOf;
 var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator;
 
@@ -961,7 +961,44 @@ SqlFormatter.prototype.formatSelect = function(obj)
             return $this.format(x,'%f');
         }).join(', '), ' FROM ', escapedEntity);
     }
-
+    /**
+     * @type {Array<QueryEntity|QueryExpression>}
+     */
+    const additionalSelect = obj.$additionalSelect;
+    if (Array.isArray(additionalSelect) && additionalSelect.length) {
+        const aliasKeyword = getAliasKeyword.bind($this)();
+        const additionalSelectSql = additionalSelect.map(function(item){
+            let sqlSelect = '';
+            let sqlAlias = null;
+            if (instanceOf(item, QueryEntity)) {
+                /**
+                 * @type {QueryEntity|*}
+                 */
+                const queryEntity = item;
+                sqlSelect = $this.escapeName(queryEntity.name);
+                // get alias
+                sqlAlias = queryEntity.$alias;
+            }  else if (typeof item === 'string') {
+                sqlSelect = $this.escapeName(item)
+            } else {
+                /**
+                 * @type {QueryExpression}
+                 */
+                const queryExpression = item;
+                // get alias
+                sqlAlias = queryExpression.$alias;
+                sqlSelect = '(' + $this.format(queryExpression) + ')';
+            }
+            if (sqlAlias) {
+                if (aliasKeyword) {
+                    sqlSelect += aliasKeyword;
+                }
+                sqlSelect += sqlAlias;
+            }
+            return sqlSelect;
+        });
+        sql += ', ' + additionalSelectSql.join(', ');
+    }
 
     //add join if any
     if (obj.$expand!==null)

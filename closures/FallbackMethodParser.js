@@ -1,4 +1,4 @@
-// MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
+// MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2025, THEMOST LP All rights reserved
 
 const { SimpleMethodCallExpression, MethodCallExpression } = require('../expressions');
 
@@ -63,6 +63,24 @@ class FallbackMethodParser {
     }
     static toString(args) {
         return new SimpleMethodCallExpression('toString', args);
+    }
+    static parseInt(args) {
+        return new SimpleMethodCallExpression('toInt', args);
+    }
+    static parseFloat(args) {
+        return new SimpleMethodCallExpression('toDouble', args);
+    }
+    static me() {
+        return new SimpleMethodCallExpression('me', []);
+    }
+    static today() {
+        return new SimpleMethodCallExpression('today', []);
+    }
+    static whoami() {
+        return new SimpleMethodCallExpression('whoami', []);
+    }
+    static now() {
+        return new SimpleMethodCallExpression('now', []);
     }
 }
 
