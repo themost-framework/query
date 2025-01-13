@@ -370,15 +370,17 @@ QueryExpression.prototype.distinct = function(value)
 
 /**
  * @param {*} field
- * @param {*=} params
+ * @param {...*} params
  * @returns {QueryExpression}
  */
+// eslint-disable-next-line no-unused-vars
 QueryExpression.prototype.where = function(field, params)
 {
     if (typeof field === 'function') {
         // parse closure
         const closureParser = this.getClosureParser();
-        this.$where = closureParser.parseFilter(field, params);
+        const funcWithArgs = Array.from(arguments);
+        this.$where = closureParser.parseFilter.apply(closureParser, funcWithArgs);
         return this;
     }
     if (_.isNil(field))
