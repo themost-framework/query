@@ -801,4 +801,26 @@ describe('ClosureParser', () => {
         expect(results.length).toBeTruthy();
     });
 
+    it('should use select with multiple params', async () => {
+        const Products = new QueryEntity('ProductData');
+        let a = new QueryExpression().select(({id, name, price, category}, num, percent) => ({
+            id,
+            name,
+            price,
+            rounded: round(price, num),
+            offer: round(price * percent, num),
+            category
+        }), 2, 0.75)
+        .from(Products).where((x, maxPrice, category) => {
+            return x.category === category && x.price < maxPrice;
+        }, 700, 'Laptops');
+        const result = await db.executeAsync(a);
+        expect(result).toBeTruthy();
+        for(const item of result) {
+            expect(item.price).toBeLessThan(700);
+            expect(item.category).toBe('Laptops');
+            expect(item.rounded).toBe(round(item.price, 2));
+        }
+    });
+
 });

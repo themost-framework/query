@@ -26,6 +26,17 @@ export declare class QueryExpression {
     hasPaging(): boolean;
     distinct(value: any): this;
     where<T>(expr: (value: T, ...param: any[]) => any, ...params: any[]): this;
+    where<T>(expr: (value: T, arg1: K) => any, value1: K): this;
+    where<T>(expr: (value: T, arg1: K, arg2: L) => any, value1: K, value2: L): this;
+    where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M) => any, value1: K, value2: L, value3: M): this;
+    where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M,
+        arg4: N) => any, value1: K, value2: L, value3: M, value4: N): this;
+    where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M,
+        arg4: N, arg5: O) => any, value1: K, value2: L, value3: M, value4: N, value5: O): this;
+    where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M,
+        arg4: N, arg5: O, arg6: P) => any, value1: K, value2: L, value3: M, value4: N, value5: O, value6: P): this;
+        where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M,
+            arg4: N, arg5: O, arg6: P, arg7: Q) => any, value1: K, value2: L, value3: M, value4: N, value5: O, value6: P, value7: Q): this;
     where(expr: string | any): this;
     injectWhere(where: any);
     delete(entity: string): this;
@@ -35,8 +46,19 @@ export declare class QueryExpression {
     update(entity: string): this;
     set(obj: any): this;
     select(...field: Array<any>): this;
-    select<T>(expr: (value: T, ...param: any) => any, params?: any): this;
-    select<T,J>(expr: (value1: T, value2: J, ...param: any) => any, params?: any): this;
+    select<T>(expr: (value: T, ...param: any) => any, ...params: any[]): this;
+    select<T>(expr: (value: T, arg1: K) => any, value1: K): this;
+    select<T>(expr: (value: T, arg1: K, arg2: L) => any, value1: K, value2: L): this;
+    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M) => any, value1: K, value2: L, value3: M): this;
+    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M, arg4: N) => any,
+        value1: K, value2: L, value3: M, value4: N): this;
+    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M, arg4: N, arg5: O) => any,
+        value1: K, value2: L, value3: M, value4: N, value5: O): this;
+    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M, arg4: N, arg5: O, arg6: P) => any,
+        value1: K, value2: L, value3: M, value4: N, value5: O, value6: P): this;
+    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M, arg4: N, arg5: O, arg6: P, arg7: Q) => any,
+        value1: K, value2: L, value3: M, value4: N, value5: O, value6: P, value7: Q): this;
+    select<T,J>(expr: (value1: T, value2: J, ...param: any) => any, ...params: any[]): this;
     count(alias: string): this;
     from(entity: string): this;
     from(entity: QueryEntity): this;
@@ -49,7 +71,7 @@ export declare class QueryExpression {
     rightJoin(entity: any, props?: any, alias?: any): this;
     rightJoin(entity: QueryEntity): this;
     with(obj: any): this;
-    with<T,J>(expr: (value: T, otherValue: J, ...param: any) => any, params?: any): this;
+    with<T,J>(expr: (value: T, otherValue: J, ...params: any[]) => any, ...params: any[]): this;
     orderBy(expr: string | any): this;
     orderBy<T>(expr: QueryFunc<T>, ...params: any[]): this;
     orderByDescending(expr: string | any): this;
