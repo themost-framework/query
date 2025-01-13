@@ -27,18 +27,8 @@ export declare class QueryExpression {
     distinct(value: any): this;
     where<T>(expr: (value: T, ...param: any[]) => any, ...params: any[]): this;
     where<T>(expr: (value: T, arg1: K) => any, value1: K): this;
-    where<T>(expr: (value: T, arg1: K, arg2: L) => any, value1: K, value2: L): this;
-    where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M) => any, value1: K, value2: L, value3: M): this;
-    where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M,
-        arg4: N) => any, value1: K, value2: L, value3: M, value4: N): this;
-    where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M,
-        arg4: N, arg5: O) => any, value1: K, value2: L, value3: M, value4: N, value5: O): this;
-    where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M,
-        arg4: N, arg5: O, arg6: P) => any, value1: K, value2: L, value3: M, value4: N, value5: O, value6: P): this;
-        where<T>(expr: (value: T, arg1: K, arg2: L, arg3: M,
-            arg4: N, arg5: O, arg6: P, arg7: Q) => any, value1: K, value2: L, value3: M, value4: N, value5: O, value6: P, value7: Q): this;
     where(expr: string | any): this;
-    injectWhere(where: any);
+    injectWhere(where: any): void;
     delete(entity: string): this;
     insert(obj: any): this;
     insert(expr: QueryExpression): this;
@@ -47,17 +37,6 @@ export declare class QueryExpression {
     set(obj: any): this;
     select(...field: Array<any>): this;
     select<T>(expr: (value: T, ...param: any) => any, ...params: any[]): this;
-    select<T>(expr: (value: T, arg1: K) => any, value1: K): this;
-    select<T>(expr: (value: T, arg1: K, arg2: L) => any, value1: K, value2: L): this;
-    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M) => any, value1: K, value2: L, value3: M): this;
-    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M, arg4: N) => any,
-        value1: K, value2: L, value3: M, value4: N): this;
-    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M, arg4: N, arg5: O) => any,
-        value1: K, value2: L, value3: M, value4: N, value5: O): this;
-    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M, arg4: N, arg5: O, arg6: P) => any,
-        value1: K, value2: L, value3: M, value4: N, value5: O, value6: P): this;
-    select<T>(expr: (value: T, arg1: K, arg2: L, arg3: M, arg4: N, arg5: O, arg6: P, arg7: Q) => any,
-        value1: K, value2: L, value3: M, value4: N, value5: O, value6: P, value7: Q): this;
     select<T,J>(expr: (value1: T, value2: J, ...param: any) => any, ...params: any[]): this;
     count(alias: string): this;
     from(entity: string): this;
@@ -142,29 +121,29 @@ export declare class QueryField {
     $name: string;
 
     static select(field: any): QueryField;
-    static count(name: string): QueryField;
-    static min(name: string): QueryField;
-    static max(name: string): QueryField;
-    static average(name: string): QueryField;
-    static avg(name: string): QueryField;
-    static sum(name: string): QueryField;
-    static floor(name: string): QueryField;
-    static ceil(name: string): QueryField;
-    static modulo(name: string): QueryField;
-    static add(name: string, x: number): QueryField;
-    static subtract(name: string, x: number): QueryField;
-    static divide(name: string, divider: number): QueryField;
-    static multiply(name: string, multiplier: number): QueryField;
-    static round(name: string, n: number): QueryField;
-    static length(name): QueryField;
-    static trim(name): QueryField;
-    static year(name): QueryField;
-    static date(name): QueryField;
-    static day(name): QueryField;
-    static month(name): QueryField;
-    static hour(name): QueryField;
-    static minute(name): QueryField;
-    static second(name): QueryField;
+    static count(name: any): QueryField;
+    static min(name: any): QueryField;
+    static max(name: any): QueryField;
+    static average(name: any): QueryField;
+    static avg(name: any): QueryField;
+    static sum(name: any): QueryField;
+    static floor(name: any): QueryField;
+    static ceil(name: any): QueryField;
+    static modulo(name: any): QueryField;
+    static add(name: any, x: number): QueryField;
+    static subtract(name: any, x: number): QueryField;
+    static divide(name: any, divider: number): QueryField;
+    static multiply(name: any, multiplier: number): QueryField;
+    static round(name: any, n: number): QueryField;
+    static length(name: any): QueryField;
+    static trim(name: any): QueryField;
+    static year(name: any): QueryField;
+    static date(name: any): QueryField;
+    static day(name: any): QueryField;
+    static month(name: any): QueryField;
+    static hour(name: any): QueryField;
+    static minute(name: any): QueryField;
+    static second(name: any): QueryField;
 
     select(name: string): QueryField;
     from(entity: string): QueryField;
