@@ -7,6 +7,7 @@ import { instanceOf } from './instance-of';
 import './polyfills';
 import { ObjectNameValidator } from './object-name.validator';
 import { isNameReference, trimNameReference } from './name-reference';
+import { JSONArray, JSONObject } from '@themost/json';
 
 class AbstractMethodError extends Error {
     constructor() {
@@ -133,6 +134,9 @@ class SqlFormatter {
             return SqlUtils.escape(null);
 
         if (typeof value === 'object') {
+            if (value instanceof JSONArray || value instanceof JSONObject) {
+                return SqlUtils.escape(value.toString());
+            }
             //add an exception for Date object
             if (value instanceof Date)
                 return SqlUtils.escape(value);
@@ -747,17 +751,28 @@ class SqlFormatter {
                     const queryEntity = item;
                     sqlSelect = this.escapeEntity(queryEntity.name);
                     // get alias
-                    sqlAlias = queryEntity.$alias;
+                    sqlAlias = queryEntity.$alias ? this.escapeName(queryEntity.$alias) : null;
                 }  else if (typeof item === 'string') {
                     sqlSelect = this.escapeEntity(item)
                 } else {
-                    /**
-                     * @type {QueryExpression}
-                     */
-                    const queryExpression = item;
-                    // get alias
-                    sqlAlias = queryExpression.$alias;
-                    sqlSelect = '(' + this.format(queryExpression) + ')';
+                    // try to validate if item is a query expression with a single field
+                    // e.g. { paymentMethods: { $jsonEach: 'paymentMethods' } }
+                    // which is equivalent to SELECT json_each(paymentMethods) AS paymentMethods
+                    const [key] = Object.keys(item);
+                    if (Object.prototype.hasOwnProperty.call(item[key], '$jsonEach')) {
+                        sqlSelect = $this.escape(item);
+                        sqlAlias = this.escapeName(key);
+                    } else if (Object.prototype.hasOwnProperty.call(item, '$select')) {
+                        /**
+                         * @type {QueryExpression}
+                         */
+                        const queryExpression = item;
+                        // get alias
+                        sqlAlias = queryExpression.$alias ? this.escapeName(queryExpression.$alias) : null;
+                        sqlSelect = '(' + this.format(queryExpression) + ')';
+                    } else {
+                        throw new Error('Invalid additional select expression.');
+                    }
                 }
                 if (sqlAlias) {
                     if (aliasKeyword) {
@@ -1009,15 +1024,15 @@ class SqlFormatter {
          * @type {SqlFormatter}
          */
         const formatter = new FormatterCtor();
-        for (var key in select) {
+        for (let key in select) {
             if (Object.prototype.hasOwnProperty.call(select, key)) {
-                var selectFields = select[key];
+                const selectFields = select[key];
                 fields = selectFields.map(function(selectField) {
                     let name;
                     if (selectField instanceof QueryField) {
                         name = selectField.as() || selectField.getName();
                     } else {
-                        var field = new QueryField(selectField);
+                        const field = new QueryField(selectField);
                         name = field.as() || field.getName();
                     }
                     if (name == null) {
@@ -1191,7 +1206,7 @@ class SqlFormatter {
         if (isNil(obj))
             return null;
         //if a format is defined
-        if (s !== undefined) {
+        if (typeof s === 'string') {
             if ((s === '%f') || (s === '%ff')) {
                 //field formatting
                 let field = new QueryField();
@@ -1201,11 +1216,12 @@ class SqlFormatter {
                 else
                     field = Object.assign(new QueryField(), obj);
                 return this.formatFieldEx(field, s);
-            }
-            else if (s === '%o') {
+            } else if (s === '%o') {
                 if (instanceOf(obj, QueryExpression))
                     return this.formatOrder(obj.$order);
                 return this.formatOrder(obj);
+            } else {
+                throw new Error('Invalid format expression.');
             }
         }
 
@@ -1220,27 +1236,32 @@ class SqlFormatter {
             query = Object.assign(new QueryExpression(), obj);
         }
         //format query
-        if (isObject(query.$select)) {
+        const filtered = typeof query.$where === 'object' || typeof query.$prepared === 'object';
+        if (typeof query.$select === 'object') {
             if (isString(query.$count)) {
                 return this.formatCount(query);
             }
             if (!query.hasPaging())
                 return this.formatSelect(query);
-
             else
                 return this.formatLimitSelect(query);
-        }
-        else if (isObject(query.$insert))
+        } else if (typeof query.$insert === 'object') {
             return this.formatInsert(query);
-        else if (isObject(query.$update))
+        } else if (typeof query.$update === 'object') {
+            if (filtered === false) {
+                throw new Error('Invalid update expression. Expected a valid where clause.');
+            }
             return this.formatUpdate(query);
-        else if (query.$delete !== null)
+        } else if (typeof query.$delete === 'object' || typeof query.$delete === 'string') {
+            if (filtered === false) {
+                throw new Error('Invalid delete expression. Expected a valid where clause.');
+            }
             return this.formatDelete(query);
-        else if (query.$where !== null)
+        } else if (typeof query.$where === 'object') {
             return this.formatWhere(query.$where);
-
-        else
-            return null;
+        } else {
+            throw new Error('Invalid source expression. Expected a valid query expression.');
+        }
 
     }
     $eq(left, right) {
