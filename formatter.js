@@ -4,6 +4,7 @@ var sprintf = require('sprintf-js').sprintf;
 var _ = require('lodash');
 var { Args } = require('@themost/common');
 const { QueryExpression, QueryField, QueryEntity } = require('./query');
+const { JSONArray, JSONObject } = require('@themost/json');
 var instanceOf = require('./instance-of').instanceOf;
 var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator;
 
@@ -149,6 +150,9 @@ SqlFormatter.prototype.escape = function(value,unquoted)
 
     if (typeof value === 'object')
     {
+        if (value instanceof JSONArray || value instanceof JSONObject) {
+            return SqlUtils.escape(value.toString());
+        }
         //add an exception for Date object
         if (value instanceof Date)
             return SqlUtils.escape(value);
@@ -981,13 +985,25 @@ SqlFormatter.prototype.formatSelect = function(obj)
             }  else if (typeof item === 'string') {
                 sqlSelect = $this.escapeName(item)
             } else {
-                /**
-                 * @type {QueryExpression}
-                 */
-                const queryExpression = item;
-                // get alias
-                sqlAlias = queryExpression.$alias;
-                sqlSelect = '(' + $this.format(queryExpression) + ')';
+                // try to validate if item is a query expression with a single field
+                // e.g. { paymentMethods: { $jsonEach: 'paymentMethods' } }
+                // which is equivalent to SELECT json_each(paymentMethods) AS paymentMethods
+                var [key] = Object.keys(item);
+                if (Object.prototype.hasOwnProperty.call(item[key], '$jsonEach')) {
+                    sqlSelect = $this.escape(item);
+                    sqlAlias = key;
+                } else if (Object.prototype.hasOwnProperty.call(item, '$select')) {
+                    /**
+                     * parse a sub-query expression
+                     * @type {QueryExpression}
+                     */
+                    const queryExpression = item;
+                    // get alias
+                    sqlAlias = queryExpression.$alias;
+                    sqlSelect = '(' + $this.format(queryExpression) + ')';
+                } else {
+                    throw new Error('Invalid additional select expression.');
+                }
             }
             if (sqlAlias) {
                 if (aliasKeyword) {
@@ -1430,8 +1446,7 @@ SqlFormatter.prototype.format = function(obj, s)
     if (_.isNil(obj))
         return null;
     //if a format is defined
-    if (s!==undefined)
-    {
+    if (typeof s === 'string') {
         if ((s ==='%f') || (s ==='%ff'))
         {
             //field formatting
@@ -1447,6 +1462,7 @@ SqlFormatter.prototype.format = function(obj, s)
                 return this.formatOrder(obj.$order);
             return this.formatOrder(obj);
         }
+        throw new Error('Invalid format expression.');
     }
 
     /**
@@ -1459,7 +1475,7 @@ SqlFormatter.prototype.format = function(obj, s)
     else
         query = _.assign(new QueryExpression(), obj);
     //format query
-    if (_.isObject(query.$select)) {
+    if (typeof query.$select === 'object') {
         if (_.isString(query.$count)) {
             return this.formatCount(query);
         }
@@ -1468,16 +1484,17 @@ SqlFormatter.prototype.format = function(obj, s)
         else
             return this.formatLimitSelect(query);
     }
-    else if (_.isObject(query.$insert))
+    else if (typeof query.$insert === 'object')
         return this.formatInsert(query);
-    else if (_.isObject(query.$update))
+    else if (typeof query.$update === 'object')
         return this.formatUpdate(query);
-    else if (query.$delete!==null)
+    else if (typeof query.$delete === 'object')
         return this.formatDelete(query);
-    else if (query.$where!==null)
+    else if (typeof query.$where === 'object')
         return this.formatWhere(query.$where);
-    else
-        return null;
+    else {
+        throw new Error('Invalid source expression. Expected a valid query expression.');
+    }
 
 };
 
