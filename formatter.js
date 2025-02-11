@@ -150,7 +150,7 @@ SqlFormatter.prototype.escape = function(value,unquoted)
 
     if (typeof value === 'object')
     {
-        if (value instanceof JSONArray || value instanceof JSONObject) {
+        if ((value instanceof JSONArray) || (value instanceof JSONObject)) {
             return SqlUtils.escape(value.toString());
         }
         //add an exception for Date object
@@ -992,7 +992,7 @@ SqlFormatter.prototype.formatSelect = function(obj)
                 if (Object.prototype.hasOwnProperty.call(item[key], '$jsonEach')) {
                     sqlSelect = $this.escape(item);
                     sqlAlias = key;
-                } else if (Object.prototype.hasOwnProperty.call(item, '$select')) {
+                } else if (Object.prototype.hasOwnProperty.call(item, '$select') && typeof item.$select === 'object') {
                     /**
                      * parse a sub-query expression
                      * @type {QueryExpression}
@@ -1308,15 +1308,22 @@ SqlFormatter.prototype.formatUpdate = function(obj)
     for(var prop in obj1)
         if (Object.prototype.hasOwnProperty.call(obj1, prop))
             props.push(prop);
-    //add basic INSERT statement
+    //add basic UPDATE statement
     sql = sql.concat('UPDATE ', self.escapeName(entity), ' SET ',
         _.map(props, function(x)
         {
             var value = obj1[x];
             return self.escapeName(x).concat('=', self.escape(value!==null ? value: null));
         }).join(', '));
-    if (_.isObject(obj.$where))
-        sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
+    if (obj.$where == null) {
+        throw new Error('Update expression must have a where clause.');
+    }
+
+    var whereClause = this.formatWhere(obj.$where);
+    Args.check(whereClause != null, new Error('Update expression must have a valid "where" clause.'));
+    Args.check(typeof whereClause === 'string' && whereClause.trim().length > 0, new Error('"Where" clause cannot be empty at the context of an update expression.'));
+    sql = sql.concat(' WHERE ', whereClause);
+
     return sql;
 };
 
@@ -1334,8 +1341,14 @@ SqlFormatter.prototype.formatDelete = function(obj)
     var entity = obj.$delete;
     //add basic INSERT statement
     sql = sql.concat('DELETE FROM ', this.escapeName(entity));
-    if (_.isObject(obj.$where))
-        sql = sql.concat(' WHERE ',this.formatWhere(obj.$where));
+    if (obj.$where == null) {
+        throw new Error('Delete expression must have a where clause.');
+    }
+    var whereClause = this.formatWhere(obj.$where);
+    Args.check(whereClause != null, new Error('Delete expression must have a valid "where" clause.'));
+    Args.check(typeof whereClause === 'string' && whereClause.trim().length > 0, new Error('"Where" clause cannot be empty at the context of a delete expression.'));
+    sql = sql.concat(' WHERE ', whereClause);
+
     return sql;
 };
 
@@ -1486,9 +1499,9 @@ SqlFormatter.prototype.format = function(obj, s)
     }
     else if (typeof query.$insert === 'object')
         return this.formatInsert(query);
-    else if (typeof query.$update === 'object')
+    else if (typeof query.$update === 'object' || typeof query.$update === 'string')
         return this.formatUpdate(query);
-    else if (typeof query.$delete === 'object')
+    else if (typeof query.$delete === 'object' || typeof query.$delete === 'string')
         return this.formatDelete(query);
     else if (typeof query.$where === 'object')
         return this.formatWhere(query.$where);
