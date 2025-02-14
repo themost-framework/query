@@ -1,11 +1,13 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
-import {QueryExpression} from "./query";
+import {QueryExpression} from './query';
 
 export declare interface FormatterSettings {
     nameFormat: string;
     forceAlias?: boolean;
     useAliasKeyword?: boolean;
 }
+
+export type QueryToken = string | any;
 
 export declare class SqlFormatter {
     provider: any;
@@ -82,4 +84,45 @@ export declare class SqlFormatter {
     formatFieldEx(obj: any, format: string);
     format(obj: any, s?: string);
 
+}
+
+export declare interface SqlFormatterFactory {
+    formatterClass: (...args: any[]) => SqlFormatter;
+}
+
+/**
+ * Interface representing a JSON Get Formatter.
+ * Provides a method to format a JSON get expression.
+ */
+export declare interface JsonGetFormatter {
+    $jsonGet(expr: QueryField | { $name: string }): QueryToken;
+    $jsonEach(expr: (QueryField | Record<string, unknown>)): QueryToken;
+}
+
+/**
+ * Interface representing a JSON object formatter.
+ * 
+ * @interface JsonObjectFormatter
+ */
+export declare interface JsonObjectFormatter {
+    $jsonObject(...expr: (QueryField | Record<string, unknown>)[]): QueryToken;
+}
+
+/**
+ * Interface representing a JSON array formatter.
+ */
+export declare interface JsonArrayFormatter {
+    /**
+     * Formats the given query expression as a JSON array.
+     * @param expr - The query expression to format.
+     * @returns A query token representing the formatted JSON array.
+     */
+    $jsonArray(expr: QueryExpression): QueryToken;
+
+    /**
+     * Formats the given query expression as a grouped JSON array.
+     * @param expr - The query expression to format.
+     * @returns A query token representing the formatted grouped JSON array.
+     */
+    $jsonGroupArray(expr: QueryExpression): QueryToken;
 }
