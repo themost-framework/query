@@ -10,6 +10,7 @@ spec
 # eslint
 .eslintrc
 .eslintignore
+eslint.config.mjs
 
 # dotenv
 .env
