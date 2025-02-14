@@ -103,6 +103,7 @@ export declare interface SqlFormatterFactory {
  */
 export declare interface JsonGetFormatter {
     $jsonGet(expr: QueryField | { $name: string }): QueryToken;
+    $jsonEach(expr: (QueryField | Record<string, unknown>)): QueryToken;
 }
 
 /**
@@ -112,7 +113,6 @@ export declare interface JsonGetFormatter {
  */
 export declare interface JsonObjectFormatter {
     $jsonObject(...expr: (QueryField | Record<string, unknown>)[]): QueryToken;
-    $jsonEach(expr: (QueryField | Record<string, unknown>)): QueryToken;
 }
 
 /**
