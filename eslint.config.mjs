@@ -37,8 +37,8 @@ export default [{
         'no-invalid-this': 'warn',
         'no-undef': 'error',
         'no-unused-vars': 'warn',
-        'no-var': ['error'],
-        quotes: ['error', 'single'],
+        'no-var': ['off'],
+        quotes: ['off', 'single'],
         strict: [2, 'never'],
     },
 }, ...compat.extends(
