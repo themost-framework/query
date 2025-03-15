@@ -885,6 +885,18 @@ SqlFormatter.prototype.$bit = function(p0, p1)
      return sprintf('CAST(%s AS char)', this.escape(p0));
  };
 
+ /**
+ * Converts a select query expression to the equivalent statement.
+ * @param arg {QueryExpression|*}
+ */
+ SqlFormatter.prototype.$query = function(arg)
+ {
+    if (typeof arg.$select === 'object') {
+        return Number.isInteger(arg.$take) ? `(${this.formatLimitSelect(arg)})` : `(${this.formatSelect(arg)})`;
+    }
+    throw new Error('Invalid query expression. Expected a valid select expression.');
+ };
+
 /**
  *
  * @param query {QueryExpression|*}
