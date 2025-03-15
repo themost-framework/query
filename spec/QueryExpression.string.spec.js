@@ -12,10 +12,9 @@ describe('QueryExpression.where', () => {
     beforeAll(() => {
         db = new MemoryAdapter();
     });
-    afterAll((done) => {
+    afterAll(async () => {
         if (db) {
-            db.close();
-            return done();
+            await db.closeAsync();
         }
     });
     it('should use startsWith', async () => {

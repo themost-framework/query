@@ -1507,6 +1507,19 @@ class SqlFormatter {
     $toLong(arg) {
         throw new AbstractMethodError();
     }
+
+    /**
+     * 
+     * @param {QueryExpression|*} arg 
+     * @returns 
+     */
+    $query(arg)
+    {
+        if (typeof arg.$select === 'object') {
+            return Number.isInteger(arg.$take) ? `(${this.formatLimitSelect(arg)})` : `(${this.formatSelect(arg)})`;
+        }
+        throw new Error('Invalid query expression. Expected a valid select expression.');
+    }
 }
 
 export {
