@@ -1,5 +1,10 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
-import { keys as _keys, isArray, isNil, cloneDeep, forEach, assign, isObject } from 'lodash';
+import isNil from 'lodash/isNil';
+import cloneDeep from 'lodash/cloneDeep';
+import forEach from 'lodash/forEach';
+import assign from 'lodash/assign';
+import isObject from 'lodash/isObject';
+
 import { ClosureParser } from './closures/ClosureParser';
 const aggregate = Symbol();
 import './polyfills';
@@ -38,9 +43,9 @@ class QueryFieldAggregator {
      * @param {*} comparison
      */
     wrapWith(comparison) {
-        let name = _keys(this)[0];
+        let name = Object.keys(this)[0];
         if (name) {
-            if (isArray(this[name])) {
+            if (Array.isArray(this[name])) {
                 //search for query parameter
                 for (let i = 0; i < this[name].length; i++) {
                     if (this[name][i] instanceof QueryParameter) {
@@ -140,7 +145,7 @@ class QueryExpression {
         let entity = Object.key(this.$select);
         let joins = [];
         if (!isNil(this.$expand)) {
-            if (isArray(this.$expand))
+            if (Array.isArray(this.$expand))
                 joins = this.$expand;
 
             else
@@ -224,14 +229,14 @@ class QueryExpression {
         let entity = Object.key(self.$select);
         let joins = [];
         if (!isNil(self.$expand)) {
-            if (isArray(self.$expand))
+            if (Array.isArray(self.$expand))
                 joins = self.$expand;
 
             else
                 joins.push(self.$expand);
         }
         //search for fields
-        if (isArray(self.$select[entity])) {
+        if (Array.isArray(self.$select[entity])) {
             if (self.$select[entity].length > 0)
                 return true;
         }
@@ -239,7 +244,7 @@ class QueryExpression {
         //enumerate join fields
         forEach(joins, function (x) {
             let table = Object.key(x.$entity);
-            if (isArray(x.$entity[table])) {
+            if (Array.isArray(x.$entity[table])) {
                 if (x.$entity[table].length > 0)
                     result = true;
             }
@@ -336,7 +341,7 @@ class QueryExpression {
     insert(obj) {
         if (isNil(obj))
             return this;
-        if (isArray(obj) || isObject(obj)) {
+        if (Array.isArray(obj) || isObject(obj)) {
             this.$insert = { table1: obj };
             //delete other properties (if any)
             delete this.$delete;
@@ -415,7 +420,7 @@ class QueryExpression {
     set(obj) {
         if (isNil(obj))
             return this;
-        if (isArray(obj) || !isObject(obj))
+        if (Array.isArray(obj) || !isObject(obj))
             throw new Error('Invalid argument type. Update expression argument must be an object.');
         //get entity name (by property)
         let prop = Object.key(this.$update);
@@ -520,7 +525,7 @@ class QueryExpression {
             // backward compatibility
             // any argument may be an array of fields
             // this operation needs to be deprecated
-            if (Array.isArray(x)) {
+            if (Array.Array.isArray(x)) {
                 fields.push.apply(fields, x);
             }
             else {
@@ -732,7 +737,7 @@ class QueryExpression {
             this.$expand = this.privates.expand;
         }
         else {
-            if (isArray(this.$expand)) {
+            if (Array.isArray(this.$expand)) {
                 this.$expand.push(this.privates.expand);
             }
             else {
@@ -815,7 +820,7 @@ class QueryExpression {
             let selectArgs = Array.from(arguments);
             let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
             // and return
-            if (Array.isArray(this.$order) === false) {
+            if (Array.Array.isArray(this.$order) === false) {
                 throw new Error('QueryExpression.thenBy() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
             }
             fields.forEach((item) => {
@@ -844,7 +849,7 @@ class QueryExpression {
             let selectArgs = Array.from(arguments);
             let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
             // and return
-            if (Array.isArray(this.$order) === false) {
+            if (Array.Array.isArray(this.$order) === false) {
                 throw new Error('QueryExpression.thenByDescending() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
             }
             fields.forEach((item) => {
@@ -904,7 +909,7 @@ class QueryExpression {
             // backward compatibility
             // any argument may be an array of fields
             // this operation needs to be deprecated
-            if (Array.isArray(x)) {
+            if (Array.Array.isArray(x)) {
                 fields.push.apply(fields, x);
             }
             else {
@@ -928,7 +933,7 @@ class QueryExpression {
             let op = this.privates.expression;
             if (op) {
                 //get current operator
-                let keys = _keys(this.$where);
+                let keys = Object.keys(this.$where);
                 if (keys[0] === op) {
                     this.$where[op].push(expr);
                 }
@@ -990,7 +995,7 @@ class QueryExpression {
     equal(value) {
         let p0 = this.prop();
         if (p0) {
-            let comparison = Array.isArray(value) ? { $in: value } : { $eq: value };
+            let comparison = Array.Array.isArray(value) ? { $in: value } : { $eq: value };
             //apply aggregation if any
             if (typeof this[aggregate] === 'object') {
                 comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], value);
@@ -1014,7 +1019,7 @@ class QueryExpression {
     notEqual(value) {
         let p0 = this.prop();
         if (p0) {
-            let comparison = Array.isArray(value) ? { $nin: value } : { $ne: value };
+            let comparison = Array.Array.isArray(value) ? { $nin: value } : { $ne: value };
             if (typeof this[aggregate] === 'object') {
                 comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], { $ne: value });
                 delete this[aggregate];
@@ -1801,7 +1806,7 @@ class QueryField {
         if (typeof alias === 'undefined') {
             if (typeof this.$name !== 'undefined')
                 return null;
-            let keys = _keys(this);
+            let keys = Object.keys(this);
             if (keys.length === 0)
                 return null;
 
@@ -2111,7 +2116,7 @@ class QueryFieldComparer {
          * }
          * which should produce an expression like IFNULL(`isActive`, false) <> false
          */
-        if (aggr.startsWith('$') && Array.isArray(this[aggr])) {
+        if (aggr.startsWith('$') && Array.Array.isArray(this[aggr])) {
             // get operator
             let op = Object.key(comparison);
             // and create a new expression e.g. 
@@ -2132,7 +2137,7 @@ class QueryFieldComparer {
             ];
             return expr;
           }
-        if (isArray(this[aggr])) {
+        if (Array.isArray(this[aggr])) {
             //get first element (the field name)
             name = QueryField.prototype.nameOf.call(this[aggr][0]);
         }

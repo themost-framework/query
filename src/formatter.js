@@ -1,7 +1,13 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 import { SqlUtils } from './utils';
 import { sprintf } from 'sprintf-js';
-import { isNil, isString, isFunction, map, forEach, isObject } from 'lodash';
+import isNil from 'lodash/isNil';
+import isString from 'lodash/isString';
+import isFunction from 'lodash/isFunction';
+import isObject from 'lodash/isObject';
+import map from 'lodash/map';
+import forEach from 'lodash/forEach';
+
 import { QueryEntity, QueryExpression, QueryField } from './query';
 import { instanceOf } from './instance-of';
 import './polyfills';
