@@ -525,7 +525,7 @@ class QueryExpression {
             // backward compatibility
             // any argument may be an array of fields
             // this operation needs to be deprecated
-            if (Array.Array.isArray(x)) {
+            if (Array.isArray(x)) {
                 fields.push.apply(fields, x);
             }
             else {
@@ -820,7 +820,7 @@ class QueryExpression {
             let selectArgs = Array.from(arguments);
             let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
             // and return
-            if (Array.Array.isArray(this.$order) === false) {
+            if (Array.isArray(this.$order) === false) {
                 throw new Error('QueryExpression.thenBy() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
             }
             fields.forEach((item) => {
@@ -849,7 +849,7 @@ class QueryExpression {
             let selectArgs = Array.from(arguments);
             let fields = closureParser.parseSelect.apply(closureParser, selectArgs);
             // and return
-            if (Array.Array.isArray(this.$order) === false) {
+            if (Array.isArray(this.$order) === false) {
                 throw new Error('QueryExpression.thenByDescending() statement should be called after QueryExpression.orderBy() or QueryExpression.orderByDescending()');
             }
             fields.forEach((item) => {
@@ -909,7 +909,7 @@ class QueryExpression {
             // backward compatibility
             // any argument may be an array of fields
             // this operation needs to be deprecated
-            if (Array.Array.isArray(x)) {
+            if (Array.isArray(x)) {
                 fields.push.apply(fields, x);
             }
             else {
@@ -995,7 +995,7 @@ class QueryExpression {
     equal(value) {
         let p0 = this.prop();
         if (p0) {
-            let comparison = Array.Array.isArray(value) ? { $in: value } : { $eq: value };
+            let comparison = Array.isArray(value) ? { $in: value } : { $eq: value };
             //apply aggregation if any
             if (typeof this[aggregate] === 'object') {
                 comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], value);
@@ -1019,7 +1019,7 @@ class QueryExpression {
     notEqual(value) {
         let p0 = this.prop();
         if (p0) {
-            let comparison = Array.Array.isArray(value) ? { $nin: value } : { $ne: value };
+            let comparison = Array.isArray(value) ? { $nin: value } : { $ne: value };
             if (typeof this[aggregate] === 'object') {
                 comparison = QueryFieldAggregator.prototype.wrapWith.call(this[aggregate], { $ne: value });
                 delete this[aggregate];
@@ -2116,7 +2116,7 @@ class QueryFieldComparer {
          * }
          * which should produce an expression like IFNULL(`isActive`, false) <> false
          */
-        if (aggr.startsWith('$') && Array.Array.isArray(this[aggr])) {
+        if (aggr.startsWith('$') && Array.isArray(this[aggr])) {
             // get operator
             let op = Object.key(comparison);
             // and create a new expression e.g. 
