@@ -1,4 +1,6 @@
-import {isPlainObject, isObjectLike, isNative} from 'lodash';
+import isPlainObject from 'lodash/isPlainObject';
+import isObjectLike from 'lodash/isObjectLike';
+import isNative from 'lodash/isNative';
 
 const objectToString = Function.prototype.toString.call(Object);
 

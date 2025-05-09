@@ -12,7 +12,7 @@ import {
 } from './expressions';
 import { SelectAnyExpression, AnyExpressionFormatter } from './expressions';
 import { OrderByAnyExpression } from './expressions';
-import { trim } from 'lodash';
+import trim from 'lodash/trim';
 import { series } from 'async'
 
 class OpenDataParser {
