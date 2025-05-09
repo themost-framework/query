@@ -1,5 +1,10 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
-import { keys as _keys, isArray, isNil, cloneDeep, forEach, assign, isObject } from 'lodash';
+import isArray from 'lodash/isArray';
+import isNil from 'lodash/isNil';
+import cloneDeep from 'lodash/cloneDeep';
+import forEach from 'lodash/forEach';
+import assign from 'lodash/assign';
+import isObject from 'lodash/isObject';
 import { ClosureParser } from './closures/ClosureParser';
 const aggregate = Symbol();
 import './polyfills';
@@ -38,7 +43,7 @@ class QueryFieldAggregator {
      * @param {*} comparison
      */
     wrapWith(comparison) {
-        let name = _keys(this)[0];
+        let name = Object.keys(this)[0];
         if (name) {
             if (isArray(this[name])) {
                 //search for query parameter
@@ -928,7 +933,7 @@ class QueryExpression {
             let op = this.privates.expression;
             if (op) {
                 //get current operator
-                let keys = _keys(this.$where);
+                let keys = Object.keys(this.$where);
                 if (keys[0] === op) {
                     this.$where[op].push(expr);
                 }
@@ -1801,7 +1806,7 @@ class QueryField {
         if (typeof alias === 'undefined') {
             if (typeof this.$name !== 'undefined')
                 return null;
-            let keys = _keys(this);
+            let keys = Object.keys(this);
             if (keys.length === 0)
                 return null;
 
