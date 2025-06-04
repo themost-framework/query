@@ -1835,21 +1835,18 @@ class QueryField {
         let name = null;
         if (typeof this.$name === 'string') {
             name = this.$name;
-        }
-        else {
+        } else {
             let prop = Object.key(this);
             if (prop) {
                 name = this[prop];
             }
         }
         if (typeof name === 'string') {
-            //check if an entity is already defined
-            let re = new RegExp(QueryField.FieldNameExpression.source);
-            if (re.test(name))
-                return name;
-
-            else
-                return name.split('.')[1];
+            const names = name.match(new RegExp(ObjectNameValidator.validator.pattern.source, 'g'));
+            if (names.length === 0) {
+                throw new Error('The validation of the given database object name has failed.')
+            }
+            return names[names.length - 1];
         }
     }
     nameOf() {
