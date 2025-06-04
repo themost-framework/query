@@ -1843,8 +1843,8 @@ class QueryField {
         }
         if (typeof name === 'string') {
             const names = name.match(new RegExp(ObjectNameValidator.validator.pattern.source, 'g'));
-            if (names.length === 0) {
-                throw new Error('The validation of the given database object name has failed.')
+            if (!names || names.length === 0) {
+                throw new Error('The validation of the given database object name has failed.');
             }
             return names[names.length - 1];
         }
