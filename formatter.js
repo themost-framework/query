@@ -2,7 +2,7 @@
 var SqlUtils = require('./utils').SqlUtils;
 var sprintf = require('sprintf-js').sprintf;
 var _ = require('lodash');
-var { Args } = require('@themost/common');
+var { Args, AbstractMethodError} = require('@themost/common');
 const { QueryExpression, QueryField, QueryEntity } = require('./query');
 const { JSONArray, JSONObject } = require('@themost/json');
 var instanceOf = require('./instance-of').instanceOf;
@@ -896,6 +896,92 @@ SqlFormatter.prototype.$bit = function(p0, p1)
     }
     throw new Error('Invalid query expression. Expected a valid select expression.');
  };
+
+/**
+ * @abstract
+ * Converts an expression to integer.
+ * @param {*} arg
+ */
+SqlFormatter.prototype.$toInt = function(arg) {
+    throw new AbstractMethodError();
+}
+
+/**
+ * @abstract
+ * Converts an expression to long.
+ * @param {*} arg
+ */
+SqlFormatter.prototype.$toLong = function(arg) {
+    throw new AbstractMethodError();
+}
+
+/**
+ * @abstract
+ * Converts an expression to decimal.
+ * @param {*} arg
+ */
+SqlFormatter.prototype.$toDouble = function(arg) {
+    throw new AbstractMethodError();
+}
+
+/**
+ * @abstract
+ * Converts an expression to decimal.
+ * @param {*} arg
+ */
+SqlFormatter.prototype.$toDecimal = function(arg) {
+    throw new AbstractMethodError();
+}
+
+SqlFormatter.prototype.$toDecimal = function(arg) {
+    throw new AbstractMethodError();
+}
+
+SqlFormatter.prototype.$toGuid = function(arg) {
+    throw new AbstractMethodError();
+}
+
+SqlFormatter.prototype.$toBoolean = function(arg) {
+    throw new AbstractMethodError();
+}
+
+SqlFormatter.prototype.$toDate = function(arg, type) {
+    throw new AbstractMethodError();
+}
+/**
+ * Casts an expression to the specified type.
+ * @param {*} arg
+ * @param {string} type
+ * @returns {string}
+ */
+ SqlFormatter.prototype.$cast = function(arg, type) {
+     switch (type.toLowerCase()) {
+         case 'int':
+         case 'integer':
+             return this.$toInt(arg);
+         case 'boolean':
+             return this.$toBoolean(arg);
+         case 'long':
+         case 'bigint':
+             return this.$toLong(arg);
+         case 'double':
+         case 'float':
+             return this.$toDouble(arg);
+         case 'decimal':
+             return this.$toDecimal(arg);
+         case 'string':
+             return this.$toString(arg);
+         case 'date':
+         case 'datetime':
+         case 'timestamp':
+             return this.$toDate(arg, type.toLowerCase());
+         case 'guid':
+         case 'uuid':
+             return this.$toGuid(arg);
+         default:
+             throw new Error(`The specified cast type '${type}' is not supported.`);
+     }
+ }
 
 /**
  *

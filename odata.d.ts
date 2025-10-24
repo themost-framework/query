@@ -1,5 +1,6 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 import {MemberExpression, MethodCallExpression, ExpressionBase, OrderByAnyExpression} from "./expressions";
+import {SyncSeriesEventEmitter} from '@themost/events';
 
 export declare interface TokenType {
     Literal : string;
@@ -106,6 +107,10 @@ export declare class OpenDataParser {
     static isWhitespace(c: any): boolean;
     static isIdentifierChar(c: any): boolean;
     static isDigit(c: any): boolean;
+
+    readonly resolvingMember: SyncSeriesEventEmitter<{target: OpenDataParser, member: (string | MemberExpression)}>;
+    readonly resolvingMethod: SyncSeriesEventEmitter<{target: OpenDataParser, method: (string | MethodCallExpression), args: Array<unknown>}>;
+
 
     parse(str: string, callback: (err?: Error, res?: any) => void);
     parseAsync(str: string): Promise<any>;
