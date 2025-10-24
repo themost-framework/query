@@ -1,6 +1,7 @@
 import { QueryField } from '../src/index';
 import { QueryEntity, QueryExpression } from '../src/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
+import {OpenDataParser} from '../src/index';
 
 describe('SqlFormatter', () => {
 
@@ -124,6 +125,52 @@ describe('SqlFormatter', () => {
         results.forEach((item) => {
             expect(item.date1).toBeTruthy();
         });
+    });
+
+    it('should parse cast to double expression', async() => {
+        const parser = new OpenDataParser();
+        const expr = await parser.parseSelectSequenceAsync(
+            'id,cast(price, \'double\') as priceAsDouble'
+        );
+        const query = new QueryExpression().select(
+            ...expr.map((x) => x.exprOf())
+        ).from('ProductData');
+
+        let results = await db.executeAsync(query, []);
+        expect(results.length).toBeTruthy();
+    });
+
+    it('should parse cast to string expression', async() => {
+        const parser = new OpenDataParser();
+        const expr = await parser.parseSelectSequenceAsync(
+            'id,cast(price, \'Edm.EdmString\') as priceString'
+        );
+        const query = new QueryExpression().select(
+            ...expr.map((x) => x.exprOf())
+        ).from('ProductData');
+
+        let results = await db.executeAsync(query, []);
+        expect(results.length).toBeTruthy();
+        const [result] = results;
+        expect(typeof result.priceString).toBe('string');
+    });
+
+    it('should parse cast to decimal expression', async() => {
+        const parser = new OpenDataParser();
+        const expr = await parser.parseSelectSequenceAsync(
+            'id,cast(price, \'Edm.EdmDecimal\') as priceDecimal'
+        );
+        const query = new QueryExpression().select(
+            ...expr.map((x) => x.exprOf())
+        ).from('ProductData');
+
+        let results = await db.executeAsync(query, []);
+        expect(results.length).toBeTruthy();
+        /**
+         * @type {{priceDecimal: number}}
+         */
+        const [result] = results;
+        expect(typeof result.priceDecimal).toBe('number');
     });
 
 });

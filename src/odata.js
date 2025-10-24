@@ -14,6 +14,8 @@ import { SelectAnyExpression, AnyExpressionFormatter } from './expressions';
 import { OrderByAnyExpression } from './expressions';
 import trim from 'lodash/trim';
 import { series } from 'async'
+import {SyncSeriesEventEmitter} from '@themost/events';
+import {onResolvingTypeCastMethod} from './odata.typeCast';
 
 class OpenDataParser {
     constructor() {
@@ -72,6 +74,11 @@ class OpenDataParser {
             },
             configurable: false, enumerable: false
         });
+
+        this.resolvingMember = new SyncSeriesEventEmitter();
+        this.resolvingMethod = new SyncSeriesEventEmitter();
+
+        this.resolvingMethod.subscribe(onResolvingTypeCastMethod);
 
     }
     /**
@@ -810,12 +817,30 @@ class OpenDataParser {
      * @param {Function} callback
      */
     resolveMember(member, callback) {
-        if (typeof callback !== 'function')
-            //sync process
-            return member;
-
-        else
-            callback.call(this, null, member);
+        let memberExpr = null;
+        try {
+            // emit resolvingMethod event
+            const event = {
+                target: this,
+                member: member
+            }
+            this.resolvingMember.emit(event);
+            // check if member is resolved
+            if (event.member instanceof MemberExpression) {
+                memberExpr = event.member;
+            } else {
+                memberExpr = event.member;
+            }
+        } catch (err) {
+            if (typeof callback === 'function') {
+                return callback(err);
+            }
+            throw err;
+        }
+        if (typeof callback !== 'function') {
+            return memberExpr;
+        }
+        return callback(null, memberExpr);
     }
     /**
      * Resolves a custom method of the given name and arguments and returns an equivalent MethodCallExpression instance.
@@ -825,12 +850,29 @@ class OpenDataParser {
      * @returns {MethodCallExpression}
      */
     resolveMethod(method, args, callback) {
-        if (typeof callback !== 'function')
-            //sync process
-            return null;
-
-        else
-            callback.call(this);
+        let methodExpr = null;
+        try {
+            // emit resolvingMethod event
+            const event = {
+                target: this,
+                method: method,
+                args: args
+            }
+            this.resolvingMethod.emit(event);
+            // check if method is resolved
+            if (event.method instanceof MethodCallExpression) {
+                methodExpr = event.method;
+            }
+        } catch (err) {
+            if (typeof callback === 'function') {
+                return callback(err);
+            }
+            throw err;
+        }
+        if (typeof callback !== 'function') {
+            return methodExpr;
+        }
+        return callback(null, methodExpr);
     }
     ///**
     // * Resolves an equivalent expression based on the given OData token
