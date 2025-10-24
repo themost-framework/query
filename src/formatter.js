@@ -1514,6 +1514,62 @@ class SqlFormatter {
     }
 
     /**
+     * @abstract
+     * @param {*} arg
+     * @returns {string}
+     */
+    /* eslint-disable-next-line no-unused-vars */
+    $toBoolean(arg) {
+        throw new AbstractMethodError();
+    }
+
+    /**
+     * @abstract
+     * @param {*} arg
+     * @param {string} type
+     * @returns {string}
+     */
+    /* eslint-disable-next-line no-unused-vars */
+    $toDate(arg, type) {
+        throw new AbstractMethodError();
+    }
+
+    /**
+     * Casts an expression to the specified type.
+     * @param {*} arg
+     * @param {string} type
+     * @returns {string}
+     */
+    $cast(arg, type) {
+        switch (type.toLowerCase()) {
+            case 'int':
+            case 'integer':
+                return this.$toInt(arg);
+            case 'boolean':
+                return this.$toBoolean(arg);
+            case 'long':
+            case 'bigint':
+                return this.$toLong(arg);
+            case 'double':
+            case 'float':
+                return this.$toDouble(arg);
+            case 'decimal':
+                return this.$toDecimal(arg);
+            case 'string':
+                return this.$toString(arg);
+            case 'date':
+            case 'datetime':
+            case 'timestamp':
+                return this.$toDate(arg, type.toLowerCase());
+            case 'guid':
+            case 'uuid':
+                return this.$toGuid(arg);
+            default:
+                throw new Error(`The specified cast type '${type}' is not supported.`);
+        }
+    }
+
+    /**
      * 
      * @param {QueryExpression|*} arg 
      * @returns 
