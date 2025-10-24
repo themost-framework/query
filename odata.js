@@ -3,13 +3,16 @@ var _ = require("lodash");
 var {trim} = require('lodash');
 var {LangUtils} = require("@themost/common");
 var {sprintf} = require('sprintf-js');
-var {SwitchExpression, SelectAnyExpression, OrderByAnyExpression, AnyExpressionFormatter, isLogicalOperator,
+var {MemberExpression, SwitchExpression, SelectAnyExpression, OrderByAnyExpression, AnyExpressionFormatter, isLogicalOperator,
     createLogicalExpression, isArithmeticOperator, createArithmeticExpression,
     isArithmeticExpression, isLogicalExpression, isComparisonOperator,
     createMemberExpression,
     createComparisonExpression, isMethodCallExpression, isMemberExpression, Expression} = require('./expressions');
 var {whilst, series} = require('async');
 const { MethodCallExpression } = require('./expressions');
+const { SyncSeriesEventEmitter } = require('@themost/events');
+const {onResolvingTypeCastMethod} = require('./odata.typeCast');
+
 /**
  * @class
  * @constructor
@@ -71,6 +74,11 @@ function OpenDataParser() {
     },
     configurable:false, enumerable:false
     });
+
+    this.resolvingMember = new SyncSeriesEventEmitter();
+    this.resolvingMethod = new SyncSeriesEventEmitter();
+
+    this.resolvingMethod.subscribe(onResolvingTypeCastMethod);
 
 }
 
@@ -780,22 +788,17 @@ OpenDataParser.prototype.parseMethodCall = function(callback) {
         var args = [];
         self.parseMethodCallArguments(args, function(err) {
             if (err) {
-                callback.call(self, err);
+               return callback(err);
             }
-            else {
-                self.resolveMethod(method, args, function(err, expr) {
-                   if (err) {
-                       callback.call(self, err);
-                   }
-                   else {
-                       if (_.isNil(expr))
-                           callback.call(self, null, new MethodCallExpression(method, args));
-                       else
-                           callback.call(self, null, expr);
-                   }
-                });
-
-            }
+            return self.resolveMethod(method, args, function(err, expr) {
+                if (err) {
+                    return callback(err);
+                }
+                if (expr == null) {
+                    return callback(null, new MethodCallExpression(method, args));
+                }
+                return callback(null, expr);
+            });
         });
     }
 };
@@ -925,27 +928,64 @@ OpenDataParser.prototype.parseMember = function(callback) {
  */
 OpenDataParser.prototype.resolveMember = function(member, callback)
 {
-    if (typeof callback !== 'function')
-        //sync process
-        return member;
-    else
-        callback.call(this, null, member);
+    let memberExpr = null;
+    try {
+        // emit resolvingMethod event
+        const event = {
+            target: this,
+            member: member
+        }
+        this.resolvingMember.emit(event);
+        // check if member is resolved
+        if (event.member instanceof MemberExpression) {
+            memberExpr = event.member;
+        } else {
+            memberExpr = event.member;
+        }
+    } catch (err) {
+        if (typeof callback === 'function') {
+            return callback(err);
+        }
+        throw err;
+    }
+    if (typeof callback !== 'function') {
+        return memberExpr;
+    }
+    return callback(null, memberExpr);
 };
 
 /**
  * Resolves a custom method of the given name and arguments and returns an equivalent MethodCallExpression instance.
- * @param method
- * @param args
- * @param callback
- * @returns {MethodCallExpression}
+ * @param {string} method
+ * @param {Array<*>} args
+ * @param {function=} callback
+ * @returns {MethodCallExpression|void}
  */
 OpenDataParser.prototype.resolveMethod = function(method, args, callback)
 {
-    if (typeof callback !== 'function')
-        //sync process
-        return null;
-    else
-        callback.call(this);
+    let methodExpr = null;
+    try {
+        // emit resolvingMethod event
+        const event = {
+            target: this,
+            method: method,
+            args: args
+        }
+        this.resolvingMethod.emit(event);
+        // check if method is resolved
+        if (event.method instanceof MethodCallExpression) {
+            methodExpr = event.method;
+        }
+    } catch (err) {
+        if (typeof callback === 'function') {
+            return callback(err);
+        }
+        throw err;
+    }
+    if (typeof callback !== 'function') {
+        return methodExpr;
+    }
+    return callback(null, methodExpr);
 };
 ///**
 // * Resolves an equivalent expression based on the given OData token
