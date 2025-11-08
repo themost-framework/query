@@ -33,6 +33,6 @@ function onResolvingTypeCastMethod(event) {
     }
 }
 
-export {
+module.exports = {
     onResolvingTypeCastMethod
 }
