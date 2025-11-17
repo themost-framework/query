@@ -553,10 +553,31 @@ describe('QueryExpression.where', () => {
                 return x.email === value;
             }, emailAddress)
             .take(1);
-        let results = await db.executeAsync(query);
+        let results = await db.executeAsync(query, []);
         expect(results.length).toBe(1);
         expect(results[0].email).toEqual('cameron.ball@example.com');
         expect(results[0].firstName).toEqual('Cameron');
+    });
+
+    it('should use unary expression', async () => {
+        const Users = new QueryEntity('UserData');
+        let query = new QueryExpression()
+            .select(({ id, name, alternateName, enabled }) => {
+                return { id, name, alternateName, enabled }
+            })
+            .from(Users)
+            .where((x) => {
+                return x.enabled === !0;
+            }).take(5);
+        /**
+         * @type {Array<{id: number, name: string, alternateName: string, enabled: boolean}>}
+         */
+        let results = await db.executeAsync(query, []);
+        expect(results.length).toBeTruthy()
+        for (const result of results) {
+            expect(result.enabled).toBeTruthy();
+        }
+
     });
 
 });
