@@ -13,6 +13,7 @@ import './polyfills';
 import { ObjectNameValidator } from './object-name.validator';
 import { isNameReference, trimNameReference } from './name-reference';
 import { JSONArray, JSONObject } from '@themost/json';
+import {MethodCallExpression} from './expressions';
 
 class AbstractMethodError extends Error {
     constructor() {
@@ -745,47 +746,8 @@ class SqlFormatter {
          */
         const additionalSelect = obj.$additionalSelect;
         if (Array.isArray(additionalSelect) && additionalSelect.length) {
-            const aliasKeyword = getAliasKeyword.bind($this)();
            const additionalSelectSql = additionalSelect.map((item) => {
-                let sqlSelect = '';
-                let sqlAlias = null;
-                if (instanceOf(item, QueryEntity)) {
-                    /**
-                     * @type {QueryEntity}
-                     */
-                    const queryEntity = item;
-                    sqlSelect = this.escapeEntity(queryEntity.name);
-                    // get alias
-                    sqlAlias = queryEntity.$alias ? this.escapeName(queryEntity.$alias) : null;
-                }  else if (typeof item === 'string') {
-                    sqlSelect = this.escapeEntity(item)
-                } else {
-                    // try to validate if item is a query expression with a single field
-                    // e.g. { paymentMethods: { $jsonEach: 'paymentMethods' } }
-                    // which is equivalent to SELECT json_each(paymentMethods) AS paymentMethods
-                    const [key] = Object.keys(item);
-                    if (Object.prototype.hasOwnProperty.call(item[key], '$jsonEach')) {
-                        sqlSelect = $this.escape(item);
-                        sqlAlias = this.escapeName(key);
-                    } else if (Object.prototype.hasOwnProperty.call(item, '$select')) {
-                        /**
-                         * @type {QueryExpression}
-                         */
-                        const queryExpression = item;
-                        // get alias
-                        sqlAlias = queryExpression.$alias ? this.escapeName(queryExpression.$alias) : null;
-                        sqlSelect = '(' + this.format(queryExpression) + ')';
-                    } else {
-                        throw new Error('Invalid additional select expression.');
-                    }
-                }
-                if (sqlAlias) {
-                    if (aliasKeyword) {
-                        sqlSelect += aliasKeyword;
-                    }
-                    sqlSelect += sqlAlias;
-                }
-                return sqlSelect;
+                return this.formatAdditionalSelect(item);
             });
             sql += ', ' + additionalSelectSql.join(', ');
         }
@@ -1581,6 +1543,81 @@ class SqlFormatter {
         }
         throw new Error('Invalid query expression. Expected a valid select expression.');
     }
+
+    /**
+     * @protected
+     * @param expr
+     */
+    formatAdditionalJsonSelect(expr) {
+        const [key] = Object.keys(expr);
+        let sqlSelect = this.escape(expr[key]);
+        const sqlAlias = this.escapeName(key);
+        // get alias keyword e.g. AS
+        const aliasKeyword = getAliasKeyword.bind(this)();
+        // append alias
+        if (sqlAlias) {
+            if (aliasKeyword) {
+                sqlSelect += aliasKeyword;
+            }
+            sqlSelect += sqlAlias;
+        }
+        return sqlSelect;
+    }
+
+    /**
+     * @protected
+     * @param {QueryEntity|string|*} expr The additional select expression
+     * @returns {*}
+     */
+    formatAdditionalSelect(expr) {
+        let sqlSelect = '';
+        let sqlAlias = null;
+        const aliasKeyword = getAliasKeyword.bind(this)();
+        if (instanceOf(expr, QueryEntity)) {
+            /**
+             * @type {QueryEntity|{$alias: string}}
+             */
+            const queryEntity = expr;
+            sqlSelect = this.escapeEntity(queryEntity.name);
+            // get alias
+            sqlAlias = queryEntity.$alias ? this.escapeName(queryEntity.$alias) : null;
+        }  else if (typeof expr === 'string') {
+            sqlSelect = this.escapeEntity(expr)
+        } else {
+            // try to validate if item is a query expression with a single field
+            // e.g. { paymentMethods: { $jsonEach: 'paymentMethods' } }
+            // which is equivalent to SELECT json_each(paymentMethods) AS paymentMethods
+            const [key] = Object.keys(expr);
+            if (expr[key] instanceof MethodCallExpression) {
+                /**
+                 * @type {MethodCallExpression}
+                 */
+                const methodCall = expr[key];
+                sqlSelect = this.escape(methodCall.exprOf());
+                sqlAlias = this.escapeName(key);
+            } else if (Object.prototype.hasOwnProperty.call(expr[key], '$jsonEach')) {
+                return this.formatAdditionalJsonSelect(expr);
+            } else if (Object.prototype.hasOwnProperty.call(expr, '$select')) {
+                /**
+                 * @type {QueryExpression}
+                 */
+                const queryExpression = expr;
+                // get alias
+                sqlAlias = queryExpression.$alias ? this.escapeName(queryExpression.$alias) : null;
+                sqlSelect = '(' + this.format(queryExpression) + ')';
+            } else {
+                throw new Error('Invalid additional select expression.');
+            }
+        }
+        if (sqlAlias) {
+            if (aliasKeyword) {
+                sqlSelect += aliasKeyword;
+            }
+            sqlSelect += sqlAlias;
+        }
+        return sqlSelect;
+    }
+
 }
 
 export {

@@ -1,5 +1,5 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
-import {QueryExpression, QueryField, QueryValueRef} from './query';
+import {QueryEntity, QueryExpression, QueryField, QueryValueRef} from './query';
 
 export declare interface FormatterSettings {
     nameFormat: string;
@@ -90,7 +90,8 @@ export declare class SqlFormatter {
     escapeEntity(name: string): any;
     formatFieldEx(obj: any, format: string): any;
     format(obj: any, s?: string): any;
-
+    protected formatAdditionalSelect(expr: (QueryEntity | any)): string;
+    protected formatAdditionalJsonSelect(expr: (QueryEntity | any)): string;
 }
 
 export declare interface SqlFormatterFactory {
