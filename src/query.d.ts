@@ -1,4 +1,5 @@
 import {SyncSeriesEventEmitter} from '@themost/events';
+import {Expression} from './expressions';
 
 export declare type QueryFunc<T> = (value: T, ...param: any[]) => any;
 
@@ -69,7 +70,9 @@ export declare class QueryExpression {
     from(entity: string): this;
     from(entity: QueryEntity): this;
     from(entity: QueryExpression): this;
-    from(entity: QueryEntity, ...additionalEntity: (string | QueryEntity | QueryExpression)[]): this;
+    from(entity: QueryEntity, ...additionalEntity: (string | QueryEntity | QueryExpression | {
+        [k: string ]: any
+    })[]): this;
     join(entity: any, props?: any, alias?: any): this;
     join(entity: QueryEntity): this;
     leftJoin(entity: any, props?: any, alias?: any): this;
@@ -139,8 +142,9 @@ export declare class QueryExpression {
     toLocaleLowerCase(): this;
     toLocaleUpperCase(): this;
 
-    resolvingMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string }>;
-    resolvingJoinMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string, fullyQualifiedMember?: string }>;
+    resolvingMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string | Expression }>;
+    resolvingJoinMember: SyncSeriesEventEmitter<{ target: QueryExpression, member: string | Expression, fullyQualifiedMember?: string }>;
+
     resolvingMethod: SyncSeriesEventEmitter<{ target: QueryExpression, method: string }>;
 
 }
@@ -207,3 +211,4 @@ export declare class QueryFieldRef {
 export declare class QueryValueRef {
     constructor(value: any);
 }
+

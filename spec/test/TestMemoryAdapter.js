@@ -12,16 +12,17 @@ class MemoryAdapter extends SqliteAdapter {
     constructor(options) {
         super(options || {
             name: 'local',
-            database: './spec/db/local.db'
+            database: './spec/db/local.db',
+            logLevel: 'debug'
         });
     }
 
     /**
-     * @param {{ name: string, database: string }} options
+     * @param {{ name: string, database: string, logLevel: string }} options
      * @returns {Promise<MemoryAdapter>}
      */
     static create(options) {
-        const { name, database: source } = options;
+        const { name, database: source, logLevel } = options;
         const sourcePath = path.resolve(process.cwd(), source);
         const { base } = path.parse(sourcePath);
         const destPath = path.resolve(os.tmpdir(), base);
@@ -35,7 +36,8 @@ class MemoryAdapter extends SqliteAdapter {
                 resolve(new MemoryAdapter({
                     name,
                     test,
-                    database
+                    database,
+                    logLevel
                 }));
             });
         });

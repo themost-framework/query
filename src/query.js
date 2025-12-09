@@ -11,7 +11,7 @@ import './polyfills';
 import {ObjectNameValidator} from './object-name.validator';
 import {SyncSeriesEventEmitter} from '@themost/events';
 import { instanceOf } from './instance-of';
-import { Expression } from './expressions';
+import {Expression} from './expressions';
 
 class QueryParameter {
     constructor() {
@@ -560,13 +560,15 @@ class QueryExpression {
         this.$count = alias;
         return this;
     }
+    // noinspection JSCommentMatchesSignature
     /**
      * Sets the entity of a select query expression
-     * @param entity {string|QueryEntity|*} A string that represents the entity name
-     * @param additionalEntity {...{string|QueryEntity|QueryExpression}}
+     * @param {string|QueryEntity|*}  entity A string that represents the entity name
+     * @param {...(string|QueryEntity|QueryExpression|*)} additionalEntity Any additional entities to be included in the select statement
      * @returns {QueryExpression}
      */
-    from(entity) {
+    // eslint-disable-next-line no-unused-vars
+    from(entity, additionalEntity) {
 
         if (isNil(entity))
             return this;
@@ -614,11 +616,11 @@ class QueryExpression {
         if (arguments.length > 1) {
             this.$additionalSelect = [];
             for (let i = 1; i < arguments.length; i++) {
-                const additionalEntity = arguments[i];
-                if (typeof additionalEntity === 'string') {
-                    this.$additionalSelect.push(new QueryEntity(additionalEntity));
+                const additionalEntityArg = arguments[i];
+                if (typeof additionalEntityArg === 'string') {
+                    this.$additionalSelect.push(new QueryEntity(additionalEntityArg));
                 } else {
-                    this.$additionalSelect.push(additionalEntity);
+                    this.$additionalSelect.push(additionalEntityArg);
                 }
             }
         }
@@ -872,7 +874,6 @@ class QueryExpression {
      * @param {...*} field
      * @returns {QueryExpression}
      */
-    /* eslint-disable-next-line no-unused-vars */
     groupBy(field) {
 
         let fields;
