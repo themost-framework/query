@@ -1,6 +1,48 @@
-import { QueryEntity, QueryExpression, QueryField } from '../index';
+import {MemberExpression, MethodCallExpression, QueryEntity, QueryExpression, QueryField} from '../index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 import { MemoryFormatter } from './test/TestMemoryFormatter';
+
+function onResolvingJsonEachQualifiedMember(event) {
+    if (typeof event.member !== 'string') {
+        return;
+    }
+    const fullyQualifiedMember = event.fullyQualifiedMember.split('.');
+    const [member] = fullyQualifiedMember;
+    const query = event.target;
+    const additionalSelect = query.$additionalSelect.find((x) => {
+        const [key] = Object.keys(x);
+        return key === member;
+    });
+    if (additionalSelect && Object.prototype.hasOwnProperty.call(additionalSelect[member], '$jsonEach')) {
+        event.object = member;
+        fullyQualifiedMember.splice(1,0, 'value');
+        // noinspection JSValidateTypes
+        event.member = new MethodCallExpression('jsonGet', [
+            new MemberExpression(fullyQualifiedMember.join('.'))
+        ]);
+    }
+}
+
+function onResolvingJsonEachMember(event) {
+    if (typeof event.member !== 'string') {
+        return;
+    }
+    const fullyQualifiedMember = event.member.split('.');
+    const [,member] = fullyQualifiedMember;
+    const query = event.target;
+    const additionalSelect = query.$additionalSelect.find((x) => {
+        const [key] = Object.keys(x);
+        return key === member;
+    });
+    if (additionalSelect && Object.prototype.hasOwnProperty.call(additionalSelect[member], '$jsonEach')) {
+        event.object = member;
+        // noinspection JSValidateTypes
+        event.member = new MemberExpression([
+            member,
+            'value'
+        ].join('.'));
+    }
+}
 
 describe('QueryExpression.from', () => {
 
@@ -152,6 +194,70 @@ describe('QueryExpression.from', () => {
             const item = items[i];
             expect(item.familyName).toBeTruthy();
         }
+    });
+
+    it('should use json each with filter', async () => {
+        const Users = new QueryEntity('Users');
+        const userGroup = {
+            $jsonEach: [
+                '$Users.groups'
+            ]
+        };
+        const query = new QueryExpression();
+        query.resolvingJoinMember.subscribe(onResolvingJsonEachQualifiedMember);
+        query.select(
+            (x) => {
+                return {
+                    id: x.id,
+                    username: x.username,
+                    email: x.email,
+                    groups: x.groups,
+                }
+            }
+        ).from(Users, {
+            userGroup
+        }).where((x) => {
+            // noinspection JSUnresolvedReference
+            return x.userGroup.group_name === 'Administrators';
+        });
+
+        const formatter = new MemoryFormatter();
+        const sql = formatter.format(query);
+        const results = await db.executeAsync(sql, []);
+        expect(results).toBeTruthy();
+        expect(results.length).toEqual(2);
+    });
+
+    it('should use json each values with filter', async () => {
+        const Users = new QueryEntity('Users');
+        const userTag = {
+            $jsonEach: [
+                '$Users.tags'
+            ]
+        };
+        const query = new QueryExpression();
+        query.resolvingMember.subscribe(onResolvingJsonEachMember);
+        query.resolvingJoinMember.subscribe(onResolvingJsonEachQualifiedMember);
+        query.from(Users, {
+            userTag
+        }).select(
+            (x) => {
+                return {
+                    id: x.id,
+                    username: x.username,
+                    email: x.email,
+                    tags: x.tags,
+                }
+            }
+        ).where((x) => {
+            // noinspection JSUnresolvedReference
+            return x.userTag === 'admin';
+        });
+        const formatter = new MemoryFormatter();
+        const sql = formatter.format(query);
+        const results = await db.executeAsync(sql, []);
+        expect(results).toBeTruthy();
+        expect(results.length).toEqual(2);
     });
 
 });

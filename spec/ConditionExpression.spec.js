@@ -81,7 +81,7 @@ describe('ConditionExpression', () => {
             .where('category').equal('Laptops')
             .orderBy('price');
         const results = await db.executeAsync(query);
-        expect(results).toBeInstanceOf(Array);
+        expect(Array.isArray(results)).toBeTruthy();
         expect(results.length).toBeTruthy();
         const values = [
             'Expensive',
@@ -191,7 +191,7 @@ describe('ConditionExpression', () => {
             priceDescription
         ).from('ProductData').where('category').equal('Laptops');
         const results = await db.executeAsync(query);
-        expect(results).toBeInstanceOf(Array);
+        expect(Array.isArray(results)).toBeTruthy();
         expect(results.length).toBeTruthy();
         const values = [
             'Expensive',

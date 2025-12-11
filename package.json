@@ -45,6 +45,8 @@
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^22.0.2",
     "@themost/common": "^2.11.0",
+    "@themost/json-logger": "^1.3.0",
+    "@themost/sqlite": "^2.11.0",
     "@types/jest": "^29.5.13",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
