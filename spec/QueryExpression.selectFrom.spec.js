@@ -77,7 +77,7 @@ describe('QueryExpression.from', () => {
         const [additionalSelect] = q.$additionalSelect;
         expect(additionalSelect instanceof QueryEntity).toBeTruthy();
         const sql = new MemoryFormatter().format(q);
-        expect(sql).toBe('SELECT "OrderData"."id" AS "id", "OrderData"."customer" AS "customer", "PersonData"."familyName" AS "familyName", "PersonData"."givenName" AS "givenName" FROM "OrderData", "PersonData" WHERE ("OrderData"."customer"="PersonData"."id")');
+        expect(sql).toBe('SELECT `OrderData`.`id` AS `id`, `OrderData`.`customer` AS `customer`, `PersonData`.`familyName` AS `familyName`, `PersonData`.`givenName` AS `givenName` FROM `OrderData`, `PersonData` WHERE (`OrderData`.`customer`=`PersonData`.`id`)');
         const items = await db.executeAsync(q);
         expect(items.length).toEqual(orders.length);
         for (let i = 0; i < items.length; i++) {
@@ -87,7 +87,7 @@ describe('QueryExpression.from', () => {
         }
     });
 
-    it('should use multiple "from" expressions', async () => {
+    it('should use multiple `from` expressions', async () => {
         const orders = await db.executeAsync(new QueryExpression().select('id').from('OrderData'));
 
         const people = new QueryExpression()
@@ -116,7 +116,7 @@ describe('QueryExpression.from', () => {
         }
     });
 
-    it('should use multiple "from" expressions with closures', async () => {
+    it('should use multiple `from` expressions with closures', async () => {
         const orders = new QueryEntity('OrderData');
         const people = new QueryEntity('PersonData');
         const q = new QueryExpression().select(
@@ -142,7 +142,7 @@ describe('QueryExpression.from', () => {
         }
     });
 
-    it('should use multiple "from" expressions with object destructuring', async () => {
+    it('should use multiple `from` expressions with object destructuring', async () => {
         const orders = new QueryEntity('OrderData');
         const people = new QueryEntity('PersonData');
         const q = new QueryExpression().select(
@@ -168,7 +168,7 @@ describe('QueryExpression.from', () => {
         }
     });
 
-    it('should use multiple "from" expressions with full object destructuring', async () => {
+    it('should use multiple `from` expressions with full object destructuring', async () => {
         const orders = new QueryEntity('OrderData');
         const people = new QueryEntity('PersonData');
         const q = new QueryExpression().select(

@@ -1,8 +1,8 @@
-
 import { SqliteAdapter } from '@themost/sqlite';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
+import {MemoryFormatter} from './TestMemoryFormatter';
 
 class MemoryAdapter extends SqliteAdapter {
     /**
@@ -15,6 +15,12 @@ class MemoryAdapter extends SqliteAdapter {
             database: './spec/db/local.db',
             logLevel: 'debug'
         });
+    }
+
+    // noinspection JSCheckFunctionSignatures
+    getFormatter() {
+        // noinspection JSValidateTypes
+        return new MemoryFormatter();
     }
 
     /**

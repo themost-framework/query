@@ -49,6 +49,10 @@ class MemoryFormatter extends SqliteFormatter {
     $toLong(arg) {
         return sprintf('CAST(%s AS BIGINT)', this.escape(arg));
     }
+
+    $indexOfBytes(expr, searchExpr) {
+        return this.$indexOf(expr, searchExpr);
+    }
 }
 
 export {
