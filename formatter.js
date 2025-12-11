@@ -5,6 +5,8 @@ var _ = require('lodash');
 var { Args, AbstractMethodError} = require('@themost/common');
 const { QueryExpression, QueryField, QueryEntity } = require('./query');
 const { JSONArray, JSONObject } = require('@themost/json');
+const {MethodCallExpression} = require('./expressions');
+const {isNameReference, trimNameReference} = require('./name-reference');
 var instanceOf = require('./instance-of').instanceOf;
 var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator;
 
@@ -1068,48 +1070,8 @@ SqlFormatter.prototype.formatSelect = function(obj)
      */
     const additionalSelect = obj.$additionalSelect;
     if (Array.isArray(additionalSelect) && additionalSelect.length) {
-        const aliasKeyword = getAliasKeyword.bind($this)();
         const additionalSelectSql = additionalSelect.map(function(item){
-            let sqlSelect = '';
-            let sqlAlias = null;
-            if (instanceOf(item, QueryEntity)) {
-                /**
-                 * @type {QueryEntity|*}
-                 */
-                const queryEntity = item;
-                sqlSelect = $this.escapeName(queryEntity.name);
-                // get alias
-                sqlAlias = queryEntity.$alias;
-            }  else if (typeof item === 'string') {
-                sqlSelect = $this.escapeName(item)
-            } else {
-                // try to validate if item is a query expression with a single field
-                // e.g. { paymentMethods: { $jsonEach: 'paymentMethods' } }
-                // which is equivalent to SELECT json_each(paymentMethods) AS paymentMethods
-                var [key] = Object.keys(item);
-                if (Object.prototype.hasOwnProperty.call(item[key], '$jsonEach')) {
-                    sqlSelect = $this.escape(item);
-                    sqlAlias = key;
-                } else if (Object.prototype.hasOwnProperty.call(item, '$select') && typeof item.$select === 'object') {
-                    /**
-                     * parse a sub-query expression
-                     * @type {QueryExpression}
-                     */
-                    const queryExpression = item;
-                    // get alias
-                    sqlAlias = queryExpression.$alias;
-                    sqlSelect = '(' + $this.format(queryExpression) + ')';
-                } else {
-                    throw new Error('Invalid additional select expression.');
-                }
-            }
-            if (sqlAlias) {
-                if (aliasKeyword) {
-                    sqlSelect += aliasKeyword;
-                }
-                sqlSelect += sqlAlias;
-            }
-            return sqlSelect;
+            return $this.formatAdditionalSelect(item);
         });
         sql += ', ' + additionalSelectSql.join(', ');
     }
@@ -1459,7 +1421,11 @@ SqlFormatter.prototype.escapeName = function(name) {
     if (typeof name !== 'string') {
         throw new Error('Invalid name expression. Expected string.');
     }
-    return ObjectNameValidator.validator.escape(name, this.settings.nameFormat);
+    let str = name;
+    if (isNameReference(str)) {
+        str = trimNameReference(name);
+    }
+    return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
 };
 
 function isQueryField_(obj) {
@@ -1608,6 +1574,82 @@ SqlFormatter.prototype.format = function(obj, s)
     }
 
 };
+
+SqlFormatter.prototype.escapeEntity = function(name) {
+    if (typeof name !== 'string') {
+        throw new Error('Invalid entity expression. Expected string.');
+    }
+    let str = name;
+    if (isNameReference(str)) {
+        str = trimNameReference(name);
+    }
+    return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+}
+
+SqlFormatter.prototype.formatAdditionalSelect = function(expr) {
+    let sqlSelect = '';
+    let sqlAlias = null;
+    const aliasKeyword = getAliasKeyword.bind(this)();
+    if (instanceOf(expr, QueryEntity)) {
+        /**
+         * @type {QueryEntity|{$alias: string}}
+         */
+        const queryEntity = expr;
+        sqlSelect = this.escapeEntity(queryEntity.name);
+        // get alias
+        sqlAlias = queryEntity.$alias ? this.escapeName(queryEntity.$alias) : null;
+    }  else if (typeof expr === 'string') {
+        sqlSelect = this.escapeEntity(expr)
+    } else {
+        // try to validate if item is a query expression with a single field
+        // e.g. { paymentMethods: { $jsonEach: 'paymentMethods' } }
+        // which is equivalent to SELECT json_each(paymentMethods) AS paymentMethods
+        const [key] = Object.keys(expr);
+        if (expr[key] instanceof MethodCallExpression) {
+            /**
+             * @type {MethodCallExpression}
+             */
+            const methodCall = expr[key];
+            sqlSelect = this.escape(methodCall.exprOf());
+            sqlAlias = this.escapeName(key);
+        } else if (Object.prototype.hasOwnProperty.call(expr[key], '$jsonEach')) {
+            return this.formatAdditionalJsonSelect(expr);
+        } else if (Object.prototype.hasOwnProperty.call(expr, '$select')) {
+            /**
+             * @type {QueryExpression}
+             */
+            const queryExpression = expr;
+            // get alias
+            sqlAlias = queryExpression.$alias ? this.escapeName(queryExpression.$alias) : null;
+            sqlSelect = '(' + this.format(queryExpression) + ')';
+        } else {
+            throw new Error('Invalid additional select expression.');
+        }
+    }
+    if (sqlAlias) {
+        if (aliasKeyword) {
+            sqlSelect += aliasKeyword;
+        }
+        sqlSelect += sqlAlias;
+    }
+    return sqlSelect;
+}
+
+SqlFormatter.prototype.formatAdditionalJsonSelect = function(expr) {
+    const [key] = Object.keys(expr);
+    let sqlSelect = this.escape(expr[key]);
+    const sqlAlias = this.escapeName(key);
+    // get alias keyword e.g. AS
+    const aliasKeyword = getAliasKeyword.bind(this)();
+    // append alias
+    if (sqlAlias) {
+        if (aliasKeyword) {
+            sqlSelect += aliasKeyword;
+        }
+        sqlSelect += sqlAlias;
+    }
+    return sqlSelect;
+}
 
 if (typeof exports !== 'undefined') {
     module.exports = {

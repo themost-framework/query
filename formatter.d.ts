@@ -1,5 +1,5 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
-import {QueryExpression} from './query';
+import {QueryEntity, QueryExpression} from './query';
 
 export declare interface FormatterSettings {
     nameFormat: string;
@@ -83,6 +83,8 @@ export declare class SqlFormatter {
     escapeName(name: string): string;
     formatFieldEx(obj: any, format: string);
     format(obj: any, s?: string);
+    protected formatAdditionalSelect(expr: (QueryEntity | any)): string;
+    protected formatAdditionalJsonSelect(expr: (QueryEntity | any)): string;
 
 }
 

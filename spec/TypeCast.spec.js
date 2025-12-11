@@ -28,7 +28,7 @@ describe('Type Casting', () => {
         let expr = new QueryExpression().where(id).equal(orderedItem);
         const formatter = new MemoryFormatter();
         let sql = formatter.formatWhere(expr.$where);
-        expect(sql).toEqual('("ProductData"."id"="OrderData"."orderedItem")');
+        expect(sql).toEqual('(`ProductData`.`id`=`OrderData`.`orderedItem`)');
         orderedItem =new QueryField({
             '$toString': [
                 new QueryField('orderedItem').from(Order)
@@ -36,7 +36,7 @@ describe('Type Casting', () => {
         });
         expr = new QueryExpression().where(id).equal(orderedItem);
         sql = formatter.formatWhere(expr.$where);
-        expect(sql).toEqual('("ProductData"."id"=CAST("OrderData"."orderedItem" AS TEXT))');
+        expect(sql).toEqual('(`ProductData`.`id`=CAST(`OrderData`.`orderedItem` AS TEXT))');
     });
 
     it('should use $toString inside closure', async () => {
