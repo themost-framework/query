@@ -43,6 +43,14 @@ var {
     OpenDataQueryFormatter
 } = require("./open-data-query.formatter");
 
+var {
+    hasNameReference,
+    isNameReference,
+    trimNameReference,
+    isMethodOrNameReference,
+    getOwnPropertyWithNameRef
+} = require('./name-reference');
+
 var { count,
     round,
     min,
@@ -102,5 +110,10 @@ module.exports = {
     mean,
     avg,
     length,
-    ClosureParser
+    ClosureParser,
+    hasNameReference,
+    isNameReference,
+    trimNameReference,
+    isMethodOrNameReference,
+    getOwnPropertyWithNameRef
 };

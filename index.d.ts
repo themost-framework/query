@@ -10,3 +10,4 @@ export * from "./simple-open-data-parser";
 export * from "./open-data-query.formatter";
 export * from "./open-data-query.expression";
 export * from "./closures";
+export * from "./name-reference";

@@ -60,7 +60,7 @@ function hasNameReference(str) {
 }
 
 
-export {
+module.exports = {
     hasNameReference,
     isNameReference,
     trimNameReference,
