@@ -137,11 +137,13 @@ function onResolvingJsonEachQualifiedMember(event) {
     const fullyQualifiedMember = event.fullyQualifiedMember.split('.');
     const [member] = fullyQualifiedMember;
     const query = event.target;
-    const additionalSelect = query.$additionalSelect.find((x) => {
-        const [key] = Object.keys(x);
-        return key === member;
+    const joins = Array.isArray(query.$expand) ? query.$expand : (query.$expand ? [
+        query.$expand
+    ] : []);
+    const join = joins.find((x) => {
+        return x.$as === member;
     });
-    if (additionalSelect && Object.prototype.hasOwnProperty.call(additionalSelect[member], '$jsonEach')) {
+    if (join && Object.prototype.hasOwnProperty.call(join.$entity, '$jsonEach')) {
         event.object = member;
         fullyQualifiedMember.splice(1,0, 'value');
         // noinspection JSValidateTypes
@@ -158,11 +160,14 @@ function onResolvingJsonEachMember(event) {
     const fullyQualifiedMember = event.member.split('.');
     const [,member] = fullyQualifiedMember;
     const query = event.target;
-    const additionalSelect = query.$additionalSelect.find((x) => {
-        const [key] = Object.keys(x);
-        return key === member;
+    const joins = Array.isArray(query.$expand) ? query.$expand : (query.$expand ? [
+        query.$expand
+    ] : []);
+    const join = joins.find((x) => {
+        return x.$as === member;
     });
-    if (additionalSelect && Object.prototype.hasOwnProperty.call(additionalSelect[member], '$jsonEach')) {
+
+    if (join && Object.prototype.hasOwnProperty.call(join.$entity, '$jsonEach')) {
         event.object = member;
         // noinspection JSValidateTypes
         event.member = new MemberExpression([
@@ -178,7 +183,7 @@ describe('SqlFormatter', () => {
      * @type {MemoryAdapter}
      */
     let db;
-    beforeAll((done) => {
+    beforeAll(() => {return new Promise(done => {
         MemoryAdapter.create({
             name: 'local',
             database: './spec/db/local.db',
@@ -189,8 +194,8 @@ describe('SqlFormatter', () => {
         }).catch((err) => {
             return done(err);
         });
-    });
-    afterAll((done) => {
+    })});
+    afterAll(() => {return new Promise(done => {
         if (db) {
             return db.close(() => {
                 return MemoryAdapter.drop(db).then(() => {
@@ -199,7 +204,7 @@ describe('SqlFormatter', () => {
             });
         }
         return done();
-    });
+    })});
 
     it('should select json field', async () => {
         await createSimpleOrders(db);
@@ -312,6 +317,7 @@ describe('SqlFormatter', () => {
         for (const result of results) {
             if (typeof result.customer === 'string') {
                 const customer = JSON.parse(result.customer);
+                // eslint-disable-next-line jest/no-conditional-expect
                 expect(customer).toBeTruthy();
             }
         }
@@ -335,8 +341,39 @@ describe('SqlFormatter', () => {
                     groups: x.groups,
                 }
             }
-        ).from(Users, {
+        ).from(Users).leftJoin({
                 userGroup
+            }).with(false).where((x) => {
+            // noinspection JSUnresolvedReference
+            return x.userGroup.group_name === 'Administrators';
+        });
+
+        const formatter = new MemoryFormatter();
+        const sql = formatter.format(query);
+        const results = await db.executeAsync(sql, []);
+        expect(results).toBeTruthy();
+        expect(results.length).toEqual(2);
+    });
+
+    it('should use json each with join expression', async () => {
+        const Users = new QueryEntity('Users');
+        const userGroup = {
+            $jsonEach: [
+                '$Users.groups'
+            ]
+        };
+        const query = new QueryExpression();
+        query.resolvingJoinMember.subscribe(onResolvingJsonEachQualifiedMember);
+        query.select(
+            (x) => {
+                return {
+                    id: x.id,
+                    username: x.username,
+                    email: x.email
+                }
+            }
+        ).from(Users).crossJoin({
+            userGroup
         }).where((x) => {
             // noinspection JSUnresolvedReference
             return x.userGroup.group_name === 'Administrators';
@@ -359,9 +396,7 @@ describe('SqlFormatter', () => {
         const query = new QueryExpression();
         query.resolvingMember.subscribe(onResolvingJsonEachMember);
         query.resolvingJoinMember.subscribe(onResolvingJsonEachQualifiedMember);
-        query.from(Users, {
-            userTag
-        }).select(
+        query.from(Users).select(
             (x) => {
                 return {
                     id: x.id,
@@ -370,7 +405,9 @@ describe('SqlFormatter', () => {
                     tags: x.tags,
                 }
             }
-        ).where((x) => {
+        ).crossJoin({
+            userTag
+        }).where((x) => {
             // noinspection JSUnresolvedReference
             return x.userTag === 'admin';
         });
