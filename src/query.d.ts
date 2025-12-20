@@ -73,12 +73,10 @@ export declare class QueryExpression {
     from(entity: QueryEntity, ...additionalEntity: (string | QueryEntity | QueryExpression | {
         [k: string ]: any
     })[]): this;
-    join(entity: any, props?: any, alias?: any): this;
-    join(entity: QueryEntity): this;
-    leftJoin(entity: any, props?: any, alias?: any): this;
-    leftJoin(entity: QueryEntity): this;
-    rightJoin(entity: any, props?: any, alias?: any): this;
-    rightJoin(entity: QueryEntity): this;
+    join(entity: (QueryEntity | any), props?: any, alias?: any): this;
+    leftJoin(entity: (QueryEntity | any), props?: any, alias?: any): this;
+    rightJoin(entity: (QueryEntity | any), props?: any, alias?: any): this;
+    crossJoin(entity: (QueryEntity | any)): this;
     with(obj: any): this;
     with<T,J>(expr: (value: T, otherValue: J, ...param: any[]) => any, ...params: any[]): this;
     orderBy(expr: string | any): this;

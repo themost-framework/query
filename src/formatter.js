@@ -11,7 +11,7 @@ import { QueryEntity, QueryExpression, QueryField } from './query';
 import { instanceOf } from './instance-of';
 import './polyfills';
 import { ObjectNameValidator } from './object-name.validator';
-import { isNameReference, trimNameReference } from './name-reference';
+import {isMethodOrNameReference, isNameReference, trimNameReference} from './name-reference';
 import { JSONArray, JSONObject } from '@themost/json';
 import {MethodCallExpression} from './expressions';
 
@@ -767,12 +767,30 @@ class SqlFormatter {
                         sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$alias));
                 }
                 else {
+                    sql += ' ' + joinType + ' JOIN ';
+                    if (typeof x.$entity === 'object') {
+                        const [key] = Object.keys(x.$entity);
+                        if (isMethodOrNameReference(key)) {
+                            sql += $this.escape(x.$entity);
+                            const alias = x.$as || x.$entity.$as;
+                            if (alias) {
+                                sql += getAliasKeyword.bind($this)();
+                                sql += $this.escapeName(alias);
+                            }
+                            const strWhere = $this.formatWhere(x.$with);
+                            if (typeof strWhere === 'string' && strWhere.length > 0) {
+                                sql += ' ON ' + strWhere;
+                            }
+                            return;
+                        }
+                    }
                     //get join table name
                     table = Object.key(x.$entity);
-                    sql = sql.concat(' ' + joinType + ' JOIN ').concat($this.escapeEntity(table));
-                    //add alias
-                    if (x.$entity.$as)
+                    sql += $this.escapeEntity(table);
+                    // add alias
+                    if (x.$entity.$as) {
                         sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$as));
+                    }
                 }
                 if (Array.isArray(x.$with)) {
                     if (x.$with.length !== 2)
