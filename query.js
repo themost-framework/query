@@ -10,6 +10,7 @@ var SyncSeriesEventEmitter = require('@themost/events').SyncSeriesEventEmitter;
 //noinspection JSUnusedLocalSymbols
 require('./natives');
 var {Expression} = require("./expressions");
+var {isMethodOrNameReference} = require('./name-reference');
 /**
  * @class
  * @constructor
@@ -264,6 +265,12 @@ QueryExpression.prototype.fields = function() {
             //todo::add fields if any
         }
         else {
+            if (typeof x.$entity === 'object') {
+                var [key] = Object.keys(x.$entity);
+                if (isMethodOrNameReference(key)) {
+                    return;
+                }
+            }
             var table = Object.key(x.$entity), tableFields = x.$entity[table] || [];
             _.forEach(tableFields, function(y) {
                 if (typeof x === 'string') {
@@ -728,11 +735,54 @@ QueryExpression.prototype.join = function(entity, props, alias) {
     else if (entity instanceof QueryExpression) {
         //do nothing (clone object)
         obj = entity;
-    }
-    else {
+    } else {
+        // check if the given entity is a table-scalar function
+        // e.g. { $jsonEach: [ '$Users.group' ] } or
+        // using an alias { groups: { $jsonEach: [ '$Users.group' ] } }
+        var [key] = Object.keys(entity);
+        if (key && isMethodOrNameReference(key)) {
+            // the entity is a table-scalar function without alias
+            // set temporary expand object
+            if (alias == null) {
+                throw new Error('Alias is required when joining a table-like expression.');
+            }
+            this.privates.expand = {
+                $entity: obj,
+                $as: alias // use alias if any
+            };
+            Object.defineProperty(this, '$joinCollection', {
+                configurable: true,
+                enumerable: false,
+                writable: true,
+                value: alias
+            });
+            return this;
+        } else if (key) {
+            var [methodKey] = Object.keys(entity[key]);
+            if (methodKey && isMethodOrNameReference(methodKey)) {
+                // the entity is a table-scalar function with alias
+                obj = entity[key];
+                if (alias != null && alias !== key) {
+                    throw new Error('Alias mismatch when joining a table-like expression. Given alias does not match the entity alias.');
+                }
+                // set temporary expand object
+                this.privates.expand = {
+                    $entity: obj,
+                    $as: alias || key // use alias if any
+                };
+                Object.defineProperty(this, '$joinCollection', {
+                    configurable: true,
+                    enumerable: false,
+                    writable: true,
+                    value: alias || key
+                });
+                return this;
+            }
+        }
         obj[entity] = props || [];
-        if (typeof alias === 'string')
-            obj.$as=alias;
+        if (typeof alias === 'string') {
+            obj.$as = alias;
+        }
     }
     this.privates.expand =  { $entity: obj };
     // set current join entity
@@ -780,6 +830,16 @@ QueryExpression.prototype.join = function(entity, props, alias) {
     if (this.privates.expand && this.privates.expand.$entity) {
         this.privates.expand.$entity.$join = 'right';
     }
+    return this;
+}
+
+QueryExpression.prototype.crossJoin = function(entity) {
+    this.join(entity);
+    if (this.privates.expand && this.privates.expand.$entity) {
+        this.privates.expand.$entity.$join = 'cross';
+    }
+    // a cross join cannot have a with expression
+    this.with(false);
     return this;
 }
 

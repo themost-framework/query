@@ -44,11 +44,10 @@ export declare class QueryExpression {
     from(entity: QueryExpression): this;
     from(entity: (string | QueryEntity | QueryExpression), ...additionalEntity: (string | QueryEntity | QueryExpression)[]): this;
     join(entity: any, props?: any, alias?: any): this;
-    join(entity: QueryEntity): this;
-    leftJoin(entity: any, props?: any, alias?: any): this;
-    leftJoin(entity: QueryEntity): this;
-    rightJoin(entity: any, props?: any, alias?: any): this;
-    rightJoin(entity: QueryEntity): this;
+    join(entity: QueryEntity | any): this;
+    leftJoin(entity: QueryEntity | any): this;
+    rightJoin(entity: QueryEntity | any): this;
+    crossJoin(entity: any): this;
     with(obj: any): this;
     with<T,J>(expr: (value: T, otherValue: J, ...params: any[]) => any, ...params: any[]): this;
     orderBy(expr: string | any): this;

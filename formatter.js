@@ -6,7 +6,7 @@ var { Args, AbstractMethodError} = require('@themost/common');
 const { QueryExpression, QueryField, QueryEntity } = require('./query');
 const { JSONArray, JSONObject } = require('@themost/json');
 const {MethodCallExpression} = require('./expressions');
-const {isNameReference, trimNameReference} = require('./name-reference');
+const {isNameReference, trimNameReference, isMethodOrNameReference} = require('./name-reference');
 var instanceOf = require('./instance-of').instanceOf;
 var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator;
 
@@ -1081,26 +1081,39 @@ SqlFormatter.prototype.formatSelect = function(obj)
     {
         //enumerate joins
         _.forEach(joins, function(x) {
-            var joinType;
+            var joinType = (x.$entity.$join || 'inner').toUpperCase();
             if (instanceOf(x.$entity, QueryExpression)) {
-                // get join type
-                joinType = (x.$entity.$join || 'inner').toUpperCase();
                 // append join statement 
                 sql = sql.concat(sprintf(' %s JOIN (%s)', joinType, $this.format(x.$entity)));
                 // add alias
                 if (x.$entity.$alias) {
                     sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$alias));
                 }
-            }
-            else {
-                // get join table name
+            } else {
+                sql += ' ' + joinType + ' JOIN ';
+                if (typeof x.$entity === 'object') {
+                    const [key] = Object.keys(x.$entity);
+                    if (isMethodOrNameReference(key)) {
+                        sql += $this.escape(x.$entity);
+                        const alias = x.$as || x.$entity.$as;
+                        if (alias) {
+                            sql += getAliasKeyword.bind($this)();
+                            sql += $this.escapeName(alias);
+                        }
+                        const strWhere = $this.formatWhere(x.$with);
+                        if (typeof strWhere === 'string' && strWhere.length > 0) {
+                            sql += ' ON ' + strWhere;
+                        }
+                        return;
+                    }
+                }
+                //get join table name
                 var table = Object.key(x.$entity);
-                // get on statement (the join comparison)
-                joinType = (x.$entity.$join || 'inner').toUpperCase();
-                sql = sql.concat(' '+ joinType + ' JOIN ').concat($this.escapeName(table));
+                sql += $this.escapeEntity(table);
                 // add alias
-                if (x.$entity.$as)
+                if (x.$entity.$as) {
                     sql = sql.concat(getAliasKeyword.bind($this)()).concat($this.escapeName(x.$entity.$as));
+                }
             }
             if (_.isArray(x.$with))
             {
