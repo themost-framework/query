@@ -3,6 +3,7 @@ import { SqliteDialect } from '../src/dialects/sqlite';
 import { MySQLDialect } from '../src/dialects/mysql';
 import { MSSQLDialect } from '../src/dialects/mssql';
 import { PostgreSQLDialect } from '../src/dialects/pg';
+import { OracleDialect } from '../src/dialects/oracle';
 
 describe('SqlDialects', () => {
 
@@ -497,6 +498,203 @@ describe('SqlDialects', () => {
         });
     });
 
+    describe('OracleDialect', () => {
+        it('should format a SELECT statement with OFFSET/FETCH', () => {
+            const Products = new QueryEntity('ProductData');
+            const query = new QueryExpression().select('id', 'name').from(Products).take(10).skip(20);
+            const formatter = new OracleDialect();
+            const sql = formatter.formatLimitSelect(query);
+            expect(sql).toContain('FROM "ProductData"');
+            expect(sql).toContain('OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY');
+        });
+
+        it('should format a SELECT with FETCH NEXT (no skip)', () => {
+            const Products = new QueryEntity('ProductData');
+            const query = new QueryExpression().select('id', 'name').from(Products).take(5);
+            const formatter = new OracleDialect();
+            const sql = formatter.formatLimitSelect(query);
+            expect(sql).toContain('OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY');
+        });
+
+        it('should escape identifiers with double quotes', () => {
+            const formatter = new OracleDialect();
+            expect(formatter.escapeName('name')).toBe('"name"');
+        });
+
+        it('should escape boolean as 1/0', () => {
+            const formatter = new OracleDialect();
+            expect(formatter.escape(true)).toBe('1');
+            expect(formatter.escape(false)).toBe('0');
+        });
+
+        it('should format $toString', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$toString({ $name: 'price' });
+            expect(result).toBe('TO_CHAR("price")');
+        });
+
+        it('should format $toInt', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$toInt({ $name: 'price' });
+            expect(result).toBe('CAST("price" AS NUMBER(10,0))');
+        });
+
+        it('should format $toLong', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$toLong({ $name: 'id' });
+            expect(result).toBe('CAST("id" AS NUMBER(19,0))');
+        });
+
+        it('should format $toDouble', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$toDouble({ $name: 'price' });
+            expect(result).toBe('CAST("price" AS NUMBER(19,8))');
+        });
+
+        it('should format $toDecimal', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$toDecimal({ $name: 'price' }, 10, 2);
+            expect(result).toBe('CAST("price" AS NUMBER(10,2))');
+        });
+
+        it('should format $toBoolean', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$toBoolean({ $name: 'active' });
+            expect(result).toBe('CAST("active" AS NUMBER(1,0))');
+        });
+
+        it('should format $concat', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$concat({ $name: 'firstName' }, ' ', { $name: 'lastName' });
+            expect(result).toContain('CONCAT(');
+        });
+
+        it('should format $length', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$length({ $name: 'name' });
+            expect(result).toBe('LENGTH("name")');
+        });
+
+        it('should format $substring', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$substring({ $name: 'name' }, 0, 5);
+            expect(result).toBe('SUBSTR("name",0 + 1,5)');
+        });
+
+        it('should format $indexOf', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$indexOf({ $name: 'name' }, 'John');
+            expect(result).toBe('(INSTR("name",\'John\')-1)');
+        });
+
+        it('should format $startsWith', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$startsWith({ $name: 'name' }, 'John');
+            expect(result).toContain('LIKE');
+            expect(result).toContain('John%');
+        });
+
+        it('should format $endsWith', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$endsWith({ $name: 'name' }, 'son');
+            expect(result).toContain('LIKE');
+            expect(result).toContain('%son');
+        });
+
+        it('should format $contains', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$contains({ $name: 'name' }, 'ohn');
+            expect(result).toContain('LIKE');
+            expect(result).toContain('%ohn%');
+        });
+
+        it('should format $year', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$year({ $name: 'createdAt' });
+            expect(result).toBe('EXTRACT(YEAR FROM "createdAt")');
+        });
+
+        it('should format $month', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$month({ $name: 'createdAt' });
+            expect(result).toBe('EXTRACT(MONTH FROM "createdAt")');
+        });
+
+        it('should format $day', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$day({ $name: 'createdAt' });
+            expect(result).toBe('EXTRACT(DAY FROM "createdAt")');
+        });
+
+        it('should format $hour', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$hour({ $name: 'createdAt' });
+            expect(result).toBe('EXTRACT(HOUR FROM "createdAt")');
+        });
+
+        it('should format $minute', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$minute({ $name: 'createdAt' });
+            expect(result).toBe('EXTRACT(MINUTE FROM "createdAt")');
+        });
+
+        it('should format $second', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$second({ $name: 'createdAt' });
+            expect(result).toBe('EXTRACT(SECOND FROM "createdAt")');
+        });
+
+        it('should format $date', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$date({ $name: 'createdAt' });
+            expect(result).toBe('TRUNC("createdAt")');
+        });
+
+        it('should format $ifNull', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$ifNull({ $name: 'description' }, '');
+            expect(result).toBe('NVL("description", \'\')');
+        });
+
+        it('should format $ceiling', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$ceiling({ $name: 'price' });
+            expect(result).toBe('CEIL("price")');
+        });
+
+        it('should format $regex', () => {
+            const formatter = new OracleDialect();
+            const result = formatter.$regex({ $name: 'name' }, 'John');
+            expect(result).toContain('REGEXP_LIKE');
+        });
+
+        it('should format $uuid', () => {
+            const formatter = new OracleDialect();
+            expect(formatter.$uuid()).toBe('LOWER(RAWTOHEX(SYS_GUID()))');
+        });
+
+        it('should format $toDate', () => {
+            const formatter = new OracleDialect();
+            expect(formatter.$toDate({ $name: 'createdAt' }, 'date')).toBe('TRUNC(CAST("createdAt" AS DATE))');
+            expect(formatter.$toDate({ $name: 'createdAt' }, 'datetime')).toBe('CAST("createdAt" AS DATE)');
+            expect(formatter.$toDate({ $name: 'createdAt' }, 'timestamp')).toBe('CAST("createdAt" AS TIMESTAMP)');
+        });
+
+        it('should format $getDate', () => {
+            const formatter = new OracleDialect();
+            expect(formatter.$getDate('date')).toBe('TRUNC(SYSDATE)');
+            expect(formatter.$getDate('datetime')).toBe('SYSDATE');
+            expect(formatter.$getDate('timestamp')).toBe('SYSTIMESTAMP');
+        });
+
+        it('should be exported from main index', () => {
+            const { OracleDialect: dialect } = require('../src/index');
+            expect(dialect).toBeDefined();
+            const instance = new dialect();
+            expect(instance).toBeInstanceOf(OracleDialect);
+        });
+    });
+
     describe('Dialect common features', () => {
         it('should all dialects extend SqlFormatter', () => {
             const { SqlFormatter } = require('../src/index');
@@ -504,6 +702,7 @@ describe('SqlDialects', () => {
             expect(new MySQLDialect()).toBeInstanceOf(SqlFormatter);
             expect(new MSSQLDialect()).toBeInstanceOf(SqlFormatter);
             expect(new PostgreSQLDialect()).toBeInstanceOf(SqlFormatter);
+            expect(new OracleDialect()).toBeInstanceOf(SqlFormatter);
         });
 
         it('should all dialects format a basic SELECT', () => {
@@ -513,7 +712,8 @@ describe('SqlDialects', () => {
                 new SqliteDialect(),
                 new MySQLDialect(),
                 new MSSQLDialect(),
-                new PostgreSQLDialect()
+                new PostgreSQLDialect(),
+                new OracleDialect()
             ];
             for (const formatter of dialects) {
                 const sql = formatter.formatSelect(query);
@@ -527,7 +727,8 @@ describe('SqlDialects', () => {
                 new SqliteDialect(),
                 new MySQLDialect(),
                 new MSSQLDialect(),
-                new PostgreSQLDialect()
+                new PostgreSQLDialect(),
+                new OracleDialect()
             ];
             for (const formatter of dialects) {
                 const result = formatter.$cast({ $name: 'price' }, 'string');

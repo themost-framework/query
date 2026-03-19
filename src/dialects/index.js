@@ -3,3 +3,4 @@ export { SqliteDialect } from './sqlite';
 export { MySQLDialect } from './mysql';
 export { MSSQLDialect } from './mssql';
 export { PostgreSQLDialect } from './pg';
+export { OracleDialect } from './oracle';
