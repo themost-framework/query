@@ -60,6 +60,9 @@ class SqlSynonym extends Map {
     }
 
     static getInstance() {
+        if (this.instance == null) {
+            this.instance = new SqlSynonym();
+        }
         return this.instance;
     }
 
@@ -83,8 +86,6 @@ class SqlSynonym extends Map {
         return this.getInstance().resolve(name);
     }
 }
-
-SqlSynonym.instance = new SqlSynonym();
 
 SqlFormatter.resolvingName.subscribe((event) => {
     if (typeof event.name !== 'string') {
