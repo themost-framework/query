@@ -11,9 +11,9 @@ export declare interface FormatterSettings {
 export type QueryToken = string | any;
 
 export declare class SqlFormatter {
-    static resolvingName: SyncSeriesEventEmitter<{ formatter: SqlFormatter, name: string, format: string, type: string }>;
+    static resolvingName: SyncSeriesEventEmitter<{ target: SqlFormatter, name: string, type: string }>;
     provider: any;
-    resolvingName: SyncSeriesEventEmitter<{ formatter: SqlFormatter, name: string, format: string, type: string }>;
+    resolvingName: SyncSeriesEventEmitter<{ target: SqlFormatter, name: string, type: string }>;
     settings: FormatterSettings;
     
     escape(value: any,unquoted?: boolean): string | any;

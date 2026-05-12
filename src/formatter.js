@@ -1100,13 +1100,12 @@ class SqlFormatter {
             str = trimNameReference(name);
         }
         const event = {
-            formatter: this,
+            target: this,
             name: str,
-            format: this.settings.nameFormat,
             type: 'name'
         };
         this.resolvingName.emit(event);
-        return ObjectNameValidator.validator.escape(event.name, event.format);
+        return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
     }
 
     escapeEntity(name) {
@@ -1118,13 +1117,12 @@ class SqlFormatter {
             str = trimNameReference(name);
         }
         const event = {
-            formatter: this,
+            target: this,
             name: str,
-            format: this.settings.nameFormat,
             type: 'entity'
         };
         this.resolvingName.emit(event);
-        return ObjectNameValidator.validator.escape(event.name, event.format);
+        return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
     }
 
     /**
