@@ -1,8 +1,8 @@
 export declare class SqlSynonym extends Map<string, string> {
-    add(name: string | [string, string][], synonym?: string): SqlSynonym;
+    add(...args: [name: string, synonym: string] | [entries: [string, string][]]): SqlSynonym;
     resolve(name: string): string;
     static getInstance(): SqlSynonym;
-    static add(name: string | [string, string][], synonym?: string): SqlSynonym;
+    static add(...args: [name: string, synonym: string] | [entries: [string, string][]]): SqlSynonym;
     static remove(name: string): boolean;
     static clear(): void;
     static get(name: string): string | undefined;

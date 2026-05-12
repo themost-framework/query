@@ -1,6 +1,11 @@
 import {SqlFormatter} from './formatter';
 
 class SqlSynonym extends Map {
+    constructor() {
+        super();
+        this.sortedKeys = null;
+    }
+
     add(name, synonym) {
         if (Array.isArray(name)) {
             for (const item of name) {
@@ -28,6 +33,7 @@ class SqlSynonym extends Map {
         if (typeof synonym !== 'string') {
             throw new TypeError('Invalid synonym name. Expected string.');
         }
+        this.sortedKeys = null;
         return super.set(name, synonym);
     }
 
@@ -42,7 +48,13 @@ class SqlSynonym extends Map {
         if (typeof name !== 'string') {
             throw new TypeError('Invalid object name. Expected string.');
         }
+        this.sortedKeys = null;
         return super.delete(name);
+    }
+
+    clear() {
+        this.sortedKeys = null;
+        return super.clear();
     }
 
     resolve(name) {
@@ -50,7 +62,7 @@ class SqlSynonym extends Map {
         if (typeof exactMatch === 'string') {
             return exactMatch;
         }
-        const keys = Array.from(this.keys()).sort((a, b) => b.length - a.length);
+        const keys = this.sortedKeys || (this.sortedKeys = Array.from(this.keys()).sort((a, b) => b.length - a.length));
         for (const key of keys) {
             if (name.startsWith(key + '.')) {
                 return this.get(key).concat(name.substring(key.length));
@@ -60,7 +72,7 @@ class SqlSynonym extends Map {
     }
 
     static getInstance() {
-        if (this.instance == null) {
+        if (this.instance === undefined) {
             this.instance = new SqlSynonym();
         }
         return this.instance;
