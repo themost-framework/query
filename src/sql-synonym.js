@@ -38,9 +38,6 @@ class SqlSynonym extends Map {
     }
 
     get(name) {
-        if (typeof name !== 'string') {
-            throw new TypeError('Invalid object name. Expected string.');
-        }
         return super.get(name);
     }
 
@@ -58,17 +55,27 @@ class SqlSynonym extends Map {
     }
 
     resolve(name) {
+        if (typeof name !== 'string') {
+            throw new TypeError('Invalid synonym expression. Expected string.');
+        }
         const exactMatch = this.get(name);
         if (typeof exactMatch === 'string') {
             return exactMatch;
         }
-        const keys = this.sortedKeys || (this.sortedKeys = Array.from(this.keys()).sort((a, b) => b.length - a.length));
+        const keys = this.getSortedKeys();
         for (const key of keys) {
             if (name.startsWith(key + '.')) {
                 return this.get(key).concat(name.substring(key.length));
             }
         }
         return name;
+    }
+
+    getSortedKeys() {
+        if (this.sortedKeys === null) {
+            this.sortedKeys = Array.from(this.keys()).sort((a, b) => b.length - a.length);
+        }
+        return this.sortedKeys;
     }
 
     static getInstance() {
