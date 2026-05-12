@@ -1,5 +1,6 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 import {QueryEntity, QueryExpression, QueryField, QueryValueRef} from './query';
+import {SyncSeriesEventEmitter} from '@themost/events';
 
 export declare interface FormatterSettings {
     nameFormat: string;
@@ -10,7 +11,9 @@ export declare interface FormatterSettings {
 export type QueryToken = string | any;
 
 export declare class SqlFormatter {
+    static resolvingName: SyncSeriesEventEmitter<{ formatter: SqlFormatter, name: string, format: string, type: string }>;
     provider: any;
+    resolvingName: SyncSeriesEventEmitter<{ formatter: SqlFormatter, name: string, format: string, type: string }>;
     settings: FormatterSettings;
     
     escape(value: any,unquoted?: boolean): string | any;

@@ -14,6 +14,7 @@ import { ObjectNameValidator } from './object-name.validator';
 import {isMethodOrNameReference, isNameReference, trimNameReference} from './name-reference';
 import { JSONArray, JSONObject } from '@themost/json';
 import {MethodCallExpression} from './expressions';
+import {SyncSeriesEventEmitter} from '@themost/events';
 
 class AbstractMethodError extends Error {
     constructor() {
@@ -45,6 +46,7 @@ class SqlFormatter {
     constructor() {
         //
         this.provider = null;
+        this.resolvingName = SqlFormatter.resolvingName;
         /**
          * Gets or sets formatter settings
          * @type {{nameFormat: string, forceAlias: boolean, useAliasKeyword: boolean}|*}
@@ -1097,7 +1099,14 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+        const event = {
+            formatter: this,
+            name: str,
+            format: this.settings.nameFormat,
+            type: 'name'
+        };
+        this.resolvingName.emit(event);
+        return ObjectNameValidator.validator.escape(event.name, event.format);
     }
 
     escapeEntity(name) {
@@ -1108,7 +1117,14 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+        const event = {
+            formatter: this,
+            name: str,
+            format: this.settings.nameFormat,
+            type: 'entity'
+        };
+        this.resolvingName.emit(event);
+        return ObjectNameValidator.validator.escape(event.name, event.format);
     }
 
     /**
@@ -1637,6 +1653,8 @@ class SqlFormatter {
     }
 
 }
+
+SqlFormatter.resolvingName = new SyncSeriesEventEmitter();
 
 export {
     SqlFormatter
