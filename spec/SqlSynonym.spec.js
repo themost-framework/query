@@ -1,16 +1,18 @@
 import {OpenDataQueryFormatter, QueryExpression, SqlFormatter, SqlSynonym} from '../src/index';
 
 describe('SqlSynonym', () => {
+    const synonyms = SqlSynonym.getInstance();
+
     beforeEach(() => {
-        SqlSynonym.clear();
+        synonyms.clear();
     });
 
     afterAll(() => {
-        SqlSynonym.clear();
+        synonyms.clear();
     });
 
     it('should format query by using data object synonym', () => {
-        SqlSynonym.add('ProductData', 'MyProduct');
+        synonyms.add('ProductData', 'MyProduct');
         const formatter = new SqlFormatter();
         formatter.settings.nameFormat = '`$1`';
         const query = new QueryExpression().select('id', 'name')
@@ -20,7 +22,7 @@ describe('SqlSynonym', () => {
     });
 
     it('should format qualified object names by using synonym', () => {
-        SqlSynonym.add('Production.Product', 'MyProduct');
+        synonyms.add('Production.Product', 'MyProduct');
         const formatter = new SqlFormatter();
         formatter.settings.nameFormat = '`$1`';
         expect(formatter.escapeEntity('Production.Product')).toBe('`MyProduct`');
@@ -28,17 +30,17 @@ describe('SqlSynonym', () => {
     });
 
     it('should apply synonyms in formatter subclasses', () => {
-        SqlSynonym.add('Products', 'MyProducts');
+        synonyms.add('Products', 'MyProducts');
         const formatter = new OpenDataQueryFormatter();
         expect(formatter.escapeName('Products.id')).toBe('MyProducts/id');
     });
 
     it('should add synonyms from array entries', () => {
-        SqlSynonym.add([
+        synonyms.add([
             ['object1', 'synonym1'],
             ['object2', 'synonym2']
         ]);
-        expect(SqlSynonym.get('object1')).toBe('synonym1');
-        expect(SqlSynonym.get('object2')).toBe('synonym2');
+        expect(synonyms.get('object1')).toBe('synonym1');
+        expect(synonyms.get('object2')).toBe('synonym2');
     });
 });

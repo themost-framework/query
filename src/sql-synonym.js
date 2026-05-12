@@ -84,26 +84,6 @@ class SqlSynonym extends Map {
         }
         return this.instance;
     }
-
-    static add(name, synonym) {
-        return this.getInstance().add(name, synonym);
-    }
-
-    static remove(name) {
-        return this.getInstance().delete(name);
-    }
-
-    static clear() {
-        this.getInstance().clear();
-    }
-
-    static get(name) {
-        return this.getInstance().get(name);
-    }
-
-    static resolve(name) {
-        return this.getInstance().resolve(name);
-    }
 }
 
 SqlFormatter.resolvingName.subscribe((event) => {
