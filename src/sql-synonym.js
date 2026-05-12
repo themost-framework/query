@@ -1,53 +1,99 @@
 import {SqlFormatter} from './formatter';
 
-const synonyms = new Map();
-
-class SqlSynonym {
-    static add(name, synonym) {
+class SqlSynonym extends Map {
+    add(name, synonym) {
+        if (Array.isArray(name)) {
+            for (const item of name) {
+                if (Array.isArray(item) === false || item.length !== 2) {
+                    throw new TypeError('Invalid synonym entry. Expected [name, synonym].');
+                }
+                this.set(item[0], item[1]);
+            }
+            return this;
+        }
         if (typeof name !== 'string') {
             throw new TypeError('Invalid object name. Expected string.');
         }
         if (typeof synonym !== 'string') {
             throw new TypeError('Invalid synonym name. Expected string.');
         }
-        synonyms.set(name, synonym);
+        this.set(name, synonym);
+        return this;
     }
 
-    static remove(name) {
+    set(name, synonym) {
         if (typeof name !== 'string') {
             throw new TypeError('Invalid object name. Expected string.');
         }
-        return synonyms.delete(name);
+        if (typeof synonym !== 'string') {
+            throw new TypeError('Invalid synonym name. Expected string.');
+        }
+        return super.set(name, synonym);
     }
 
-    static clear() {
-        synonyms.clear();
+    get(name) {
+        if (typeof name !== 'string') {
+            throw new TypeError('Invalid object name. Expected string.');
+        }
+        return super.get(name);
     }
 
-    static get(name) {
-        return synonyms.get(name);
+    delete(name) {
+        if (typeof name !== 'string') {
+            throw new TypeError('Invalid object name. Expected string.');
+        }
+        return super.delete(name);
     }
 
-    static resolve(name) {
-        const exactMatch = synonyms.get(name);
+    resolve(name) {
+        if (typeof name !== 'string') {
+            throw new TypeError('Invalid object name. Expected string.');
+        }
+        const exactMatch = this.get(name);
         if (typeof exactMatch === 'string') {
             return exactMatch;
         }
-        const keys = Array.from(synonyms.keys()).sort((a, b) => b.length - a.length);
+        const keys = Array.from(this.keys()).sort((a, b) => b.length - a.length);
         for (const key of keys) {
             if (name.startsWith(key + '.')) {
-                return synonyms.get(key).concat(name.substring(key.length));
+                return this.get(key).concat(name.substring(key.length));
             }
         }
         return name;
     }
+
+    static getInstance() {
+        return this.instance;
+    }
+
+    static add(name, synonym) {
+        return this.getInstance().add(name, synonym);
+    }
+
+    static remove(name) {
+        return this.getInstance().delete(name);
+    }
+
+    static clear() {
+        this.getInstance().clear();
+    }
+
+    static get(name) {
+        return this.getInstance().get(name);
+    }
+
+    static resolve(name) {
+        return this.getInstance().resolve(name);
+    }
 }
+
+SqlSynonym.instance = new SqlSynonym();
 
 SqlFormatter.resolvingName.subscribe((event) => {
     if (typeof event.name !== 'string') {
         return;
     }
-    event.name = SqlSynonym.resolve(event.name);
+    event.name = SqlSynonym.getInstance().resolve(event.name);
 });
 
 export {

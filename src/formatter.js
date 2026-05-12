@@ -1101,8 +1101,7 @@ class SqlFormatter {
         }
         const event = {
             target: this,
-            name: str,
-            type: 'name'
+            name: str
         };
         this.resolvingName.emit(event);
         return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
@@ -1118,8 +1117,7 @@ class SqlFormatter {
         }
         const event = {
             target: this,
-            name: str,
-            type: 'entity'
+            name: str
         };
         this.resolvingName.emit(event);
         return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);

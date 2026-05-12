@@ -32,4 +32,13 @@ describe('SqlSynonym', () => {
         const formatter = new OpenDataQueryFormatter();
         expect(formatter.escapeName('Products.id')).toBe('MyProducts/id');
     });
+
+    it('should add synonyms from array entries', () => {
+        SqlSynonym.add([
+            ['object1', 'synonym1'],
+            ['object2', 'synonym2']
+        ]);
+        expect(SqlSynonym.get('object1')).toBe('synonym1');
+        expect(SqlSynonym.get('object2')).toBe('synonym2');
+    });
 });
