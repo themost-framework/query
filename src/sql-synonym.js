@@ -4,7 +4,7 @@ class SqlSynonym extends Map {
     add(name, synonym) {
         if (Array.isArray(name)) {
             for (const item of name) {
-                if (Array.isArray(item) === false || item.length !== 2) {
+                if (!Array.isArray(item) || item.length !== 2) {
                     throw new TypeError('Invalid synonym entry. Expected [name, synonym].');
                 }
                 this.set(item[0], item[1]);
@@ -46,9 +46,6 @@ class SqlSynonym extends Map {
     }
 
     resolve(name) {
-        if (typeof name !== 'string') {
-            throw new TypeError('Invalid object name. Expected string.');
-        }
         const exactMatch = this.get(name);
         if (typeof exactMatch === 'string') {
             return exactMatch;
