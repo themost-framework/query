@@ -37,6 +37,17 @@ function getAliasKeyword() {
     return ' ';
 }
 
+function resolveName(formatter, name) {
+    let str = name;
+    if (isNameReference(str)) {
+        str = trimNameReference(name);
+    }
+    if (formatter.synonyms && typeof formatter.synonyms.resolve === 'function') {
+        str = formatter.synonyms.resolve(str);
+    }
+    return str;
+}
+
 /**
  * Initializes an SQL formatter class.
  * @class SqlFormatter
@@ -1096,16 +1107,9 @@ class SqlFormatter {
         if (typeof name !== 'string') {
             throw new Error('Invalid name expression. Expected string.');
         }
-        let str = name;
-        if (isNameReference(str)) {
-            str = trimNameReference(name);
-        }
-        if (this.synonyms && typeof this.synonyms.resolve === 'function') {
-            str = this.synonyms.resolve(str);
-        }
         const event = {
             target: this,
-            name: str
+            name: resolveName(this, name)
         };
         this.resolvingName.emit(event);
         return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
@@ -1115,16 +1119,9 @@ class SqlFormatter {
         if (typeof name !== 'string') {
             throw new Error('Invalid entity expression. Expected string.');
         }
-        let str = name;
-        if (isNameReference(str)) {
-            str = trimNameReference(name);
-        }
-        if (this.synonyms && typeof this.synonyms.resolve === 'function') {
-            str = this.synonyms.resolve(str);
-        }
         const event = {
             target: this,
-            name: str
+            name: resolveName(this, name)
         };
         this.resolvingName.emit(event);
         return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
