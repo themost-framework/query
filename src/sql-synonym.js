@@ -5,25 +5,25 @@ class SqlSynonym extends Map {
         super(entries);
     }
 
-    set(name, synonym) {
-        if (typeof name !== 'string') {
-            throw new TypeError('Invalid object name. Expected string.');
-        }
+    set(synonym, name) {
         if (typeof synonym !== 'string') {
             throw new TypeError('Invalid synonym name. Expected string.');
         }
-        return super.set(name, synonym);
-    }
-
-    get(name) {
-        return super.get(name);
-    }
-
-    delete(name) {
         if (typeof name !== 'string') {
             throw new TypeError('Invalid object name. Expected string.');
         }
-        return super.delete(name);
+        return super.set(synonym, name);
+    }
+
+    get(synonym) {
+        return super.get(synonym);
+    }
+
+    delete(synonym) {
+        if (typeof synonym !== 'string') {
+            throw new TypeError('Invalid synonym name. Expected string.');
+        }
+        return super.delete(synonym);
     }
 
     clear() {
