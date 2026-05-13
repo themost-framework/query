@@ -36,6 +36,16 @@ describe('SqlSynonym', () => {
         expect(formatter.escapeName('Products.id')).toBe('sales/Products/id');
     });
 
+    it('should prioritize formatter instance synonyms over static resolving handlers', () => {
+        synonyms.set('Products', 'sales.Products');
+        const formatter = new SqlFormatter();
+        formatter.settings.nameFormat = '`$1`';
+        formatter.synonyms = new SqlSynonym([
+            ['Products', 'inventory.Products']
+        ]);
+        expect(formatter.escapeEntity('Products')).toBe('`inventory`.`Products`');
+    });
+
     it('should construct synonyms from array entries', () => {
         const localSynonyms = new SqlSynonym([
             ['synonym1', 'schema1.object1'],

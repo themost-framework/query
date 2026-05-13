@@ -13,6 +13,7 @@ export type QueryToken = string | any;
 export declare class SqlFormatter {
     static resolvingName: SyncSeriesEventEmitter<{ target: SqlFormatter, name: string }>;
     provider: any;
+    synonyms: { resolve(name: string): string } | null;
     resolvingName: SyncSeriesEventEmitter<{ target: SqlFormatter, name: string }>;
     settings: FormatterSettings;
     

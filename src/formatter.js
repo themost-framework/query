@@ -46,6 +46,7 @@ class SqlFormatter {
     constructor() {
         //
         this.provider = null;
+        this.synonyms = null;
         this.resolvingName = SqlFormatter.resolvingName;
         /**
          * Gets or sets formatter settings
@@ -1099,6 +1100,9 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
+        if (this.synonyms && typeof this.synonyms.resolve === 'function') {
+            str = this.synonyms.resolve(str);
+        }
         const event = {
             target: this,
             name: str
@@ -1114,6 +1118,9 @@ class SqlFormatter {
         let str = name;
         if (isNameReference(str)) {
             str = trimNameReference(name);
+        }
+        if (this.synonyms && typeof this.synonyms.resolve === 'function') {
+            str = this.synonyms.resolve(str);
         }
         const event = {
             target: this,
