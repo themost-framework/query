@@ -1,5 +1,6 @@
 export declare class SqlSynonym extends Map<string, string> {
-    add(...args: [name: string, synonym: string] | [entries: [string, string][]]): SqlSynonym;
+    constructor();
+    constructor(entries?: readonly (readonly [string, string])[] | null);
     resolve(name: string): string;
     static getInstance(): SqlSynonym;
 }

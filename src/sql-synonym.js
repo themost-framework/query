@@ -1,29 +1,8 @@
 import {SqlFormatter} from './formatter';
 
 class SqlSynonym extends Map {
-    constructor() {
-        super();
-        this.sortedKeys = null;
-    }
-
-    add(name, synonym) {
-        if (Array.isArray(name)) {
-            for (const item of name) {
-                if (!Array.isArray(item) || item.length !== 2) {
-                    throw new TypeError('Invalid synonym entry. Expected [name, synonym].');
-                }
-                this.set(item[0], item[1]);
-            }
-            return this;
-        }
-        if (typeof name !== 'string') {
-            throw new TypeError('Invalid object name. Expected string.');
-        }
-        if (typeof synonym !== 'string') {
-            throw new TypeError('Invalid synonym name. Expected string.');
-        }
-        this.set(name, synonym);
-        return this;
+    constructor(entries) {
+        super(entries);
     }
 
     set(name, synonym) {
@@ -33,7 +12,6 @@ class SqlSynonym extends Map {
         if (typeof synonym !== 'string') {
             throw new TypeError('Invalid synonym name. Expected string.');
         }
-        this.sortedKeys = null;
         return super.set(name, synonym);
     }
 
@@ -45,12 +23,10 @@ class SqlSynonym extends Map {
         if (typeof name !== 'string') {
             throw new TypeError('Invalid object name. Expected string.');
         }
-        this.sortedKeys = null;
         return super.delete(name);
     }
 
     clear() {
-        this.sortedKeys = null;
         return super.clear();
     }
 
@@ -62,20 +38,18 @@ class SqlSynonym extends Map {
         if (typeof exactMatch === 'string') {
             return exactMatch;
         }
-        const keys = this.getSortedKeys();
-        for (const key of keys) {
+        let candidate;
+        for (const key of this.keys()) {
             if (name.startsWith(key + '.')) {
-                return this.get(key).concat(name.substring(key.length));
+                if (candidate === undefined || key.length > candidate.length) {
+                    candidate = key;
+                }
             }
         }
-        return name;
-    }
-
-    getSortedKeys() {
-        if (this.sortedKeys === null) {
-            this.sortedKeys = Array.from(this.keys()).sort((a, b) => b.length - a.length);
+        if (typeof candidate === 'string') {
+            return this.get(candidate).concat(name.substring(candidate.length));
         }
-        return this.sortedKeys;
+        return name;
     }
 
     static getInstance() {
