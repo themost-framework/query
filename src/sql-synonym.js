@@ -10,7 +10,7 @@ class SqlSynonym extends Map {
             throw new TypeError('Invalid synonym name. Expected string.');
         }
         if (typeof name !== 'string') {
-            throw new TypeError('Invalid object name. Expected string.');
+            throw new TypeError('Invalid target name. Expected string.');
         }
         return super.set(synonym, name);
     }

@@ -18,7 +18,8 @@ describe('SqlSynonym', () => {
         const query = new QueryExpression().select('id', 'name')
             .from('Products').where('id').equal(100);
         const sql = formatter.formatSelect(query);
-        expect(sql).toBe('SELECT `sales`.`Products`.`id`, `sales`.`Products`.`name` FROM `sales`.`Products` WHERE (`id`=100)');
+        const expectedSql = 'SELECT `sales`.`Products`.`id`, `sales`.`Products`.`name` FROM `sales`.`Products` WHERE (`id`=100)';
+        expect(sql).toBe(expectedSql);
     });
 
     it('should format qualified object names by using synonym', () => {
