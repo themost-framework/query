@@ -5,6 +5,20 @@ export declare type QueryFunc<T> = (value: T, ...param: any[]) => any;
 
 export declare type QueryJoinFunc<T, J> = (value1: T, value2: J, ...param: any[]) => any;
 
+export declare interface QueryExpressionProperties {
+    $additionalSelect?: ( QueryEntity | QueryExpression | string)[];
+    $unionWith?: QueryExpressionProperties[];
+    $select?: any;
+    $delete?: any;
+    $update?: any;
+    $insert?: any;
+    $order?: any;
+    $group?: any;
+    $expand?: any;
+    $where?: any;
+    $fixed?: any;
+}
+
 export declare class QueryExpression {
 
     static ComparisonOperators: {
@@ -34,6 +48,7 @@ export declare class QueryExpression {
     }
 
     $additionalSelect?: ( QueryEntity | QueryExpression | string)[];
+    $unionWith?: QueryExpression[];
     $select?: any;
     $delete?: any;
     $update?: any;
@@ -79,6 +94,7 @@ export declare class QueryExpression {
     crossJoin(entity: (QueryEntity | any)): this;
     with(obj: any): this;
     with<T,J>(expr: (value: T, otherValue: J, ...param: any[]) => any, ...params: any[]): this;
+    union(expr: QueryExpression): this;
     orderBy(expr: string | any): this;
     orderBy<T>(expr: QueryFunc<T>, ...params: any[]): this;
     orderByDescending(expr: string | any): this;

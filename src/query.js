@@ -818,6 +818,20 @@ class QueryExpression {
         //and return QueryExpression
         return this;
     }
+
+    /**
+     * @param {QueryExpression} expr
+     * @returns this
+     */
+    union(expr) {
+        if (this.$select == null) {
+            throw new Error('Select statement cannot be empty when using union operator.');
+        }
+        this.$unionWith = this.$unionWith || [];
+        this.$unionWith.push(expr);
+        return this;
+    }
+
     // noinspection JSUnusedGlobalSymbols
     /**
      * Applies an ascending ordering to a query expression
