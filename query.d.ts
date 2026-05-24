@@ -16,6 +16,7 @@ export declare class QueryExpression {
     $where?: any;
     $fixed?: any;
     $additionalSelect?: ( QueryEntity | QueryExpression | string)[];
+    $unionWith?: QueryExpression[];
 
     clone():QueryExpression;
     as(alias: string): this;
@@ -50,6 +51,7 @@ export declare class QueryExpression {
     crossJoin(entity: any): this;
     with(obj: any): this;
     with<T,J>(expr: (value: T, otherValue: J, ...params: any[]) => any, ...params: any[]): this;
+    union(expr: QueryExpression): this;
     orderBy(expr: string | any): this;
     orderBy<T>(expr: QueryFunc<T>, ...params: any[]): this;
     orderByDescending(expr: string | any): this;

@@ -897,6 +897,25 @@ QueryExpression.prototype.with = function(obj) {
     //and return QueryExpression
     return this;
 };
+/**
+ * Initializes a union query expression with the specified query expression
+ * @param {QueryExpression} expr
+ * @returns this
+ */
+QueryExpression.prototype.union = function(expr) {
+    if (this.$select == null) {
+        throw new Error('Select statement cannot be empty when using union operator.');
+    }
+    if (expr == null) {
+        throw new Error('Union query expression cannot be empty.');
+    }
+    if (Object.keys(expr.$select).length === 0) {
+        throw new Error('Union expression must have a non-empty select statement.');
+    }
+    this.$unionWith = this.$unionWith || [];
+    this.$unionWith.push(expr);
+    return this;
+}
 
 // noinspection JSUnusedGlobalSymbols
 /**

@@ -1156,6 +1156,15 @@ SqlFormatter.prototype.formatSelect = function(obj)
             }
         });
     }
+
+    // check if there are union expression to format
+    if (Array.isArray(obj.$unionWith)) {
+        for (const unionWith of obj.$unionWith) {
+            sql += ' UNION ';
+            sql += this.formatSelect(unionWith);
+        }
+    }
+
     //add WHERE statement if any
     if (_.isObject(obj.$where))
     {
