@@ -81,7 +81,7 @@ describe('EscapingName', () => {
         // query is written using the common synonym name "Orders"
         const orders = new QueryEntity('Orders');
         const q = new QueryExpression().select(
-            ({id, status}) => ({ id, status })
+            ({id, orderDate}) => ({ id, orderDate })
         ).from(orders).take(5);
         const formatter = new MemoryFormatter();
         // remap synonym "Orders" to the real underlying data object "OrderData"
@@ -91,8 +91,24 @@ describe('EscapingName', () => {
                 event.name = synonyms.get(event.name);
             }
         });
+        // also remap column-qualifier occurrences: escapeName may receive 'Orders.id'
+        formatter.escapingName.subscribe((event) => {
+            const parts = event.name.split('.');
+            if (parts.length > 1 && synonyms.has(parts[0])) {
+                parts[0] = synonyms.get(parts[0]);
+                event.name = parts.join('.');
+            } else if (synonyms.has(event.name)) {
+                event.name = synonyms.get(event.name);
+            }
+        });
         const sql = formatter.format(q);
         expect(sql).toContain('`OrderData`');
+        // execute the formatted SQL against the underlying database engine to confirm it is valid
+        const items = await db.executeAsync(sql);
+        expect(items.length).toBeGreaterThan(0);
+        items.forEach((item) => {
+            expect(item).toHaveProperty('id');
+        });
     });
 
     it('should apply escapingName subscription in SQL query generation', async () => {
