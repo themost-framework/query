@@ -1,5 +1,6 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 export * from './formatter';
+export * from './sql-synonym';
 export * from './odata';
 export * from './expressions';
 export * from './query';
