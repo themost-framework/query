@@ -61,8 +61,11 @@ var { count,
     length,
     ClosureParser  } = require("./closures");
 
+var { SqlSynonym } = require("./sql-synonym");
+
 module.exports = {
     SqlFormatter,
+    SqlSynonym,
     Token,
     LiteralToken,
     SyntaxToken,
