@@ -17,7 +17,7 @@ describe('ResolvingName', () => {
         }
     });
 
-    it('should allow subscriber to override escaped name in escapeName', () => {
+    it('should allow subscriber to override name in escapeName', () => {
         const formatter = new MemoryFormatter();
         const subscriptions = new Map([
             ['OrderData', 'Orders'],
@@ -25,7 +25,7 @@ describe('ResolvingName', () => {
         ]);
         formatter.resolvingName.subscribe((event) => {
             if (subscriptions.has(event.name)) {
-                event.escapedName = `\`${subscriptions.get(event.name)}\``;
+                event.name = subscriptions.get(event.name);
             }
         });
         expect(formatter.escapeName('OrderData')).toBe('`Orders`');
@@ -34,14 +34,14 @@ describe('ResolvingName', () => {
         expect(formatter.escapeName('id')).toBe('`id`');
     });
 
-    it('should allow subscriber to override escaped entity name in escapeEntity', () => {
+    it('should allow subscriber to override entity name in escapeEntity', () => {
         const formatter = new MemoryFormatter();
         const subscriptions = new Map([
             ['OrderData', 'Orders']
         ]);
         formatter.resolvingName.subscribe((event) => {
             if (subscriptions.has(event.name)) {
-                event.escapedName = `\`${subscriptions.get(event.name)}\``;
+                event.name = subscriptions.get(event.name);
             }
         });
         expect(formatter.escapeEntity('OrderData')).toBe('`Orders`');
@@ -57,7 +57,7 @@ describe('ResolvingName', () => {
         const formatter = new MemoryFormatter();
         formatter.resolvingName.subscribe((event) => {
             if (event.name === 'OrderData') {
-                event.escapedName = '`Orders`';
+                event.name = 'Orders';
             }
         });
         const sql = formatter.format(q);
@@ -67,7 +67,7 @@ describe('ResolvingName', () => {
     it('should allow unsubscribing from resolvingName', () => {
         const formatter = new MemoryFormatter();
         const listener = (event) => {
-            event.escapedName = '`Overridden`';
+            event.name = 'Overridden';
         };
         const subscription = formatter.resolvingName.subscribe(listener);
         expect(formatter.escapeName('OrderData')).toBe('`Overridden`');

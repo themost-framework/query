@@ -69,9 +69,9 @@ class SqlFormatter {
         };
         /**
          * An event emitter that allows subscribers to override the escaped object name.
-         * Subscribers receive an event object with { name: string, escapedName: string }
-         * and can override the result by setting event.escapedName.
-         * @type {SyncSeriesEventEmitter<{name: string, escapedName: string}>}
+         * Subscribers receive an event object with { name: string }
+         * and can override the name by setting event.name before ObjectNameValidator escapes it.
+         * @type {SyncSeriesEventEmitter<{name: string}>}
          */
         this.resolvingName = new SyncSeriesEventEmitter();
     }
@@ -1112,13 +1112,11 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        const escapedName = ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
         const event = {
-            name: str,
-            escapedName
+            name: str
         };
         this.resolvingName.emit(event);
-        return event.escapedName;
+        return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
     }
 
     escapeEntity(name) {
@@ -1129,13 +1127,11 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        const escapedName = ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
         const event = {
-            name: str,
-            escapedName
+            name: str
         };
         this.resolvingName.emit(event);
-        return event.escapedName;
+        return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
     }
 
     /**

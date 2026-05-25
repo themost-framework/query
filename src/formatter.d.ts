@@ -15,10 +15,10 @@ export declare class SqlFormatter {
     settings: FormatterSettings;
     /**
      * An event emitter that allows subscribers to override the escaped object name.
-     * Subscribers receive an event object with { name: string, escapedName: string }
-     * and can override the result by setting event.escapedName.
+     * Subscribers receive an event object with { name: string }
+     * and can override the name by setting event.name before ObjectNameValidator escapes it.
      */
-    resolvingName: SyncSeriesEventEmitter<{name: string, escapedName: string}>;
+    resolvingName: SyncSeriesEventEmitter<{name: string}>;
     
     escape(value: any,unquoted?: boolean): string | any;
     escapeConstant(value: any,unquoted?: boolean): string | any;
