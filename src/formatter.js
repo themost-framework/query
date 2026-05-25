@@ -68,12 +68,19 @@ class SqlFormatter {
             useAliasKeyword: true
         };
         /**
-         * An event emitter that allows subscribers to override the escaped object name.
+         * An event emitter that allows subscribers to override the escaped field name.
          * Subscribers receive an event object with { name: string }
          * and can override the name by setting event.name before ObjectNameValidator escapes it.
          * @type {SyncSeriesEventEmitter<{name: string}>}
          */
         this.escapingName = new SyncSeriesEventEmitter();
+        /**
+         * An event emitter that allows subscribers to override the escaped entity name.
+         * Subscribers receive an event object with { name: string }
+         * and can override the name by setting event.name before ObjectNameValidator escapes it.
+         * @type {SyncSeriesEventEmitter<{name: string}>}
+         */
+        this.escapingEntity = new SyncSeriesEventEmitter();
     }
     /**
      * Formats a JSON comparison object to the equivalent sql expression e.g. { $gt: 100} as >100, or { $in:[5, 8] } as IN {5,8} etc
@@ -1130,7 +1137,7 @@ class SqlFormatter {
         const event = {
             name: str
         };
-        this.escapingName.emit(event);
+        this.escapingEntity.emit(event);
         return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
     }
 
