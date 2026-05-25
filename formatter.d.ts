@@ -1,5 +1,6 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 import {QueryEntity, QueryExpression} from './query';
+import { SyncSeriesEventEmitter } from '@themost/events';
 
 export declare interface FormatterSettings {
     nameFormat: string;
@@ -12,6 +13,18 @@ export type QueryToken = string | any;
 export declare class SqlFormatter {
     provider: any;
     settings: FormatterSettings;
+    /**
+     * An event emitter that allows subscribers to override the escaped field name.
+     * Subscribers receive an event object with { name: string }
+     * and can override the name by setting event.name before ObjectNameValidator escapes it.
+     */
+    escapingName: SyncSeriesEventEmitter<{name: string}>;
+    /**
+     * An event emitter that allows subscribers to override the escaped entity name.
+     * Subscribers receive an event object with { name: string }
+     * and can override the name by setting event.name before ObjectNameValidator escapes it.
+     */
+    escapingEntity: SyncSeriesEventEmitter<{name: string}>;
 
     formatComparison(comparison: any): string;
     isComparison(obj: any): boolean;

@@ -9,6 +9,7 @@ const {MethodCallExpression} = require('./expressions');
 const {isNameReference, trimNameReference, isMethodOrNameReference} = require('./name-reference');
 var instanceOf = require('./instance-of').instanceOf;
 var ObjectNameValidator = require('./object-name.validator').ObjectNameValidator;
+const { SyncSeriesEventEmitter } = require('@themost/events');
 
 if (typeof Object.key !== 'function') {
     /**
@@ -70,6 +71,20 @@ function SqlFormatter() {
          */
         useAliasKeyword: true
     }
+    /**
+     * An event emitter that allows subscribers to override the escaped field name.
+     * Subscribers receive an event object with { name: string }
+     * and can override the name by setting event.name before ObjectNameValidator escapes it.
+     * @type {SyncSeriesEventEmitter<{name: string}>}
+     */
+    this.escapingName = new SyncSeriesEventEmitter();
+    /**
+     * An event emitter that allows subscribers to override the escaped entity name.
+     * Subscribers receive an event object with { name: string }
+     * and can override the name by setting event.name before ObjectNameValidator escapes it.
+     * @type {SyncSeriesEventEmitter<{name: string}>}
+     */
+    this.escapingEntity = new SyncSeriesEventEmitter();
 }
 
 /**
@@ -1447,7 +1462,11 @@ SqlFormatter.prototype.escapeName = function(name) {
     if (isNameReference(str)) {
         str = trimNameReference(name);
     }
-    return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+    const event = {
+        name: str
+    };
+    this.escapingName.emit(event);
+    return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
 };
 
 function isQueryField_(obj) {
@@ -1605,7 +1624,11 @@ SqlFormatter.prototype.escapeEntity = function(name) {
     if (isNameReference(str)) {
         str = trimNameReference(name);
     }
-    return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+    const event = {
+        name: str
+    };
+    this.escapingEntity.emit(event);
+    return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
 }
 
 SqlFormatter.prototype.formatAdditionalSelect = function(expr) {
