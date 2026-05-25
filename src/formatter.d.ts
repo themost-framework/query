@@ -18,7 +18,7 @@ export declare class SqlFormatter {
      * Subscribers receive an event object with { name: string }
      * and can override the name by setting event.name before ObjectNameValidator escapes it.
      */
-    resolvingName: SyncSeriesEventEmitter<{name: string}>;
+    escapingName: SyncSeriesEventEmitter<{name: string}>;
     
     escape(value: any,unquoted?: boolean): string | any;
     escapeConstant(value: any,unquoted?: boolean): string | any;

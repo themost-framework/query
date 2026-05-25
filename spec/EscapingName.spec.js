@@ -2,7 +2,7 @@ import { QueryEntity, QueryExpression, QueryField } from '../src/index';
 import { MemoryAdapter } from './test/TestMemoryAdapter';
 import { MemoryFormatter } from './test/TestMemoryFormatter';
 
-describe('ResolvingName', () => {
+describe('EscapingName', () => {
 
     /**
      * @type {MemoryAdapter}
@@ -23,7 +23,7 @@ describe('ResolvingName', () => {
             ['OrderData', 'Orders'],
             ['PersonData', 'Persons']
         ]);
-        formatter.resolvingName.subscribe((event) => {
+        formatter.escapingName.subscribe((event) => {
             if (subscriptions.has(event.name)) {
                 event.name = subscriptions.get(event.name);
             }
@@ -39,7 +39,7 @@ describe('ResolvingName', () => {
         const subscriptions = new Map([
             ['OrderData', 'Orders']
         ]);
-        formatter.resolvingName.subscribe((event) => {
+        formatter.escapingName.subscribe((event) => {
             if (subscriptions.has(event.name)) {
                 event.name = subscriptions.get(event.name);
             }
@@ -49,13 +49,13 @@ describe('ResolvingName', () => {
         expect(formatter.escapeEntity('PersonData')).toBe('`PersonData`');
     });
 
-    it('should apply resolvingName subscription in SQL query generation', async () => {
+    it('should apply escapingName subscription in SQL query generation', async () => {
         const orders = new QueryEntity('OrderData');
         const q = new QueryExpression().select(
             ({id, status}) => ({ id, status })
         ).from(orders).take(5);
         const formatter = new MemoryFormatter();
-        formatter.resolvingName.subscribe((event) => {
+        formatter.escapingName.subscribe((event) => {
             if (event.name === 'OrderData') {
                 event.name = 'Orders';
             }
@@ -64,12 +64,12 @@ describe('ResolvingName', () => {
         expect(sql).toContain('`Orders`');
     });
 
-    it('should allow unsubscribing from resolvingName', () => {
+    it('should allow unsubscribing from escapingName', () => {
         const formatter = new MemoryFormatter();
         const listener = (event) => {
             event.name = 'Overridden';
         };
-        const subscription = formatter.resolvingName.subscribe(listener);
+        const subscription = formatter.escapingName.subscribe(listener);
         expect(formatter.escapeName('OrderData')).toBe('`Overridden`');
         subscription.unsubscribe();
         // After unsubscribe, name should be escaped normally

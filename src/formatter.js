@@ -73,7 +73,7 @@ class SqlFormatter {
          * and can override the name by setting event.name before ObjectNameValidator escapes it.
          * @type {SyncSeriesEventEmitter<{name: string}>}
          */
-        this.resolvingName = new SyncSeriesEventEmitter();
+        this.escapingName = new SyncSeriesEventEmitter();
     }
     /**
      * Formats a JSON comparison object to the equivalent sql expression e.g. { $gt: 100} as >100, or { $in:[5, 8] } as IN {5,8} etc
@@ -1115,7 +1115,7 @@ class SqlFormatter {
         const event = {
             name: str
         };
-        this.resolvingName.emit(event);
+        this.escapingName.emit(event);
         return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
     }
 
@@ -1130,7 +1130,7 @@ class SqlFormatter {
         const event = {
             name: str
         };
-        this.resolvingName.emit(event);
+        this.escapingName.emit(event);
         return ObjectNameValidator.validator.escape(event.name, this.settings.nameFormat);
     }
 
