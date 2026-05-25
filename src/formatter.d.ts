@@ -1,5 +1,6 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 import {QueryEntity, QueryExpression, QueryField, QueryValueRef} from './query';
+import { SyncSeriesEventEmitter } from '@themost/events';
 
 export declare interface FormatterSettings {
     nameFormat: string;
@@ -12,6 +13,12 @@ export type QueryToken = string | any;
 export declare class SqlFormatter {
     provider: any;
     settings: FormatterSettings;
+    /**
+     * An event emitter that allows subscribers to override the escaped object name.
+     * Subscribers receive an event object with { name: string, escapedName: string }
+     * and can override the result by setting event.escapedName.
+     */
+    resolvingName: SyncSeriesEventEmitter<{name: string, escapedName: string}>;
     
     escape(value: any,unquoted?: boolean): string | any;
     escapeConstant(value: any,unquoted?: boolean): string | any;

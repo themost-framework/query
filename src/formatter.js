@@ -14,6 +14,7 @@ import { ObjectNameValidator } from './object-name.validator';
 import {isMethodOrNameReference, isNameReference, trimNameReference} from './name-reference';
 import { JSONArray, JSONObject } from '@themost/json';
 import {MethodCallExpression} from './expressions';
+import { SyncSeriesEventEmitter } from '@themost/events';
 
 class AbstractMethodError extends Error {
     constructor() {
@@ -66,6 +67,13 @@ class SqlFormatter {
              */
             useAliasKeyword: true
         };
+        /**
+         * An event emitter that allows subscribers to override the escaped object name.
+         * Subscribers receive an event object with { name: string, escapedName: string }
+         * and can override the result by setting event.escapedName.
+         * @type {SyncSeriesEventEmitter<{name: string, escapedName: string}>}
+         */
+        this.resolvingName = new SyncSeriesEventEmitter();
     }
     /**
      * Formats a JSON comparison object to the equivalent sql expression e.g. { $gt: 100} as >100, or { $in:[5, 8] } as IN {5,8} etc
@@ -1104,7 +1112,13 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+        const escapedName = ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+        const event = {
+            name: str,
+            escapedName
+        };
+        this.resolvingName.emit(event);
+        return event.escapedName;
     }
 
     escapeEntity(name) {
@@ -1115,7 +1129,13 @@ class SqlFormatter {
         if (isNameReference(str)) {
             str = trimNameReference(name);
         }
-        return ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+        const escapedName = ObjectNameValidator.validator.escape(str, this.settings.nameFormat);
+        const event = {
+            name: str,
+            escapedName
+        };
+        this.resolvingName.emit(event);
+        return event.escapedName;
     }
 
     /**
