@@ -70,6 +70,6 @@ class SqlSynonym {
 
 }
 
-module.exports = {
+export {
     SqlSynonym
 }
