@@ -722,17 +722,13 @@ OpenDataParser.prototype.parseCommonItem = function(callback) {
             {
                 self.parseMember(function(err, result) {
                     if (err) {
-                        callback.call(self,err);
+                        return callback(err);
                     }
-                    else {
-                        while (!self.atEnd() && self.currentToken.syntax===SyntaxToken.Slash.syntax) {
-                            //self.moveNext();
-                            //self.parseMembers(callback)
-                            callback.call(self,new Error('Slash syntax is not yet implemented.'));
-                        }
+                    while (!self.atEnd() && self.currentToken.syntax===SyntaxToken.Slash.syntax) {
+                        return callback(new Error('Slash syntax is not yet implemented.'));
                     }
                     self.moveNext();
-                    callback.call(self, null, result);
+                    return callback(null, result);
                 });
 
             }
