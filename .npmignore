@@ -43,3 +43,6 @@ tsconfig.json
 jest.config.js
 jest.setup.js
 jsconfig.json
+
+# docs
+docs
