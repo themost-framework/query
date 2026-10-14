@@ -1,4 +1,3 @@
-
 ---
 title: @themost/query
 summary: Learn what @themost/query, a database-agnostic query builder for Node.js, does
