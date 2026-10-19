@@ -1,6 +1,6 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 
-import { sprintf } from 'sprintf-js';
+import { printf as sprintf } from 'fast-printf';
 import { instanceOf } from './instance-of';
 import {
     LogicalExpression,

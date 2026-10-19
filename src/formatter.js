@@ -1,6 +1,6 @@
 // MOST Web Framework Codename Zero Gravity Copyright (c) 2017-2022, THEMOST LP All rights reserved
 import { SqlUtils } from './utils';
-import { sprintf } from 'sprintf-js';
+import { printf as sprintf } from 'fast-printf';
 import isNil from 'lodash/isNil';
 import isString from 'lodash/isString';
 import isFunction from 'lodash/isFunction';

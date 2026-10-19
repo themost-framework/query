@@ -1,4 +1,4 @@
-import { sprintf } from 'sprintf-js';
+import { printf as sprintf } from 'fast-printf';
 import { SqlFormatter } from './formatter';
 import { instanceOf } from './instance-of';
 import { QueryExpression } from './query';
