@@ -1,4 +1,5 @@
 ---
+index: 700
 title: Grouping Query Results
 summary: Group matching values and select aggregate values such as a count.
 category: Queries

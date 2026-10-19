@@ -1,4 +1,5 @@
 ---
+index: 500
 title: Ordering and Paging Query Results
 summary: Sort query results and limit them to a manageable page of rows.
 category: Queries

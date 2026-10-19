@@ -1,4 +1,5 @@
 ---
+index: 1000
 title: Formatting and Executing Queries
 summary: Understand the difference between generating SQL and running a query with a database adapter.
 category: Getting Started

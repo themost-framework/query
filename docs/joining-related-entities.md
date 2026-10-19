@@ -1,4 +1,5 @@
 ---
+index: 600
 title: Joining Related Entities
 summary: Combine rows from related sources with an inner join or a left join.
 category: Queries

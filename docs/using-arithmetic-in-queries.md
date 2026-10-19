@@ -1,4 +1,5 @@
 ---
+index: 800
 title: Using Arithmetic in Queries
 summary: Describe calculated fields and numeric filters using closure expressions.
 category: Queries

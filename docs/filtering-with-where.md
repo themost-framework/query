@@ -1,4 +1,5 @@
 ---
+index: 300
 title: Filtering Results with Where
 summary: Filter query results using closure comparisons or QueryExpression comparison methods.
 category: Queries

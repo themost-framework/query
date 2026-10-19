@@ -1,4 +1,5 @@
 ---
+index: 400
 title: Combining Query Conditions
 summary: Combine query comparisons with AND and OR to express common filters.
 category: Queries

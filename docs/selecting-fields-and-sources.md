@@ -1,4 +1,5 @@
 ---
+index: 200
 title: Selecting Fields and Sources
 summary: Choose which fields to return and identify the entity that supplies them.
 category: Queries

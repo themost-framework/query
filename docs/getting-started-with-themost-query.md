@@ -1,4 +1,5 @@
 ---
+index: 100
 title: Getting Started with @themost/query
 summary: Learn what @themost/query does, install it, and build your first query expression.
 category: Getting Started

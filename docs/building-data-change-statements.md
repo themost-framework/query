@@ -1,4 +1,5 @@
 ---
+index: 900
 title: Building Data Change Statements
 summary: Describe insert, update, and delete statements and format them as SQL.
 category: Queries
