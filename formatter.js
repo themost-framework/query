@@ -1,6 +1,6 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
 var SqlUtils = require('./utils').SqlUtils;
-var sprintf = require('sprintf-js').sprintf;
+const { printf: sprintf } = require('fast-printf');
 var _ = require('lodash');
 var { Args, AbstractMethodError} = require('@themost/common');
 const { QueryExpression, QueryField, QueryEntity } = require('./query');

@@ -1,4 +1,4 @@
-const { sprintf } = require('sprintf-js');
+const { printf: sprintf } = require('fast-printf');
 const { SqlFormatter } = require('./formatter');
 const { instanceOf } = require('./instance-of');
 const { QueryExpression } = require('./query');

@@ -1,6 +1,6 @@
 
 import { SqliteFormatter } from '@themost/sqlite';
-import {sprintf} from 'sprintf-js';
+import {printf as sprintf} from 'fast-printf';
 
 Object.assign(SqliteFormatter.prototype, {
     $toString(arg) {

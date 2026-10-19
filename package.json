@@ -1,6 +1,6 @@
 {
   "name": "@themost/query",
-  "version": "2.6.85",
+  "version": "2.6.86",
   "description": "@themost/query is a query builder for SQL. It includes a wide variety of helper functions for building complex SQL queries under node.js.",
   "main": "index.js",
   "scripts": {
@@ -28,8 +28,8 @@
     "@themost/json": "^1.1.0",
     "async": "^2.6.4",
     "esprima": "^4.0.1",
+    "fast-printf": "^1.6.10",
     "lodash": "^4.18.1",
-    "sprintf-js": "^1.1.2",
     "symbol": "^0.3.1"
   },
   "devDependencies": {

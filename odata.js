@@ -2,7 +2,7 @@
 var _ = require("lodash");
 var {trim} = require('lodash');
 var {LangUtils} = require("@themost/common");
-var {sprintf} = require('sprintf-js');
+const { printf: sprintf } = require('fast-printf');
 var {MemberExpression, SwitchExpression, SelectAnyExpression, OrderByAnyExpression, AnyExpressionFormatter, isLogicalOperator,
     createLogicalExpression, isArithmeticOperator, createArithmeticExpression,
     isArithmeticExpression, isLogicalExpression, isComparisonOperator,

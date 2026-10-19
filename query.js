@@ -1,5 +1,5 @@
 // MOST Web Framework Codename Blueshift Copyright (c) 2017-2022, THEMOST LP All rights reserved
-var sprintf = require('sprintf-js').sprintf;
+const { printf: sprintf } = require('fast-printf');
 var Args = require('@themost/common').Args;
 var _ = require('lodash');
 var Symbol = require('symbol');
